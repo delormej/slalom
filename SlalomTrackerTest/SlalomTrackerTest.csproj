@@ -56,7 +56,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ClassLibrary1\SlalomTracker.csproj">
+    <ProjectReference Include="..\SlalomTracker\SlalomTracker.csproj">
       <Project>{4c11a895-1730-4698-b186-250991a34a62}</Project>
       <Name>SlalomTracker</Name>
     </ProjectReference>
