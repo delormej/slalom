@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace SlalomTracker
 {
     [TestClass]
-    public class TrackerTest
+    public class CoursePassTest
     {
         public static readonly Course COURSE = new Course() {
             CourseEntryCL = new GeoCoordinate() { Latitude = 0, Longitude = 0 },
@@ -15,7 +15,7 @@ namespace SlalomTracker
         public void TestTrack()
         {
             Rope rope = new Rope(16);
-            Tracker tracker = new Tracker(COURSE, rope);
+            CoursePass pass = new CoursePass(COURSE, rope);
 
         }
     }

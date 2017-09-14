@@ -66,42 +66,6 @@ namespace SlalomTracker
         public GeoCoordinate CourseEntryCL { get; set; }
         public GeoCoordinate CourseExitCL { get; set; }
     }
-    
-    /// <summary>
-    /// Represents a pass through the course, containing all measurements.
-    /// </summary>
-    public class CoursePass
-    {
-        public List<Measurement> Measurements;
-
-        public DateTime CourseEntryTimestamp { get; set; }
-        public DateTime CourseExitTimestamp { get; set; }
-
-        public Course Course { get; private set; }
-
-        /// <summary>
-        /// Rope length used for the pass.
-        /// </summary>
-        public Rope Rope { get; private set; }
-
-        /// <summary>
-        /// Average boat speed (i.e. 30.4,32.3,34.2,36 mph) for the course.
-        /// </summary>
-        public double AverageBoatSpeed { get; }
-
-        /// <summary>
-        /// Calibration offset in degrees from which rope angle is calculated from.  
-        /// This value represents the heading in degrees which should represent the center line.
-        /// </summary>
-        public double CenterLineDegreeOffset { get; set; }
-
-        public CoursePass(Course course, Rope rope)
-        {
-            this.Course = course;
-            this.Rope = rope;
-        }
-    }
-
 
     /// <summary>
     /// Object to store measurements calculated from a rope rotation event.

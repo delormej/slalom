@@ -1,22 +1,46 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace SlalomTracker
 {
-    public class Tracker
+    /// <summary>
+    /// Represents a pass through the course, containing all measurements.
+    /// </summary>
+    public class CoursePass
     {
-        CoursePass m_pass;
-        bool m_inCourse; // has the boat pilon entered the course geofenced area.
+        // Flag if the boat pilon entered the course geofenced area.
+        bool m_inCourse; 
+
+        public List<Measurement> Measurements;
+
+        public DateTime CourseEntryTimestamp { get; set; }
+        public DateTime CourseExitTimestamp { get; set; }
+
+        public Course Course { get; private set; }
 
         /// <summary>
-        /// Create a 
+        /// Rope length used for the pass.
         /// </summary>
-        public Tracker(Course course, Rope rope)
+        public Rope Rope { get; private set; }
+
+        /// <summary>
+        /// Average boat speed (i.e. 30.4,32.3,34.2,36 mph) for the course.
+        /// </summary>
+        public double AverageBoatSpeed { get; }
+
+        /// <summary>
+        /// Calibration offset in degrees from which rope angle is calculated from.  
+        /// This value represents the heading in degrees which should represent the center line.
+        /// </summary>
+        public double CenterLineDegreeOffset { get; set; }
+
+        public CoursePass(Course course, Rope rope)
         {
-            m_pass = new CoursePass(course, rope);
-            m_pass.CenterLineDegreeOffset = 0; 
-            m_pass.Measurements = new List<Measurement>();
+            this.Course = course;
+            this.Rope = rope;
+
+            CenterLineDegreeOffset = 0;
+            Measurements = new List<Measurement>();
         }
 
         /// <summary>
@@ -53,7 +77,7 @@ namespace SlalomTracker
                 throw new NotImplementedException("CalibrateRopeAngle not yet implemented.");
             }
 
-            m_pass.CenterLineDegreeOffset = 0;
+            CenterLineDegreeOffset = 0;
         }
 
         /// <summary>
@@ -70,7 +94,7 @@ namespace SlalomTracker
                     {
                         // Boat pilon is now in the course.
                         m_inCourse = true;
-                        m_pass.CourseEntryTimestamp = timestamp;
+                        CourseEntryTimestamp = timestamp;
                     }
                 }
                 else
@@ -82,7 +106,7 @@ namespace SlalomTracker
 
             // Calculate measurements.
             Measurement current = new Measurement();
-            Measurement previous = m_pass.Measurements.Count > 0 ? m_pass.Measurements[m_pass.Measurements.Count - 1] : null;
+            Measurement previous = Measurements.Count > 0 ? Measurements[Measurements.Count - 1] : null;
             current.BoatPosition = CoursePosition.CoursePositionFromGeo(boatPosition);
             current.RopeSwingSpeedRadS = ropeSwingRadS;
 
@@ -93,7 +117,7 @@ namespace SlalomTracker
                 double time = current.Timestamp.Subtract(previous.Timestamp).Milliseconds * 1000;
 
                 // Convert radians per second to degrees per second.  
-                current.RopeAngleDegrees = previous.RopeAngleDegrees + 
+                current.RopeAngleDegrees = previous.RopeAngleDegrees +
                     Rope.RadToDeg(ropeSwingRadS) * time;
 
                 // Only interested in the down course speed, if the boat waggled side to 
@@ -103,14 +127,14 @@ namespace SlalomTracker
 
                 // Handle position is calculated relative to the pilon/boat position.
                 current.HandlePosition = current.BoatPosition +
-                    m_pass.Rope.GetHandlePosition(current.RopeAngleDegrees);
+                    Rope.GetHandlePosition(current.RopeAngleDegrees);
             }
             else
             {
-                current.RopeAngleDegrees = m_pass.CenterLineDegreeOffset;
+                current.RopeAngleDegrees = CenterLineDegreeOffset;
             }
 
-            m_pass.Measurements.Add(current);
+            Measurements.Add(current);
         }
     }
 }
