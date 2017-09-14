@@ -102,8 +102,8 @@ namespace SlalomTracker
                 current.BoatSpeedMps = boatDistanceM / time;
 
                 // Handle position is calculated relative to the pilon/boat position.
-                current.HandlePosition = CoursePosition.Add(current.BoatPosition,
-                    m_pass.Rope.GetHandlePosition(current.RopeAngleDegrees));
+                current.HandlePosition = current.BoatPosition +
+                    m_pass.Rope.GetHandlePosition(current.RopeAngleDegrees);
             }
             else
             {

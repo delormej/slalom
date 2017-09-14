@@ -32,8 +32,14 @@ namespace SlalomTracker
             throw new NotImplementedException();
         }
 
-        // TODO: there is a way to override the default + operator, look this up.
-        public static CoursePosition Add(CoursePosition a, CoursePosition b)
+        /// <summary>
+        /// Overrides the + operator between two CoursePositions and returns a new one 
+        /// representing the sum of both X & Y.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static CoursePosition operator +(CoursePosition a, CoursePosition b)
         {
             return new CoursePosition(a.X + b.X, a.Y + b.Y);
         }
