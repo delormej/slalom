@@ -1,4 +1,5 @@
 ﻿using System;
+using GeoCoordinatePortable;
 
 namespace SlalomTracker
 {
@@ -43,10 +44,10 @@ namespace SlalomTracker
         }
     }
 
-    public struct GeoCoordinate
-    {
-        public double Latitude, Longitude;
-    }
+    //public struct GeoCoordinate
+    //{
+    //    public double Latitude, Longitude;
+    //}
 
     /// <summary>
     /// Represents the entry & exit gates for a course and the rectangle that surrounds.
