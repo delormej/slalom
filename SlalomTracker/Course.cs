@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SlalomTracker
 {
@@ -65,6 +63,31 @@ namespace SlalomTracker
         /// </summary>
         public GeoCoordinate CourseEntryCL { get; set; }
         public GeoCoordinate CourseExitCL { get; set; }
+
+        /// <summary>
+        /// Generates Balls, BoatMarkers, Gates once Course Entry & Exit coordinates are available.
+        /// </summary>
+        public void GenerateCourseFeatures()
+        {
+            throw new NotImplementedException();
+        }
+
+        //
+        // Maintain a virtual course map in x,y coordinates for all course elements (entry/exit gates, balls[1-6], boat markers)
+        // 
+        // Entry Gate Center Line Position (lat/long)
+        // Exit Gate Center Line Position (lat/long)
+        // EntryGates[2] (x,y coordinates) 
+        // ExitGates[2] (x,y coordiantes)
+        // Balls[5] (x,y coordinates)
+        // BoatMarkers[10] (x,y coordiantes)
+        // BoatGuides[4] -- the course entry / exit guides, what are these called? Green balls..
+
+        public CoursePosition[] Balls { get; private set; }
+
+        public CoursePosition[] BoatMarkers { get; private set; }
+
+        public CoursePosition[] Gates { get; private set; }
     }
 
     /// <summary>
@@ -99,17 +122,6 @@ namespace SlalomTracker
         // 4. Calculate handle position based on degrees and rope length.
         // 5. Calculate the arc of the rope for a given length
         // 6. Calculate x,y position of handle in space.
-
-        //
-        // Maintain a virtual course map in x,y (unit==centimeters) coordinates for all course elements (entry/exit gates, balls[1-6], boat markers)
-        // 
-        // Entry Gate Center Line Position (lat/long)
-        // Exit Gate Center Line Position (lat/long)
-        // EntryGates[2] (x,y coordinates) 
-        // ExitGates[2] (x,y coordiantes)
-        // Balls[5] (x,y coordinates)
-        // BoatMarkers[10] (x,y coordiantes)
-        // BoatGuides[4] -- the course entry / exit guides, what are these called? Green balls..
 
         // Measurement:
         // Time Stamp
