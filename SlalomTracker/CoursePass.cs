@@ -117,6 +117,7 @@ namespace SlalomTracker
             // Calculate measurements.
             Measurement current = new Measurement();
             Measurement previous = Measurements.Count > 0 ? Measurements[Measurements.Count - 1] : null;
+            current.Timestamp = timestamp;
             current.BoatPosition = Course.CoursePositionFromGeo(boatPosition);
             current.RopeSwingSpeedRadS = ropeSwingRadS;
 
