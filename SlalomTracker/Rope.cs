@@ -44,26 +44,6 @@ namespace SlalomTracker
         }
 
         /// <summary>
-        /// Helper methods that coverts radians to degrees since Trig functions return radians.
-        /// </summary>
-        /// <param name="rad"></param>
-        /// <returns></returns>
-        internal static double RadToDeg(double rad)
-        {
-            return rad * 180 / Math.PI;
-        }
-
-        /// <summary>
-        /// Helper method to convert degrees to radians.
-        /// </summary>
-        /// <param name="deg"></param>
-        /// <returns></returns>
-        internal static double DegToRad(double deg)
-        {
-            return deg / 180 * Math.PI;
-        }
-
-        /// <summary>
         /// Calculates the angle of the rope where the handle will have reached the apex
         /// at the buoy line.
         /// </summary>
@@ -76,7 +56,7 @@ namespace SlalomTracker
             // Longer side needs to be the divisor.
             double soa = HandleApexRadiusM > m_lengthM ? m_lengthM / HandleApexRadiusM :
                 HandleApexRadiusM / m_lengthM;
-            double degrees = RadToDeg(Math.Asin(soa));
+            double degrees = Util.RadToDeg(Math.Asin(soa));
             //double degrees = radians * 180 / Math.PI;
 
             return degrees;
@@ -106,8 +86,8 @@ namespace SlalomTracker
             double A = B - C;  // A+B+C=180 degrees
             double b = m_lengthM;
 
-            double a = Math.Sin(DegToRad(A)) * b;
-            double c = Math.Sin(DegToRad(C)) * b;
+            double a = Math.Sin(Util.DegToRad(A)) * b;
+            double c = Math.Sin(Util.DegToRad(C)) * b;
 
             // Determine which buoy line (0 degrees == @buoy246line, 180 degreees == @buoy135line)
             //

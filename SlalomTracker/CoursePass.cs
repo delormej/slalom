@@ -84,8 +84,17 @@ namespace SlalomTracker
         /// <summary>
         /// Calculates and records an event along the skiers course pass.
         /// </summary>
-        public void Track(DateTime timestamp, double ropeSwingRadS, GeoCoordinate boatPosition)
+        public void Track(DateTime timestamp, double ropeSwingRadS, double latitude, double longitude)
         {
+            GeoCoordinate boatPosition = new GeoCoordinate(latitude, longitude);
+            Track(timestamp, ropeSwingRadS, boatPosition);
+        }
+
+        /// <summary>
+        /// Calculates and records an event along the skiers course pass, using GeoCoordinate.
+        /// </summary>
+        public void Track(DateTime timestamp, double ropeSwingRadS, GeoCoordinate boatPosition)
+        { 
             // Block on this to enure only the first event entering the course gets recorded.
             lock (this)
             {
@@ -108,7 +117,7 @@ namespace SlalomTracker
             // Calculate measurements.
             Measurement current = new Measurement();
             Measurement previous = Measurements.Count > 0 ? Measurements[Measurements.Count - 1] : null;
-            current.BoatPosition = CoursePosition.CoursePositionFromGeo(boatPosition);
+            current.BoatPosition = Course.CoursePositionFromGeo(boatPosition);
             current.RopeSwingSpeedRadS = ropeSwingRadS;
 
             // All subsequent calculations are based on movement since the last measurement.
@@ -119,7 +128,7 @@ namespace SlalomTracker
 
                 // Convert radians per second to degrees per second.  
                 current.RopeAngleDegrees = previous.RopeAngleDegrees +
-                    Rope.RadToDeg(ropeSwingRadS) * time;
+                    Util.RadToDeg(ropeSwingRadS) * time;
 
                 // Only interested in the down course speed, if the boat waggled side to 
                 // side, it technically could have been going faster.

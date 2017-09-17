@@ -21,17 +21,6 @@ namespace SlalomTracker
         }
 
         /// <summary>
-        /// Given the boat's position, calculate in the matrix (x,y) relative to the course. 
-        /// Where 0,0 represents Center Line at course entry.
-        /// </summary>
-        /// <param name="boatPosition"></param>
-        /// <returns></returns>
-        public static CoursePosition CoursePositionFromGeo(GeoCoordinate boatPosition)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
         /// Overrides the + operator between two CoursePositions and returns a new one 
         /// representing the sum of both X & Y.
         /// </summary>
@@ -66,11 +55,62 @@ namespace SlalomTracker
         public GeoCoordinate CourseExitCL { get; set; }
 
         /// <summary>
+        /// The heading in degrees for a straight line from course entry to exit 
+        /// along the center line of the wake.
+        /// </summary>
+        /// <remarks>
+        /// Only available after Course Entry & Exit have been set.
+        /// </remarks>
+        public double CourseHeadingDeg { get; }
+
+        public Course()
+        {
+            CourseEntryCL = new GeoCoordinate();
+            CourseExitCL = new GeoCoordinate();
+        }
+
+        /// <summary>
         /// Generates Balls, BoatMarkers, Gates once Course Entry & Exit coordinates are available.
         /// </summary>
         public void GenerateCourseFeatures()
         {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Calculates the heading straight through the course from Entry to Exit Center Line.
+        /// </summary>
+        /// <returns></returns>
+        public double GetCourseHeadingDeg()
+        {
+            double dLongitude = Util.DegToRad(CourseExitCL.Longitude -
+                CourseEntryCL.Longitude);
+
+            double dPhi = Math.Log(
+                      Math.Tan(Util.DegToRad(CourseExitCL.Latitude)/2+Math.PI/4) /
+                        Math.Tan(Util.DegToRad(CourseEntryCL.Latitude)/2+Math.PI/4));
+
+            if (Math.Abs(dLongitude) > Math.PI) 
+                dLongitude = dLongitude > 0 ? -(2*Math.PI- dLongitude) : (2*Math.PI+ dLongitude);
+
+            double heading = Util.RadToDeg(Math.Atan2(dLongitude, dPhi));
+
+            return heading;
+        }
+
+        public void SetCourseEntry(double latitude, double longitude)
+        {
+            CourseEntryCL.Latitude = latitude;
+            CourseEntryCL.Longitude = longitude;
+        }
+
+        public void SetCourseExit(double latitude, double longitude)
+        {
+            CourseExitCL.Latitude = latitude;
+            CourseExitCL.Longitude = longitude;
+
+            double length = CourseEntryCL.GetDistanceTo(CourseExitCL);
+
         }
 
         //
@@ -89,55 +129,30 @@ namespace SlalomTracker
         public CoursePosition[] BoatMarkers { get; private set; }
 
         public CoursePosition[] Gates { get; private set; }
-    }
-
-    /// <summary>
-    /// Object to store measurements calculated from a rope rotation event.
-    /// </summary>
-    public class Measurement
-    {
-        public DateTime Timestamp { get; set; }
-
-        public CoursePosition BoatPosition { get; set; }
 
         /// <summary>
-        /// Rope swing speed in radians/second.
+        /// Given the boat's position, calculate in the matrix (x,y) relative to the course. 
+        /// Where 0,0 represents Center Line at course entry.
         /// </summary>
-        public double RopeSwingSpeedRadS { get; set; }
+        /// <param name="boatPosition"></param>
+        /// <returns></returns>
+        public CoursePosition CoursePositionFromGeo(double latitude, double longitude)
+        {
+            return CoursePositionFromGeo(new GeoCoordinate(latitude, longitude));
+        }
 
         /// <summary>
-        /// Current rope angle as it rotates on Y axis aound the ski pilon.
+        /// Given the boat's position, calculate in the matrix (x,y) relative to the course. 
+        /// Where 0,0 represents Center Line at course entry.
         /// </summary>
-        public double RopeAngleDegrees { get; set; }
+        /// <param name="boatPosition"></param>
+        /// <returns></returns>
+        public CoursePosition CoursePositionFromGeo(GeoCoordinate boatPosition)
+        {
+            double distance = boatPosition.GetDistanceTo(CourseEntryCL);
 
-        public double BoatSpeedMps { get; set; }
-
-        public CoursePosition HandlePosition { get; set; }
-
-
-
-        // 1. GPS map entry and exit gates for course, store bearing (degrees) to be used to offset phone/rope bearing at launch.
-        // 2. Calculate CL bearing based on gate entry, current bearing
-        // 2. Calculate rope swing speed
-        // 3. Calculate rope apex
-        // 4. Calculate handle position based on degrees and rope length.
-        // 5. Calculate the arc of the rope for a given length
-        // 6. Calculate x,y position of handle in space.
-
-        // Measurement:
-        // Time Stamp
-        // Boat Position (Lat/Long), but store x,y position?
-        // Boat Speed (this-last position / this-last time)
-        // Rope Swing Speed (rad/second)
-        // Rope Angle (degrees) -- calculated based on swing speed and last degrees
-        // Handle Position (x,y relative to course)
-
-
-        // We're registering for rotation events, which will come with timestamp & rad/sec.
-        // We need to then get the pilon position (lat/long) at that very instant
-        // From all of this, we can create a measurement.
-
-        // GPS
-
+            // TODO: Right now we're hardcoded to center of the course.
+            return new CoursePosition(11.5, distance);
+        }
     }
 }

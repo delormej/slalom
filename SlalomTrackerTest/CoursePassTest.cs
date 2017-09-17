@@ -6,17 +6,19 @@ namespace SlalomTracker
     [TestClass]
     public class CoursePassTest
     {
-        public static readonly Course COURSE = new Course() {
-            CourseEntryCL = new GeoCoordinate() { Latitude = 0, Longitude = 0 },
-            CourseExitCL = new GeoCoordinate() { Latitude = 259, Longitude = 23 }
-        };
-
         [TestMethod]
         public void TestTrack()
         {
             Rope rope = new Rope(16);
-            CoursePass pass = new CoursePass(COURSE, rope);
+            CoursePass pass = new CoursePass(CourseTest.CreateTestCourse(), rope);
 
+            pass.Track(DateTime.Now.Subtract(TimeSpan.FromSeconds(13)), 0.5, CourseTest.latitude, 
+                CourseTest.AddDistance(CourseTest.latitude, CourseTest.longitude, 10));
+
+            //foreach(var m in pass.Measurements)
+            //{
+            //    Console.WriteLine(m.HandlePosition);
+            //}
         }
     }
 }
