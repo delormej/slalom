@@ -125,7 +125,7 @@ namespace SlalomTracker
             if (previous != null)
             {
                 // Time since last event in partial seconds.
-                double time = current.Timestamp.Subtract(previous.Timestamp).Milliseconds * 1000;
+                double time = current.Timestamp.Subtract(previous.Timestamp).TotalSeconds;
 
                 // Convert radians per second to degrees per second.  
                 current.RopeAngleDegrees = previous.RopeAngleDegrees +
