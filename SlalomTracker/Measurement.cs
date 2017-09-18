@@ -11,6 +11,9 @@ namespace SlalomTracker
     {
         public DateTime Timestamp { get; set; }
 
+        /// <summary>
+        /// Boat's position in x/y coordinates relative to the course.
+        /// </summary>
         public CoursePosition BoatPosition { get; set; }
 
         /// <summary>
@@ -23,34 +26,14 @@ namespace SlalomTracker
         /// </summary>
         public double RopeAngleDegrees { get; set; }
 
+        /// <summary>
+        /// Current boat speed in meters per second.
+        /// </summary>
         public double BoatSpeedMps { get; set; }
 
+        /// <summary>
+        /// Position of the handle relative to the course in X,Y coordinates.
+        /// </summary>
         public CoursePosition HandlePosition { get; set; }
-
-
-
-        // 1. GPS map entry and exit gates for course, store bearing (degrees) to be used to offset phone/rope bearing at launch.
-        // 2. Calculate CL bearing based on gate entry, current bearing
-        // 2. Calculate rope swing speed
-        // 3. Calculate rope apex
-        // 4. Calculate handle position based on degrees and rope length.
-        // 5. Calculate the arc of the rope for a given length
-        // 6. Calculate x,y position of handle in space.
-
-        // Measurement:
-        // Time Stamp
-        // Boat Position (Lat/Long), but store x,y position?
-        // Boat Speed (this-last position / this-last time)
-        // Rope Swing Speed (rad/second)
-        // Rope Angle (degrees) -- calculated based on swing speed and last degrees
-        // Handle Position (x,y relative to course)
-
-
-        // We're registering for rotation events, which will come with timestamp & rad/sec.
-        // We need to then get the pilon position (lat/long) at that very instant
-        // From all of this, we can create a measurement.
-
-        // GPS
-
     }
 }
