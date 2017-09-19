@@ -125,25 +125,27 @@ namespace SlalomTracker
             if (previous != null)
             {
                 // Time since last event in partial seconds.
-                double time = current.Timestamp.Subtract(previous.Timestamp).TotalSeconds;
+                double seconds = current.Timestamp.Subtract(previous.Timestamp).TotalSeconds;
 
                 // Convert radians per second to degrees per second.  
                 current.RopeAngleDegrees = previous.RopeAngleDegrees +
-                    Util.RadToDeg(ropeSwingRadS) * time;
+                    Util.RadToDeg(ropeSwingRadS * seconds);
 
                 // Only interested in the down course speed, if the boat waggled side to 
                 // side, it technically could have been going faster.
                 double boatDistanceM = current.BoatPosition.Y - previous.BoatPosition.Y;
-                current.BoatSpeedMps = boatDistanceM / time;
+                current.BoatSpeedMps = boatDistanceM / seconds;
             }
             else
             {
                 current.RopeAngleDegrees = CenterLineDegreeOffset;
             }
-            
-            // Handle position is calculated relative to the pilon/boat position.
-            current.HandlePosition = current.BoatPosition +
-                Rope.GetHandlePosition(current.RopeAngleDegrees);
+
+            // Get handle position in x,y coordinates from the pilon.
+            CoursePosition virtualHandlePos = Rope.GetHandlePosition(current.RopeAngleDegrees);
+            // Actual handle position is calculated relative to the pilon/boat position, behind the boat.
+            current.HandlePosition = new CoursePosition(current.BoatPosition.X + virtualHandlePos.X,
+                current.BoatPosition.Y - virtualHandlePos.Y);
 
             Measurements.Add(current);
         }

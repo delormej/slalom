@@ -35,6 +35,22 @@ namespace SlalomTracker
         }
 
         /// <summary>
+        /// Returns the rope length in meters.
+        /// </summary>
+        public double LengthM
+        {
+            get { return m_lengthM; }
+        }
+
+        /// <summary>
+        /// Returns the conventional definition of the number of feet off the full 75' rope.
+        /// </summary>
+        public double FtOff
+        {
+            get { return 75 - (m_lengthM * 3.28084);  }
+        }
+
+        /// <summary>
         /// Readonly rope arc.  
         /// In theory this could be statically stored based on well-known rope lengths.
         /// </summary>
