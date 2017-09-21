@@ -17,7 +17,7 @@ namespace SlalomTracker
             // Travel down the course is 259m @ 14m/sec
             // 2 events per second
             // 
-            const int eventsPerSecond = 4;
+            const int eventsPerSecond = 16;
             double metersPerSecond = boatSpeedMps;
             double courseLengthM = 259 + rope.LengthM;
             int events = (int)(courseLengthM / metersPerSecond) * eventsPerSecond;
@@ -42,7 +42,7 @@ namespace SlalomTracker
 
                     // Exponentially increment speed towards center line.
                     double ropeSpeedFactor = ((Math.Pow(handlePosX - centerLineX, 2) / 100) * ropeRadPerSecond);
-                    if (ropeSpeedFactor > (ropeRadPerSecond*0.75)) ropeSpeedFactor = ropeRadPerSecond * 0.75;
+                    if (ropeSpeedFactor > (ropeRadPerSecond*0.80)) ropeSpeedFactor = ropeRadPerSecond * 0.80;
                     ropeSpeed = ropeRadPerSecond - ropeSpeedFactor;
                 }
 
