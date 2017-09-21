@@ -8,9 +8,9 @@ namespace SlalomTracker
     public class CoursePassTest
     {
         [TestMethod]
-        public void TestTrack()
+        public CoursePass TestTrack(double ropeM, double swingSpeedRadS, double boatSpeedMps)
         {
-            Rope rope = new Rope(16);
+            Rope rope = new Rope(ropeM);
             CoursePass pass = new CoursePass(CourseTest.CreateTestCourse(), rope);
             pass.CourseEntryTimestamp = DateTime.Now.Subtract(TimeSpan.FromSeconds(15));
 
@@ -18,10 +18,10 @@ namespace SlalomTracker
             // 2 events per second
             // 
             const int eventsPerSecond = 4;
-            const int metersPerSecond = 14;
+            double metersPerSecond = boatSpeedMps;
             double courseLengthM = 259 + rope.LengthM;
-            int events = ((int)courseLengthM / metersPerSecond) * eventsPerSecond;
-            const double ropeRadPerSecond = 0.67;
+            int events = (int)(courseLengthM / metersPerSecond) * eventsPerSecond;
+            double ropeRadPerSecond = swingSpeedRadS;
             int ropeDirection = 1;
             const double centerLineX = 11.5;
             double ropeSpeed = ropeRadPerSecond;
@@ -35,7 +35,7 @@ namespace SlalomTracker
 
                     // Invert the direction of the rope when you hit the apex.
                     //if (ropeAngle > rope.GetHandleApexDeg() || ropeAngle < (rope.GetHandleApexDeg() * -1))
-                    if (handlePosX > 23 || handlePosX < 0)
+                    if (handlePosX > 22.5 || handlePosX < 0.5)
                     {
                         ropeDirection = ropeDirection * -1;
                     }
@@ -48,7 +48,7 @@ namespace SlalomTracker
 
                 // increment 1 second & 14 meters.
                 double longitude = CourseTest.AddDistance(CourseTest.latitude, CourseTest.longitude,
-                    (metersPerSecond / eventsPerSecond) * i);
+                    ((metersPerSecond / eventsPerSecond) * i) + ropeM);
                 DateTime time = pass.CourseEntryTimestamp.AddSeconds((double)(1.0 / eventsPerSecond) * i);
 
                 pass.Track(time, 
@@ -67,6 +67,8 @@ namespace SlalomTracker
             {
                 Trace.WriteLine(m.HandlePosition.Y);
             }
+
+            return pass;
         }
     }
 }

@@ -67,6 +67,8 @@ namespace SlalomTracker
         {
             CourseEntryCL = new GeoCoordinate();
             CourseExitCL = new GeoCoordinate();
+
+            GenerateCourseFeatures();
         }
 
         /// <summary>
@@ -74,7 +76,26 @@ namespace SlalomTracker
         /// </summary>
         public void GenerateCourseFeatures()
         {
-            throw new NotImplementedException();
+            Gates = new CoursePosition[4];
+
+            // Entry Gates
+            Gates[0] = new CoursePosition((WidthM / 2.0) - (1.25 / 2.0), 0);
+            Gates[1] = new CoursePosition((WidthM / 2.0) + (1.25 / 2.0), 0);
+
+            // Exit Gates
+            Gates[2] = new CoursePosition((WidthM / 2.0) - (1.25 / 2.0), LengthM);
+            Gates[3] = new CoursePosition((WidthM / 2.0) + (1.25 / 2.0), LengthM);
+
+            Balls = new CoursePosition[6];
+
+            Balls[0] = new CoursePosition(0, 27); // Ball 1
+
+            for (int i = 1; i<6; i++)
+            {
+                Balls[i] = new CoursePosition(Balls[i-1].X == 0 ? 23 : 0,
+                    Balls[i - 1].Y + 41);
+            }
+
         }
 
         /// <summary>
