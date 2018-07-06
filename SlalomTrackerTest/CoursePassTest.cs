@@ -71,5 +71,16 @@ namespace SlalomTracker
 
             return pass;
         }
+
+        [TestMethod]
+        public void TestCoursePositionFromGeo()
+        {
+            //Course course = CreateTestCourse();
+            //course.SetCourseEntry(42.286670, -71.358994);
+            //course.SetCourseExit(42.289249, -71.359091);
+
+            //CoursePosition position = course.CoursePositionFromGeo(42.286770, -71.35900);
+
+        }
     }
 }

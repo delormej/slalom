@@ -7,7 +7,7 @@ namespace SlalomTracker
     public class CourseTest
     {
         internal static double r_earth = 6378; // km
-        internal static double latitude = 42.286670, longitude = -71.358994; // original lat/long position
+        internal static double latitude = 42.289087, longitude = -71.359124; // original lat/long position
 
         /// <summary>
         /// Test hepler method that adds longitude distance to the start of the course.
@@ -39,20 +39,10 @@ namespace SlalomTracker
         }
 
         [TestMethod]
-        public void TestCoursePositionFromGeo()
-        {
-            Course course = CreateTestCourse();
-            //course.SetCourseEntry(42.286670, -71.358994);
-            //course.SetCourseExit(42.289249, -71.359091);
-
-            CoursePosition position = course.CoursePositionFromGeo(42.286770, -71.35900);
-
-        }
-
-        [TestMethod]
         public void TestGetCourseHeadingDeg()
         {
 
         }
+
     }
 }

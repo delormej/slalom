@@ -51,5 +51,22 @@ namespace SlalomTracker
 
             return new GeoCoordinate(lat * RadiansToDegrees, lon * RadiansToDegrees);
         }
+
+        public static double GetHeading(GeoCoordinate start, GeoCoordinate end)
+        {
+            double dLongitude = Util.DegToRad(end.Longitude -
+                start.Longitude);
+
+            double dPhi = Math.Log(
+                      Math.Tan(Util.DegToRad(end.Latitude) / 2 + Math.PI / 4) /
+                        Math.Tan(Util.DegToRad(start.Latitude) / 2 + Math.PI / 4));
+
+            if (Math.Abs(dLongitude) > Math.PI)
+                dLongitude = dLongitude > 0 ? -(2 * Math.PI - dLongitude) : (2 * Math.PI + dLongitude);
+
+            double heading = Util.RadToDeg(Math.Atan2(dLongitude, dPhi));
+
+            return heading;
+        }
     }
 }

@@ -10,7 +10,7 @@ namespace SlalomTracker
     public class CoursePass
     {
         // Flag if the boat pilon entered the course geofenced area.
-        bool m_inCourse; 
+        bool m_enteredCourse; 
 
         public List<Measurement> Measurements;
 
@@ -68,6 +68,32 @@ namespace SlalomTracker
         }
 
         /// <summary>
+        /// Given the boat's position, calculate in the matrix (x,y) relative to the course. 
+        /// </summary>
+        /// <param name="boatPosition"></param>
+        /// <returns></returns>
+        public CoursePosition CoursePositionFromGeo(double latitude, double longitude)
+        {
+            return CoursePositionFromGeo(new GeoCoordinate(latitude, longitude));
+        }
+
+        /// <summary>
+        /// Given the boat's position, calculate in the matrix (x,y) relative to the course. 
+        /// </summary>
+        /// <param name="boatPosition"></param>
+        /// <returns></returns>
+        public CoursePosition CoursePositionFromGeo(GeoCoordinate boatPosition)
+        {
+            double distance = boatPosition.GetDistanceTo(Course.CourseEntryCL);
+
+            if (!m_enteredCourse)
+                distance = distance * -1; // we're approaching.
+
+            // TODO: Right now we're hardcoded to center of the course.
+            return new CoursePosition(11.5, distance);
+        }
+
+        /// <summary>
         /// From the rope's compass heading (degress) and the heading from the center line
         /// straight through the course, determines the starting angle of the rope for which
         /// all rope position calculations will be based on.
@@ -121,17 +147,17 @@ namespace SlalomTracker
                 inCourse = IsInCourse(boatPosition);
                 if (inCourse)
                 {
-                    if (!m_inCourse)
+                    if (!m_enteredCourse)
                     {
                         // Boat pilon is now in the course.
-                        m_inCourse = true;
+                        m_enteredCourse = true;
                         CourseEntryTimestamp = timestamp;
                     }
                 }
                 else
                 {
                     // record exit time.
-                    m_inCourse = false;
+                    CourseExitTimestamp = timestamp;
                 }
             }
 
@@ -140,7 +166,9 @@ namespace SlalomTracker
             Measurement previous = Measurements.Count > 0 ? Measurements[Measurements.Count - 1] : null;
             current.InCourse = inCourse;
             current.Timestamp = timestamp;
-            current.BoatPosition = Course.CoursePositionFromGeo(boatPosition);
+            current.BoatSpeedMps = boatPosition.Speed; // TODO: this is redundant, because it's now in BoatGeoCoordinate.
+            current.BoatPosition = CoursePositionFromGeo(boatPosition);
+            current.BoatGeoCoordinate = boatPosition;
             current.RopeSwingSpeedRadS = ropeSwingRadS;
 
             // All subsequent calculations are based on movement since the last measurement.
@@ -152,11 +180,6 @@ namespace SlalomTracker
                 // Convert radians per second to degrees per second.  
                 current.RopeAngleDegrees = previous.RopeAngleDegrees +
                     Util.RadToDeg(ropeSwingRadS * seconds);
-
-                // Only interested in the down course speed, if the boat waggled side to 
-                // side, it technically could have been going faster.
-                double boatDistanceM = current.BoatPosition.Y - previous.BoatPosition.Y;
-                current.BoatSpeedMps = boatDistanceM / seconds;
             }
             else
             {

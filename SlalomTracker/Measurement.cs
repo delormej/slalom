@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using GeoCoordinatePortable;
 
 namespace SlalomTracker
 {
@@ -15,6 +14,11 @@ namespace SlalomTracker
         /// Boat's position in x/y coordinates relative to the course.
         /// </summary>
         public CoursePosition BoatPosition { get; set; }
+
+        /// <summary>
+        /// Lat/Lon, heading and speed of boat.
+        /// </summary>
+        public GeoCoordinate BoatGeoCoordinate { get; set; }
 
         /// <summary>
         /// Indicates whether boat is in the course or not.

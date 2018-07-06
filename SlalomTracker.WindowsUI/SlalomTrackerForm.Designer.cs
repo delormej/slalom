@@ -37,16 +37,22 @@
             this._cmbRopeM = new System.Windows.Forms.ComboBox();
             this._btnDraw = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
+            this.label4 = new System.Windows.Forms.Label();
+            this.vScrollBar1 = new System.Windows.Forms.VScrollBar();
+            this._panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // _panel1
             // 
-            this._panel1.Dock = System.Windows.Forms.DockStyle.Right;
-            this._panel1.Location = new System.Drawing.Point(125, 0);
+            this._panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
+            this._panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this._panel1.Controls.Add(this.vScrollBar1);
+            this._panel1.Location = new System.Drawing.Point(136, 24);
             this._panel1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this._panel1.Name = "_panel1";
-            this._panel1.Size = new System.Drawing.Size(327, 546);
+            this._panel1.Size = new System.Drawing.Size(305, 511);
             this._panel1.TabIndex = 0;
+            this._panel1.Paint += new System.Windows.Forms.PaintEventHandler(this._panel1_Paint_1);
             // 
             // _txtRadS
             // 
@@ -130,11 +136,28 @@
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(133, 9);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(66, 13);
+            this.label4.TabIndex = 0;
+            this.label4.Text = "Course Pass";
+            // 
+            // vScrollBar1
+            // 
+            this.vScrollBar1.Location = new System.Drawing.Point(290, 0);
+            this.vScrollBar1.Name = "vScrollBar1";
+            this.vScrollBar1.Size = new System.Drawing.Size(17, 511);
+            this.vScrollBar1.TabIndex = 0;
+            // 
             // SlalomTrackerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(452, 546);
+            this.Controls.Add(this.label4);
             this.Controls.Add(this.button1);
             this.Controls.Add(this._btnDraw);
             this.Controls.Add(this._cmbRopeM);
@@ -147,6 +170,7 @@
             this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.Name = "SlalomTrackerForm";
             this.Text = "Form1";
+            this._panel1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -163,6 +187,8 @@
         private System.Windows.Forms.ComboBox _cmbRopeM;
         private System.Windows.Forms.Button _btnDraw;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.VScrollBar vScrollBar1;
+        private System.Windows.Forms.Label label4;
     }
 }
 

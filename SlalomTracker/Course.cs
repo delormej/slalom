@@ -9,7 +9,8 @@ namespace SlalomTracker
     /// <summary>
     /// X,Y coorinates in relative meters to the rectangle that represents the ski course.
     /// https://www.thinkwaterski.com/dox/slalom_tolerances.pdf
-    /// Lower left of course is 0,0 meters.  Upper right is 23,259.
+    /// Lower left of course is 0,0 meters.  Upper right is 23,369.
+    /// Matrix is inclusive of the pregates (55's).
     /// </summary>
     public class CoursePosition
     {
@@ -47,7 +48,7 @@ namespace SlalomTracker
         // The default course width and length, there is a possibility that these 
         // are slightly off.
         public static readonly double WidthM = 23;
-        public static readonly double LengthM = 259;
+        public static readonly double LengthM = 259 + 55 * 2; // Course + pregates
 
         /// <summary>
         /// Lat/Long of the pilon as you enter & exit the course.
@@ -68,24 +69,36 @@ namespace SlalomTracker
         /// </summary>
         public void GenerateCourseFeatures()
         {
+            PreGates = new CoursePosition[4];
             Gates = new CoursePosition[4];
 
+            // Pre Gates (55m)
+            PreGates[0] = new CoursePosition((WidthM / 2.0) - 1.25, 0);
+            PreGates[1] = new CoursePosition((WidthM / 2.0) + 1.25, 0);
+            PreGates[2] = new CoursePosition((WidthM / 2.0) - 1.25, LengthM);
+            PreGates[3] = new CoursePosition((WidthM / 2.0) + 1.25, LengthM);
+
             // Entry Gates
-            Gates[0] = new CoursePosition((WidthM / 2.0) - (1.25 / 2.0), 0);
-            Gates[1] = new CoursePosition((WidthM / 2.0) + (1.25 / 2.0), 0);
+            Gates[0] = new CoursePosition((WidthM / 2.0) - 1.25, 55);
+            Gates[1] = new CoursePosition((WidthM / 2.0) + 1.25, 55);
 
             // Exit Gates
-            Gates[2] = new CoursePosition((WidthM / 2.0) - (1.25 / 2.0), LengthM);
-            Gates[3] = new CoursePosition((WidthM / 2.0) + (1.25 / 2.0), LengthM);
+            Gates[2] = new CoursePosition((WidthM / 2.0) - 1.25, LengthM - 55);
+            Gates[3] = new CoursePosition((WidthM / 2.0) + 1.25, LengthM - 55);
 
+            BoatMarkers = new CoursePosition[12];
             Balls = new CoursePosition[6];
-
-            Balls[0] = new CoursePosition(0, 27); // Ball 1
-
+            Balls[0] = new CoursePosition(0, 27 + 55); // Ball 1
             for (int i = 1; i<6; i++)
             {
                 Balls[i] = new CoursePosition(Balls[i-1].X == 0 ? 23 : 0,
                     Balls[i - 1].Y + 41);
+            }
+
+            for (int i = 0; i < Balls.Length; i++)
+            {
+                BoatMarkers[i * 2] = new CoursePosition(11.5 - 1.15, Balls[i].Y);
+                BoatMarkers[i * 2 + 1] = new CoursePosition(11.5 + 1.15, Balls[i].Y);
             }
         }
 
@@ -95,19 +108,7 @@ namespace SlalomTracker
         /// <returns></returns>
         public double GetCourseHeadingDeg()
         {
-            double dLongitude = Util.DegToRad(CourseExitCL.Longitude -
-                CourseEntryCL.Longitude);
-
-            double dPhi = Math.Log(
-                      Math.Tan(Util.DegToRad(CourseExitCL.Latitude)/2+Math.PI/4) /
-                        Math.Tan(Util.DegToRad(CourseEntryCL.Latitude)/2+Math.PI/4));
-
-            if (Math.Abs(dLongitude) > Math.PI) 
-                dLongitude = dLongitude > 0 ? -(2*Math.PI- dLongitude) : (2*Math.PI+ dLongitude);
-
-            double heading = Util.RadToDeg(Math.Atan2(dLongitude, dPhi));
-
-            return heading;
+            return Util.GetHeading(CourseEntryCL, CourseExitCL);
         }
 
         public List<GeoCoordinate> GetPolygon()
@@ -116,16 +117,21 @@ namespace SlalomTracker
             right = (heading + 90 + 360) % 360;
             left = (right + 180) % 360;
 
+            // From the 55's.
             List<GeoCoordinate> poly = new List<GeoCoordinate>(4);
-            poly.Add(Util.CalculateDerivedPosition(this.CourseEntryCL, 5.0, left));
-            poly.Add(Util.CalculateDerivedPosition(this.CourseEntryCL, 5.0, right));
-            poly.Add(Util.CalculateDerivedPosition(this.CourseExitCL, 5.0, left));
-            poly.Add(Util.CalculateDerivedPosition(this.CourseExitCL, 5.0, right));
+            poly.Add(Util.CalculateDerivedPosition(
+                Util.CalculateDerivedPosition(this.CourseEntryCL, 5.0, left), 
+                -55, heading));
+            poly.Add(Util.CalculateDerivedPosition(
+                Util.CalculateDerivedPosition(this.CourseEntryCL, 5.0, right),
+                -55, heading));
 
-            // Calculate 55's geo positions (entry & exit) as polygon perimeter.
-            //GeoCoordinate left55 = Util.CalculateDerivedPosition(leftGate, -55, 0);
-            //GeoCoordinate right55 = Util.CalculateDerivedPosition(rightGate, -55, 0);
-
+            poly.Add(Util.CalculateDerivedPosition(
+                Util.CalculateDerivedPosition(this.CourseExitCL, 5.0, left),
+                55, heading));
+            poly.Add(Util.CalculateDerivedPosition(
+                Util.CalculateDerivedPosition(this.CourseExitCL, 5.0, right),
+                55, heading));
             return poly;
         }
 
@@ -162,29 +168,6 @@ namespace SlalomTracker
 
         public CoursePosition[] Gates { get; private set; }
 
-        /// <summary>
-        /// Given the boat's position, calculate in the matrix (x,y) relative to the course. 
-        /// Where 0,0 represents Center Line at course entry.
-        /// </summary>
-        /// <param name="boatPosition"></param>
-        /// <returns></returns>
-        public CoursePosition CoursePositionFromGeo(double latitude, double longitude)
-        {
-            return CoursePositionFromGeo(new GeoCoordinate(latitude, longitude));
-        }
-
-        /// <summary>
-        /// Given the boat's position, calculate in the matrix (x,y) relative to the course. 
-        /// Where 0,0 represents Center Line at course entry.
-        /// </summary>
-        /// <param name="boatPosition"></param>
-        /// <returns></returns>
-        public CoursePosition CoursePositionFromGeo(GeoCoordinate boatPosition)
-        {
-            double distance = boatPosition.GetDistanceTo(CourseEntryCL);
-
-            // TODO: Right now we're hardcoded to center of the course.
-            return new CoursePosition(11.5, distance);
-        }
+        public CoursePosition[] PreGates { get; private set; }
     }
 }
