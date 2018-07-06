@@ -49,10 +49,22 @@ namespace SlalomTracker
         /// </summary>
         /// <param name="boatPosition"></param>
         /// <returns></returns>
-        private bool IsInCourse(GeoCoordinate boatPosition)
+        private bool IsInCourse(GeoCoordinate point)
         {
-            // dummy value.
-            return true;
+            List<GeoCoordinate> poly = Course.GetPolygon();
+            int i, j;
+            bool c = false;
+            for (i = 0, j = poly.Count - 1; i < poly.Count; j = i++)
+            {
+                if ((((poly[i].Latitude <= point.Latitude) && (point.Latitude < poly[j].Latitude))
+                        || ((poly[j].Latitude <= point.Latitude) && (point.Latitude < poly[i].Latitude)))
+                        && (point.Longitude < (poly[j].Longitude - poly[i].Longitude) * (point.Latitude - poly[i].Latitude)
+                            / (poly[j].Latitude - poly[i].Latitude) + poly[i].Longitude))
+
+                    c = !c;
+            }
+
+            return c;
         }
 
         /// <summary>
@@ -81,6 +93,13 @@ namespace SlalomTracker
             CenterLineDegreeOffset = 0;
         }
 
+        public void Track(DateTime timestamp, double ropeSwingRadS, double latitude, double longitude, double speed)
+        {
+            GeoCoordinate boatPosition = new GeoCoordinate(latitude, longitude);
+            boatPosition.Speed = speed;
+            Track(timestamp, ropeSwingRadS, boatPosition);
+        }
+
         /// <summary>
         /// Calculates and records an event along the skiers course pass.
         /// </summary>
@@ -94,11 +113,13 @@ namespace SlalomTracker
         /// Calculates and records an event along the skiers course pass, using GeoCoordinate.
         /// </summary>
         public void Track(DateTime timestamp, double ropeSwingRadS, GeoCoordinate boatPosition)
-        { 
+        {
+            bool inCourse;
             // Block on this to enure only the first event entering the course gets recorded.
             lock (this)
             {
-                if (IsInCourse(boatPosition))
+                inCourse = IsInCourse(boatPosition);
+                if (inCourse)
                 {
                     if (!m_inCourse)
                     {
@@ -117,6 +138,7 @@ namespace SlalomTracker
             // Calculate measurements.
             Measurement current = new Measurement();
             Measurement previous = Measurements.Count > 0 ? Measurements[Measurements.Count - 1] : null;
+            current.InCourse = inCourse;
             current.Timestamp = timestamp;
             current.BoatPosition = Course.CoursePositionFromGeo(boatPosition);
             current.RopeSwingSpeedRadS = ropeSwingRadS;

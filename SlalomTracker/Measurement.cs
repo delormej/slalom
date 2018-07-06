@@ -17,6 +17,11 @@ namespace SlalomTracker
         public CoursePosition BoatPosition { get; set; }
 
         /// <summary>
+        /// Indicates whether boat is in the course or not.
+        /// </summary>
+        public bool InCourse { get; set; }
+
+        /// <summary>
         /// Rope swing speed in radians/second.
         /// </summary>
         public double RopeSwingSpeedRadS { get; set; }
@@ -25,6 +30,11 @@ namespace SlalomTracker
         /// Current rope angle as it rotates on Y axis aound the ski pilon.
         /// </summary>
         public double RopeAngleDegrees { get; set; }
+
+        /// <summary>
+        /// How fast the skiier is moving.
+        /// </summary>
+        public double HandleSpeedMps { get; set; }
 
         /// <summary>
         /// Current boat speed in meters per second.

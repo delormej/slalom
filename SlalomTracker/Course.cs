@@ -1,5 +1,6 @@
 ﻿using System;
 using GeoCoordinatePortable;
+using System.Collections.Generic;
 
 namespace SlalomTracker
 {
@@ -54,15 +55,6 @@ namespace SlalomTracker
         public GeoCoordinate CourseEntryCL { get; set; }
         public GeoCoordinate CourseExitCL { get; set; }
 
-        /// <summary>
-        /// The heading in degrees for a straight line from course entry to exit 
-        /// along the center line of the wake.
-        /// </summary>
-        /// <remarks>
-        /// Only available after Course Entry & Exit have been set.
-        /// </remarks>
-        public double CourseHeadingDeg { get; }
-
         public Course()
         {
             CourseEntryCL = new GeoCoordinate();
@@ -95,7 +87,6 @@ namespace SlalomTracker
                 Balls[i] = new CoursePosition(Balls[i-1].X == 0 ? 23 : 0,
                     Balls[i - 1].Y + 41);
             }
-
         }
 
         /// <summary>
@@ -119,6 +110,25 @@ namespace SlalomTracker
             return heading;
         }
 
+        public List<GeoCoordinate> GetPolygon()
+        {
+            double left, right, heading = this.GetCourseHeadingDeg();
+            right = (heading + 90 + 360) % 360;
+            left = (right + 180) % 360;
+
+            List<GeoCoordinate> poly = new List<GeoCoordinate>(4);
+            poly.Add(Util.CalculateDerivedPosition(this.CourseEntryCL, 5.0, left));
+            poly.Add(Util.CalculateDerivedPosition(this.CourseEntryCL, 5.0, right));
+            poly.Add(Util.CalculateDerivedPosition(this.CourseExitCL, 5.0, left));
+            poly.Add(Util.CalculateDerivedPosition(this.CourseExitCL, 5.0, right));
+
+            // Calculate 55's geo positions (entry & exit) as polygon perimeter.
+            //GeoCoordinate left55 = Util.CalculateDerivedPosition(leftGate, -55, 0);
+            //GeoCoordinate right55 = Util.CalculateDerivedPosition(rightGate, -55, 0);
+
+            return poly;
+        }
+
         public void SetCourseEntry(double latitude, double longitude)
         {
             CourseEntryCL.Latitude = latitude;
@@ -130,6 +140,7 @@ namespace SlalomTracker
             CourseExitCL.Latitude = latitude;
             CourseExitCL.Longitude = longitude;
 
+            // TODO validate that it is 259 meters!
             double length = CourseEntryCL.GetDistanceTo(CourseExitCL);
 
         }

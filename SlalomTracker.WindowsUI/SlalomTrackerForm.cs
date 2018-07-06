@@ -55,6 +55,7 @@ namespace WindowsFormsApp1
             // Start drawing at the bottom of the screen and go up.
             int x = (int)(position.X * ScaleFactor);
             int y = (CourseLength * ScaleFactor) - (int)(position.Y * ScaleFactor);
+            System.Diagnostics.Trace.WriteLine(x + ", " + y);
             return new Point(x, y);
         }
 
@@ -81,20 +82,26 @@ namespace WindowsFormsApp1
         {
             CoursePassTest test = new CoursePassTest();
             CoursePass mockPass = test.TestTrack(ropeM, swingSpeedRadS, boatSpeedRadS);
+            Draw(mockPass);
+        }
 
+        private void Draw(CoursePass pass)
+        { 
             _panel1.Height = CourseLength * ScaleFactor;
             Graphics graphics = _panel1.CreateGraphics();
             Pen pen = new Pen(Color.Black, 3);
+            Pen inCoursePen = new Pen(Color.Green, 3);
+            Pen outCoursePen = new Pen(Color.Pink, 3);
             graphics.Clear(_panel1.BackColor);
 
             Pen ballPen = new Pen(Color.Red, 2);
 
-            foreach (var ball in mockPass.Course.Gates)
+            foreach (var ball in pass.Course.Gates)
             {
                 graphics.DrawEllipse(ballPen, (int)(ball.X * ScaleFactor), (int)ball.Y * ScaleFactor, 2, 2);
             }
 
-            foreach (var ball in mockPass.Course.Balls)
+            foreach (var ball in pass.Course.Balls)
             {
                 graphics.DrawEllipse(ballPen, (int)(ball.X * ScaleFactor), (int)ball.Y * ScaleFactor, 2, 2);
             }
@@ -103,17 +110,25 @@ namespace WindowsFormsApp1
             graphics.DrawLine(new Pen(Color.Gray, 1), new Point((int)11.5 * ScaleFactor, 0), 
                 new Point((int)11.5 * ScaleFactor, CourseLength * ScaleFactor));
 
-            for (int i = 0; i < mockPass.Measurements.Count-2; i++)
+            for (int i = 0; i < pass.Measurements.Count-2; i++)
             {
-                var m = mockPass.Measurements[i];
-                graphics.DrawLine(pen, PointFromCoursePosition(m.HandlePosition),
-                    PointFromCoursePosition(mockPass.Measurements[i+1].HandlePosition));
+                var m = pass.Measurements[i];
+                Pen coursePen = m.InCourse ? inCoursePen : outCoursePen;
+                graphics.DrawLine(coursePen, PointFromCoursePosition(m.HandlePosition),
+                    PointFromCoursePosition(pass.Measurements[i+1].HandlePosition));
             }
         }
 
         private void label2_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            const string FilePath = @"\\files.local\video\GOPRO271.csv";
+            CoursePass pass = CoursePassFromCSV.Load(FilePath);
+            Draw(pass);
         }
     }
 }
