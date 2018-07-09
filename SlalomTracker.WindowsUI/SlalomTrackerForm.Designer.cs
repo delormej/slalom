@@ -39,6 +39,8 @@
             this.button1 = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.vScrollBar1 = new System.Windows.Forms.VScrollBar();
+            this._txtHeadingOffset = new System.Windows.Forms.TextBox();
+            this.label5 = new System.Windows.Forms.Label();
             this._panel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -117,7 +119,7 @@
             // 
             // _btnDraw
             // 
-            this._btnDraw.Location = new System.Drawing.Point(11, 153);
+            this._btnDraw.Location = new System.Drawing.Point(11, 226);
             this._btnDraw.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this._btnDraw.Name = "_btnDraw";
             this._btnDraw.Size = new System.Drawing.Size(56, 24);
@@ -127,7 +129,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(12, 190);
+            this.button1.Location = new System.Drawing.Point(12, 198);
             this.button1.Margin = new System.Windows.Forms.Padding(2);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(56, 24);
@@ -152,11 +154,32 @@
             this.vScrollBar1.Size = new System.Drawing.Size(17, 511);
             this.vScrollBar1.TabIndex = 0;
             // 
+            // _txtHeadingOffset
+            // 
+            this._txtHeadingOffset.Location = new System.Drawing.Point(12, 164);
+            this._txtHeadingOffset.Margin = new System.Windows.Forms.Padding(2);
+            this._txtHeadingOffset.Name = "_txtHeadingOffset";
+            this._txtHeadingOffset.Size = new System.Drawing.Size(76, 20);
+            this._txtHeadingOffset.TabIndex = 8;
+            this._txtHeadingOffset.Text = "0";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(8, 149);
+            this.label5.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(78, 13);
+            this.label5.TabIndex = 9;
+            this.label5.Text = "Heading Offset";
+            // 
             // SlalomTrackerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(452, 546);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this._txtHeadingOffset);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.button1);
             this.Controls.Add(this._btnDraw);
@@ -189,6 +212,8 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.VScrollBar vScrollBar1;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.TextBox _txtHeadingOffset;
+        private System.Windows.Forms.Label label5;
     }
 }
 

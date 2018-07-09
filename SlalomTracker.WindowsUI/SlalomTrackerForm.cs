@@ -143,8 +143,9 @@ namespace WindowsFormsApp1
 
         private void button1_Click(object sender, EventArgs e)
         {
-            const string FilePath = @"\\files.local\video\GOPRO271.csv";
-            CoursePass pass = CoursePassFromCSV.Load(FilePath);
+            //const string FilePath = @"\\files.local\video\GOPRO271.csv";
+            const string FilePath = @"\\files.local\video\GOPR0403.csv";
+            CoursePass pass = CoursePassFromCSV.Load(FilePath, double.Parse(this._txtHeadingOffset.Text));
             Draw(pass);
         }
 

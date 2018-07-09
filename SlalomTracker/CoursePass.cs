@@ -35,12 +35,15 @@ namespace SlalomTracker
         /// </summary>
         public double CenterLineDegreeOffset { get; set; }
 
-        public CoursePass(Course course, Rope rope)
+        public CoursePass(Course course, Rope rope) : this(course, rope, 0)
+        {
+        }
+
+        public CoursePass(Course course, Rope rope, double CenterLineDegreeOffset)
         {
             this.Course = course;
             this.Rope = rope;
-
-            CenterLineDegreeOffset = 0;
+            this.CenterLineDegreeOffset = CenterLineDegreeOffset;
             Measurements = new List<Measurement>();
         }
 
