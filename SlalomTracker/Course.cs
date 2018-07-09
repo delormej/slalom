@@ -33,6 +33,11 @@ namespace SlalomTracker
         {
             return new CoursePosition(a.X + b.X, a.Y + b.Y);
         }
+
+        public static CoursePosition Empty
+        {
+            get { return new CoursePosition(0, 0); }
+        }
     }
 
     //public struct GeoCoordinate
@@ -111,6 +116,10 @@ namespace SlalomTracker
             return Util.GetHeading(CourseEntryCL, CourseExitCL);
         }
 
+        /// <summary>
+        /// Create a list of points that represent the corners of a rectangle inclusive of the pre-gates.
+        /// </summary>
+        /// <returns></returns>
         public List<GeoCoordinate> GetPolygon()
         {
             double left, right, heading = this.GetCourseHeadingDeg();

@@ -45,7 +45,7 @@ namespace SlalomTracker
         }
 
         /// <summary>
-        /// Determines if the boat is within the course geofenced area.
+        /// Determines if the boat is within the course geofenced area, inclusive of pre-gates.
         /// </summary>
         /// <param name="boatPosition"></param>
         /// <returns></returns>
@@ -79,15 +79,29 @@ namespace SlalomTracker
 
         /// <summary>
         /// Given the boat's position, calculate in the matrix (x,y) relative to the course. 
+        /// Where 0,0 is center line of pre-gates.
         /// </summary>
         /// <param name="boatPosition"></param>
         /// <returns></returns>
         public CoursePosition CoursePositionFromGeo(GeoCoordinate boatPosition)
         {
+            // If boat has not yet entered the course, we're behind it and distance 
+            if (!m_enteredCourse)
+                return CoursePosition.Empty;
+
             double distance = boatPosition.GetDistanceTo(Course.CourseEntryCL);
 
-            if (!m_enteredCourse)
-                distance = distance * -1; // we're approaching.
+            if (distance < 55)
+            {
+                // Determine if boat has yet to enter the gates or has past the gates.
+                double heading = Util.GetHeading(boatPosition, Course.CourseEntryCL);
+                double h = heading + Course.GetCourseHeadingDeg();
+                if (h > 190)
+                    // we're heading away from the 55's
+                    distance += 55;
+                else
+                    distance -= 55;
+            }
 
             // TODO: Right now we're hardcoded to center of the course.
             return new CoursePosition(11.5, distance);
@@ -168,6 +182,10 @@ namespace SlalomTracker
             current.Timestamp = timestamp;
             current.BoatSpeedMps = boatPosition.Speed; // TODO: this is redundant, because it's now in BoatGeoCoordinate.
             current.BoatPosition = CoursePositionFromGeo(boatPosition);
+
+            if (current.BoatPosition == CoursePosition.Empty)
+                return;
+
             current.BoatGeoCoordinate = boatPosition;
             current.RopeSwingSpeedRadS = ropeSwingRadS;
 
@@ -189,7 +207,7 @@ namespace SlalomTracker
             // Get handle position in x,y coordinates from the pilon.
             CoursePosition virtualHandlePos = Rope.GetHandlePosition(current.RopeAngleDegrees);
             // Actual handle position is calculated relative to the pilon/boat position, behind the boat.
-            current.HandlePosition = new CoursePosition(current.BoatPosition.X + virtualHandlePos.X,
+            current.HandlePosition = new CoursePosition(current.BoatPosition.X - virtualHandlePos.X,
                 current.BoatPosition.Y - virtualHandlePos.Y);
 
             Measurements.Add(current);

@@ -63,9 +63,8 @@ namespace WindowsFormsApp1
             if (position.Y < (-1*EntryMargin*ScaleFactor))
                 return Point.Empty;
 
-            // Start drawing at the bottom of the screen and go up.
             int x = (int)(position.X * ScaleFactor);
-            int y = (CourseLength * ScaleFactor) - (int)(position.Y * ScaleFactor);
+            int y = (int)(position.Y * ScaleFactor);
             Trace.WriteLine(string.Format("Screen X: {0}, Y: {1}...Handle X: {2}, Y: {3}", 
                 x, y, position.X, position.Y));
             return new Point(x, y);
