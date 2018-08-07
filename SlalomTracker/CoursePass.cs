@@ -88,22 +88,26 @@ namespace SlalomTracker
         /// <returns></returns>
         public CoursePosition CoursePositionFromGeo(GeoCoordinate boatPosition)
         {
-            // If boat has not yet entered the course, we're behind it and distance 
-            if (!m_enteredCourse)
-                return CoursePosition.Empty;
+            //if (!m_enteredCourse)
+            //    return CoursePosition.Empty;
 
             double distance = boatPosition.GetDistanceTo(Course.CourseEntryCL);
 
             if (distance < 55)
             {
                 // Determine if boat has yet to enter the gates or has past the gates.
-                double heading = Util.GetHeading(boatPosition, Course.CourseEntryCL);
-                double h = heading + Course.GetCourseHeadingDeg();
-                if (h > 190)
-                    // we're heading away from the 55's
+                double boatHeading = Util.GetHeading(boatPosition, Course.CourseEntryCL);
+                double courseHeading = Course.GetCourseHeadingDeg();
+                double h = Math.Abs(courseHeading) + Math.Abs(boatHeading);
+                if (h < 180)
+                {
+                    distance *= -1;
                     distance += 55;
+                }
                 else
+                {
                     distance -= 55;
+                }
             }
 
             // TODO: Right now we're hardcoded to center of the course.
@@ -162,19 +166,22 @@ namespace SlalomTracker
             lock (this)
             {
                 inCourse = IsInCourse(boatPosition);
-                if (inCourse)
+                if (inCourse && !m_enteredCourse)
                 {
-                    if (!m_enteredCourse)
-                    {
-                        // Boat pilon is now in the course.
-                        m_enteredCourse = true;
-                        CourseEntryTimestamp = timestamp;
-                    }
+                    // Boat pilon is now in the course.
+                    m_enteredCourse = true;
+                    CourseEntryTimestamp = timestamp;
                 }
-                else
+                else if (!inCourse && m_enteredCourse)
                 {
                     // record exit time.
                     CourseExitTimestamp = timestamp;
+                }
+                else
+                {
+                    System.Diagnostics.Trace.WriteLine(
+                        string.Format("In Course? {3}. {0}: {1},{2}", 
+                        timestamp, boatPosition.Latitude, boatPosition.Longitude, inCourse));
                 }
             }
 
@@ -210,9 +217,10 @@ namespace SlalomTracker
             // Get handle position in x,y coordinates from the pilon.
             CoursePosition virtualHandlePos = Rope.GetHandlePosition(current.RopeAngleDegrees);
             // Actual handle position is calculated relative to the pilon/boat position, behind the boat.
-            current.HandlePosition = new CoursePosition(current.BoatPosition.X - virtualHandlePos.X,
-                current.BoatPosition.Y - virtualHandlePos.Y);
-
+            double y = current.BoatPosition.Y - virtualHandlePos.Y;
+            current.HandlePosition = new CoursePosition(current.BoatPosition.X + virtualHandlePos.X, y);
+            //virtualHandlePos.X += 11.5;
+            //current.HandlePosition = virtualHandlePos;
             Measurements.Add(current);
         }
     }

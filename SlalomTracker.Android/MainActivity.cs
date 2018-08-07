@@ -11,6 +11,7 @@ namespace SlalomTracker.Android
     {
         static readonly object _syncLock = new object();
         SensorManager _sensorManager;
+        LocationManager _locationManager;
         TextView _sensorTextView;
 
         int count = 1;

@@ -38,6 +38,11 @@ namespace SlalomTracker
         {
             get { return new CoursePosition(0, 0); }
         }
+
+        public override string ToString()
+        {
+            return string.Format("X:{0},Y:{1}", this.X, this.Y);
+        }
     }
 
     //public struct GeoCoordinate
@@ -53,7 +58,7 @@ namespace SlalomTracker
         // The default course width and length, there is a possibility that these 
         // are slightly off.
         public static readonly double WidthM = 23;
-        public static readonly double LengthM = 259 + 55 * 2; // Course + pregates
+        public static readonly double LengthM = 259 + (55 * 2); // Course + pregates
 
         /// <summary>
         /// Lat/Long of the pilon as you enter & exit the course.

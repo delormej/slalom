@@ -33,6 +33,17 @@ namespace SlalomTracker
             return new Rope((75 - ft) * 0.3048);
         }
 
+        public static List<Rope> GetStandardLengths()
+        {
+            List<Rope> ropes = new List<Rope>();
+            ropes.Add(Rope.Off(15));
+            ropes.Add(Rope.Off(22));
+            ropes.Add(Rope.Off(28));
+            ropes.Add(Rope.Off(32));
+            ropes.Add(Rope.Off(35));
+            return ropes;
+        }
+
         public Rope(double lengthM)
         {
             m_lengthM = lengthM;
@@ -121,6 +132,11 @@ namespace SlalomTracker
             }
 
             return new CoursePosition(c, a);
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0}' off", this.FtOff);
         }
     }
 }

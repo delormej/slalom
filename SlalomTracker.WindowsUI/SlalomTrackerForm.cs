@@ -77,6 +77,8 @@ namespace WindowsFormsApp1
             //_panel1.VerticalScroll.Maximum = CourseLength * ScaleFactor;
             //_panel1.VerticalScroll.Visible = true;
             _txtBoadSpeedMps.Validated += _txtBoadSpeedMps_Validated;
+
+            _cmbRopeM.Items.AddRange(Rope.GetStandardLengths().ToArray());
         }
 
         private void _txtBoadSpeedMps_Validated(object sender, EventArgs e)
@@ -101,10 +103,8 @@ namespace WindowsFormsApp1
             Pen pen = new Pen(color, 2);
             foreach (var position in positions)
             {
-                graphics.DrawEllipse(pen, 
-                    ((int)position.X * ScaleFactor), 
-                    ((int)position.Y * ScaleFactor + EntryMargin), 
-                    2, 2);
+                Point point = PointFromCoursePosition(position);
+                graphics.DrawEllipse(pen, point.X, point.Y, 2, 2);
             }
         }
 
@@ -143,8 +143,13 @@ namespace WindowsFormsApp1
 
         private void button1_Click(object sender, EventArgs e)
         {
+            var open = new OpenFileDialog();
+            //open.DefaultExt = ".csv";
+            open.Multiselect = false;
+            var result = open.ShowDialog();
+
             //const string FilePath = @"\\files.local\video\GOPRO271.csv";
-            const string FilePath = @"\\files.local\video\GOPR0403.csv";
+            string FilePath =  open.FileName;// @"\\files.local\video\GOPR0403.csv";
             CoursePass pass = CoursePassFromCSV.Load(FilePath, double.Parse(this._txtHeadingOffset.Text));
             Draw(pass);
         }

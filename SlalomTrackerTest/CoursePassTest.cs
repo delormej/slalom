@@ -20,7 +20,7 @@ namespace SlalomTracker
             // 
             const int eventsPerSecond = 16;
             double metersPerSecond = boatSpeedMps;
-            double courseLengthM = 259 + rope.LengthM;
+            double courseLengthM = 259 + rope.LengthM + (55*2);
             int events = (int)(courseLengthM / metersPerSecond) * eventsPerSecond;
             double ropeRadPerSecond = swingSpeedRadS;
             int ropeDirection = 1;
