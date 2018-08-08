@@ -1,4 +1,5 @@
-﻿using SlalomTracker;
+﻿using GeoCoordinatePortable;
+using SlalomTracker;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -98,6 +99,41 @@ namespace WindowsFormsApp1
             Draw(mockPass);
         }
 
+        private void DrawCourseBounds(CoursePass pass)
+        {
+            List<GeoCoordinate> list = pass.Course.GetPolygon();
+            // Convert geos to relative course positions, then to absolute screen points.
+            List<Point> points = new List<Point>(list.Count);
+            for (int i = 0; i < list.Count; i++)
+            {
+                GeoCoordinate corner = list[i];
+                CoursePosition position = pass.CoursePositionFromGeo(corner);
+                
+                if (i == 0 || i == 2)
+                {
+                    position.X = 0;
+                }
+                else
+                {
+                    position.X = 23;
+                }
+
+                points.Add(PointFromCoursePosition(position));
+            }
+
+            Graphics g = _panel1.CreateGraphics();
+            Pen pen = new Pen(Color.Green, 0.6F);
+            for (int i = 1; i < points.Count; i++)
+            {
+                g.DrawLine(pen, points[i - 1], points[i]);
+            }
+        }
+
+        private void AdjustPositionX(double x, ref CoursePosition position)
+        {
+            position.X = x;
+        }
+
         private void DrawCourseFeature(Graphics graphics, Color color, CoursePosition[] positions)
         {
             Pen pen = new Pen(color, 2);
@@ -112,6 +148,8 @@ namespace WindowsFormsApp1
         { 
             Graphics graphics = _panel1.CreateGraphics();
             graphics.Clear(_panel1.BackColor);
+
+            DrawCourseBounds(pass);
 
             DrawCourseFeature(graphics, Color.Green, pass.Course.PreGates);
             DrawCourseFeature(graphics, Color.Red, pass.Course.Gates);
