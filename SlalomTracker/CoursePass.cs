@@ -52,7 +52,7 @@ namespace SlalomTracker
         /// </summary>
         /// <param name="boatPosition"></param>
         /// <returns></returns>
-        private bool IsInCourse(GeoCoordinate point)
+        private bool IsBoatInCourse(GeoCoordinate point)
         {
             List<GeoCoordinate> poly = Course.GetPolygon();
             int i, j;
@@ -68,6 +68,17 @@ namespace SlalomTracker
             }
 
             return c;
+        }
+
+        private bool IsBoatBetween55andGates(GeoCoordinate boatPosition)
+        {
+            // Determine if boat has yet to enter the gates or has past the gates.
+            double distance = boatPosition.GetDistanceTo(Course.CourseEntryCL);
+            double boatHeading = Util.GetHeading(boatPosition, Course.CourseEntryCL);
+            double courseHeading = Course.GetCourseHeadingDeg();
+            double deltaHeading = Math.Abs(courseHeading - boatHeading);
+
+            return (deltaHeading < 5.0 && distance <= 55.0);
         }
 
         /// <summary>
@@ -88,19 +99,13 @@ namespace SlalomTracker
         /// <returns></returns>
         public CoursePosition CoursePositionFromGeo(GeoCoordinate boatPosition)
         {
-            //if (!m_enteredCourse)
-            //    return CoursePosition.Empty;
+            if (!m_enteredCourse)
+                return CoursePosition.Empty;
 
             double distance = boatPosition.GetDistanceTo(Course.CourseEntryCL);
 
-            // Determine if boat has yet to enter the gates or has past the gates.
-            double boatHeading = Util.GetHeading(boatPosition, Course.CourseEntryCL);
-            double courseHeading = Course.GetCourseHeadingDeg();
-            double deltaHeading = Math.Abs(courseHeading - boatHeading);
-
-            // 0 distance is @55s
-
-            if (deltaHeading < 5.0 && distance >= 55.0)
+            // Adjust 0 distance to @55s, instead of course entry.
+            if (IsBoatBetween55andGates(boatPosition))
             {
                 // We're heading for the course
                 distance = Math.Abs(distance - 55);
@@ -165,7 +170,7 @@ namespace SlalomTracker
             // Block on this to enure only the first event entering the course gets recorded.
             lock (this)
             {
-                inCourse = IsInCourse(boatPosition);
+                inCourse = IsBoatInCourse(boatPosition);
                 if (inCourse && !m_enteredCourse)
                 {
                     // Boat pilon is now in the course.
