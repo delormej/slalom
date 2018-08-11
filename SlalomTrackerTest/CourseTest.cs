@@ -33,10 +33,17 @@ namespace SlalomTracker
             return CoursePassFromCSV.Load("..\\..\\..\\GOPR0403.csv", 0.0);
         }
 
+        internal static Course CreateTestCourse()
+        {
+            return CreateTestCoursePass().Course;
+        }
+
         [TestMethod]
         public void TestGetCourseHeadingDeg()
         {
-
+            Course course = CreateTestCourse();
+            double heading = course.GetCourseHeadingDeg();
+            Assert.IsTrue((int)heading == 185, "heading is not equal");
         }
 
         [TestMethod]
