@@ -223,7 +223,7 @@ namespace SlalomTracker
             CoursePosition virtualHandlePos = Rope.GetHandlePosition(current.RopeAngleDegrees);
             // Actual handle position is calculated relative to the pilon/boat position, behind the boat.
             double y = current.BoatPosition.Y - virtualHandlePos.Y;
-            current.HandlePosition = new CoursePosition(current.BoatPosition.X + virtualHandlePos.X, y);
+            current.HandlePosition = new CoursePosition(current.BoatPosition.X - virtualHandlePos.X, y);
             //virtualHandlePos.X += 11.5;
             //current.HandlePosition = virtualHandlePos;
             Measurements.Add(current);
