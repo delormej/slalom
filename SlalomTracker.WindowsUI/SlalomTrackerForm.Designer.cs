@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this._panel1 = new System.Windows.Forms.Panel();
+            this.vScrollBar1 = new System.Windows.Forms.VScrollBar();
             this._txtRadS = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
@@ -38,7 +39,6 @@
             this._btnDraw = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
-            this.vScrollBar1 = new System.Windows.Forms.VScrollBar();
             this._txtHeadingOffset = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
             this._panel1.SuspendLayout();
@@ -50,16 +50,23 @@
             this._panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this._panel1.Controls.Add(this.vScrollBar1);
             this._panel1.Location = new System.Drawing.Point(136, 24);
-            this._panel1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this._panel1.Margin = new System.Windows.Forms.Padding(2);
             this._panel1.Name = "_panel1";
             this._panel1.Size = new System.Drawing.Size(305, 511);
             this._panel1.TabIndex = 0;
             this._panel1.Paint += new System.Windows.Forms.PaintEventHandler(this._panel1_Paint_1);
             // 
+            // vScrollBar1
+            // 
+            this.vScrollBar1.Location = new System.Drawing.Point(290, 0);
+            this.vScrollBar1.Name = "vScrollBar1";
+            this.vScrollBar1.Size = new System.Drawing.Size(17, 511);
+            this.vScrollBar1.TabIndex = 0;
+            // 
             // _txtRadS
             // 
             this._txtRadS.Location = new System.Drawing.Point(11, 72);
-            this._txtRadS.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this._txtRadS.Margin = new System.Windows.Forms.Padding(2);
             this._txtRadS.Name = "_txtRadS";
             this._txtRadS.Size = new System.Drawing.Size(76, 20);
             this._txtRadS.TabIndex = 1;
@@ -89,7 +96,7 @@
             // _txtBoadSpeedMps
             // 
             this._txtBoadSpeedMps.Location = new System.Drawing.Point(11, 118);
-            this._txtBoadSpeedMps.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this._txtBoadSpeedMps.Margin = new System.Windows.Forms.Padding(2);
             this._txtBoadSpeedMps.Name = "_txtBoadSpeedMps";
             this._txtBoadSpeedMps.Size = new System.Drawing.Size(76, 20);
             this._txtBoadSpeedMps.TabIndex = 2;
@@ -108,19 +115,16 @@
             // _cmbRopeM
             // 
             this._cmbRopeM.FormattingEnabled = true;
-            this._cmbRopeM.Items.AddRange(new object[] {
-            "16"});
             this._cmbRopeM.Location = new System.Drawing.Point(11, 24);
-            this._cmbRopeM.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this._cmbRopeM.Margin = new System.Windows.Forms.Padding(2);
             this._cmbRopeM.Name = "_cmbRopeM";
             this._cmbRopeM.Size = new System.Drawing.Size(92, 21);
             this._cmbRopeM.TabIndex = 0;
-            this._cmbRopeM.Text = "16";
             // 
             // _btnDraw
             // 
             this._btnDraw.Location = new System.Drawing.Point(11, 226);
-            this._btnDraw.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this._btnDraw.Margin = new System.Windows.Forms.Padding(2);
             this._btnDraw.Name = "_btnDraw";
             this._btnDraw.Size = new System.Drawing.Size(56, 24);
             this._btnDraw.TabIndex = 6;
@@ -146,13 +150,6 @@
             this.label4.Size = new System.Drawing.Size(66, 13);
             this.label4.TabIndex = 0;
             this.label4.Text = "Course Pass";
-            // 
-            // vScrollBar1
-            // 
-            this.vScrollBar1.Location = new System.Drawing.Point(290, 0);
-            this.vScrollBar1.Name = "vScrollBar1";
-            this.vScrollBar1.Size = new System.Drawing.Size(17, 511);
-            this.vScrollBar1.TabIndex = 0;
             // 
             // _txtHeadingOffset
             // 
@@ -190,7 +187,7 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this._txtRadS);
             this.Controls.Add(this._panel1);
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "SlalomTrackerForm";
             this.Text = "Form1";
             this._panel1.ResumeLayout(false);

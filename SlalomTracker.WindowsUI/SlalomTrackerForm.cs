@@ -34,10 +34,14 @@ namespace WindowsFormsApp1
 
         private void _btnDraw_Click(object sender, EventArgs e)
         {
+            Rope rope = _cmbRopeM.SelectedItem as Rope;
+            if (rope == null)
+                throw new Exception("Must select a rope length.");
+
             try
             {
                 DrawCoursePass(
-                    double.Parse(_cmbRopeM.Text),
+                    rope.LengthM,
                     double.Parse(_txtRadS.Text),
                     double.Parse(_txtBoadSpeedMps.Text));
             }
@@ -80,6 +84,7 @@ namespace WindowsFormsApp1
             _txtBoadSpeedMps.Validated += _txtBoadSpeedMps_Validated;
 
             _cmbRopeM.Items.AddRange(Rope.GetStandardLengths().ToArray());
+            _cmbRopeM.SelectedIndex = 0;
         }
 
         private void _txtBoadSpeedMps_Validated(object sender, EventArgs e)
