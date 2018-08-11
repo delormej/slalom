@@ -16,7 +16,7 @@ namespace WindowsFormsApp1
     public partial class SlalomTrackerForm : Form
     {
         const int EntryMargin = 50;
-        private int ScaleFactor = 1;
+        private int ScaleFactor = 2;
         private int CourseLength = 259 + (55 * 2);
 
         public SlalomTrackerForm()

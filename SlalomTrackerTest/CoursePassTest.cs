@@ -8,6 +8,8 @@ namespace SlalomTracker
     [TestClass]
     public class CoursePassTest
     {
+        CoursePass _pass;
+
         public CoursePass TestTrack(double ropeM, double swingSpeedRadS, double boatSpeedMps)
         {
             Rope rope = new Rope(ropeM);
@@ -69,6 +71,33 @@ namespace SlalomTracker
             }
 
             return pass;
+        }
+
+        [TestInitialize]
+        public void Setup()
+        {
+            _pass = CourseTest.CreateTestCoursePass();
+        }
+
+        [TestMethod]
+        public void CoursePositionFromGeoTest()
+        {
+            // Grab a boatposition and verify where in the X,Y course plane it should fit.
+            // 7.45, 42.289983, -71.358973, 13.68, 0.11289 <-- before the course
+            // 21.63, 42.288066, -71.359257, 14.87, 0.50935 <-- just prior to ball 1, after gate crossing
+            // 40.71, 42.285529, -71.359519, 14.27, 0.59728 <-- between exit gates and the 55's 
+            // 45.32, 42.285165, -71.359369, 5.60, -0.10074 <-- way past the course, looping around
+
+            // 15.02, 42.288937, -71.359136, 14.33, 0.77112 <-- boat is passing through the 55s.
+
+            CoursePosition position = _pass.CoursePositionFromGeo(42.289983, -71.358973);
+            CoursePosition position2 = _pass.CoursePositionFromGeo(42.288066, -71.359257);
+            CoursePosition position3 = _pass.CoursePositionFromGeo(42.285529, -71.359519);
+            CoursePosition position4 = _pass.CoursePositionFromGeo(42.285165, -71.359369);
+            CoursePosition position5 = _pass.CoursePositionFromGeo(42.288937, -71.359136); 
+
+
+            Assert.IsTrue(position.X == 0, "Incorrect course position.");
         }
     }
 }

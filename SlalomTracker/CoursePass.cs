@@ -93,22 +93,22 @@ namespace SlalomTracker
 
             double distance = boatPosition.GetDistanceTo(Course.CourseEntryCL);
 
-            //if (distance < 55)
-            //{
-                // Determine if boat has yet to enter the gates or has past the gates.
-                double boatHeading = Util.GetHeading(boatPosition, Course.CourseEntryCL);
-                double courseHeading = Course.GetCourseHeadingDeg();
-                double h = Math.Abs(courseHeading) + Math.Abs(boatHeading);
-                if (h < 180)
-                {
-                    distance *= -1;
-                    distance += 55;
-                }
-                else
-                {
-                    distance -= 55;
-                }
-            //}
+            // Determine if boat has yet to enter the gates or has past the gates.
+            double boatHeading = Util.GetHeading(boatPosition, Course.CourseEntryCL);
+            double courseHeading = Course.GetCourseHeadingDeg();
+            double deltaHeading = Math.Abs(courseHeading - boatHeading);
+
+            // 0 distance is @55s
+
+            if (deltaHeading < 5.0 && distance >= 55.0)
+            {
+                // We're heading for the course
+                distance = Math.Abs(distance - 55);
+            }
+            else
+            {
+                distance += 55;
+            }
 
             // TODO: Right now we're hardcoded to center of the course.
             return new CoursePosition(11.5, distance);
