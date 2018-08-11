@@ -13,6 +13,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlalomTracker.Android", "Sl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageExtractor", "..\Video\ImageExtractor\ImageExtractor.csproj", "{234DC23E-C557-4B70-BB8D-6050E81AE6B1}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{234B0062-94AD-4383-875C-030F1402F1A8}"
+	ProjectSection(SolutionItems) = preProject
+		GOPR0403.csv = GOPR0403.csv
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

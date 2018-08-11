@@ -8,11 +8,10 @@ namespace SlalomTracker
     [TestClass]
     public class CoursePassTest
     {
-        [TestMethod]
         public CoursePass TestTrack(double ropeM, double swingSpeedRadS, double boatSpeedMps)
         {
             Rope rope = new Rope(ropeM);
-            CoursePass pass = new CoursePass(CourseTest.CreateTestCourse(), rope);
+            CoursePass pass = new CoursePass(CourseTest.CreateTestCoursePass().Course, rope);
             pass.CourseEntryTimestamp = DateTime.Now.Subtract(TimeSpan.FromSeconds(15));
 
             // Travel down the course is 259m @ 14m/sec
@@ -70,17 +69,6 @@ namespace SlalomTracker
             }
 
             return pass;
-        }
-
-        [TestMethod]
-        public void TestCoursePositionFromGeo()
-        {
-            //Course course = CreateTestCourse();
-            //course.SetCourseEntry(42.286670, -71.358994);
-            //course.SetCourseExit(42.289249, -71.359091);
-
-            //CoursePosition position = course.CoursePositionFromGeo(42.286770, -71.35900);
-
         }
     }
 }

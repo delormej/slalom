@@ -28,14 +28,9 @@ namespace SlalomTracker
         /// Dummy course for testing.
         /// </summary>
         /// <returns></returns>
-        internal static Course CreateTestCourse()
+        internal static CoursePass CreateTestCoursePass()
         {
-            Course course = new Course();
-
-            course.SetCourseEntry(latitude, longitude);  // TODO need to get lat/long of start and finish.
-            course.SetCourseExit(latitude, AddDistance(latitude, longitude, 259));
-
-            return course;
+            return CoursePassFromCSV.Load("..\\..\\..\\GOPR0403.csv", 0.0);
         }
 
         [TestMethod]
@@ -44,5 +39,20 @@ namespace SlalomTracker
 
         }
 
+        [TestMethod]
+        public void TestCoursePositionFromGeo()
+        {
+            //Course course = CreateTestCourse();
+            //course.SetCourseEntry(42.286670, -71.358994);
+            //course.SetCourseExit(42.289249, -71.359091);
+
+            //CoursePosition position = course.CoursePositionFromGeo(42.286770, -71.35900);
+        }
+
+        [TestMethod]
+        public void TestGenerateCourseFeatures()
+        {
+
+        }
     }
 }
