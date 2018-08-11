@@ -65,6 +65,8 @@ namespace SlalomTracker
                 dLongitude = dLongitude > 0 ? -(2 * Math.PI - dLongitude) : (2 * Math.PI + dLongitude);
 
             double heading = Util.RadToDeg(Math.Atan2(dLongitude, dPhi));
+            if (heading < 0)
+                heading = (heading + 360) % 360;
 
             return heading;
         }
