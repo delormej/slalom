@@ -136,7 +136,7 @@ namespace SlalomTracker
 
         public override string ToString()
         {
-            return string.Format("{0}' off", this.FtOff);
+            return string.Format("{0}' off", Math.Round(this.FtOff,0));
         }
     }
 }
