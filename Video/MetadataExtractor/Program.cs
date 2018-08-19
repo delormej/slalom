@@ -13,23 +13,29 @@ namespace MetadataExtractor
             //string path = args[1];
             string videoUrl = "https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4";
 
-            string path = "GOPR0194.MP4"; //DownloadVideo(videoUrl);
+            string path = DownloadVideo(videoUrl);
             string csv = ParseMetadata(path);
             Console.WriteLine(csv);
             
         }
 
-        static string DownloadVideo(string videoUrl, string localPath)
+        static string DownloadVideo(string videoUrl)
         {
             // Hard coded for now.
             string path = "GOPR0194.MP4";
+            if (File.Exists(path)) 
+            {
+                Console.WriteLine("File already exists.");
+            }
+            else 
+            {
+                Console.Write("Requesting video: " + videoUrl + " ...");
 
-            Console.Write("Requesting video: " + videoUrl + " ...");
+                WebClient client = new WebClient();
+                client.DownloadFile(videoUrl, path);
 
-            WebClient client = new WebClient();
-            client.DownloadFile(videoUrl, path);
-
-            Console.Write("DONE\n");
+                Console.Write("DONE\n");
+            }
 
             return path;
         }

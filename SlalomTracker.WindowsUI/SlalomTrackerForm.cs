@@ -15,8 +15,9 @@ namespace WindowsFormsApp1
 {
     public partial class SlalomTrackerForm : Form
     {
+        private CoursePass _pass;
         const int EntryMargin = 50;
-        private int ScaleFactor = 2;
+        private int ScaleFactor = 4;
         private int CourseLength = 259 + (55 * 2);
 
         public SlalomTrackerForm()
@@ -100,8 +101,7 @@ namespace WindowsFormsApp1
         private void DrawCoursePass(double ropeM, double swingSpeedRadS, double boatSpeedRadS)
         {
             CoursePassTest test = new CoursePassTest();
-            CoursePass mockPass = test.TestTrack(ropeM, swingSpeedRadS, boatSpeedRadS);
-            Draw(mockPass);
+            _pass = test.TestTrack(ropeM, swingSpeedRadS, boatSpeedRadS);
         }
 
         private void DrawCourseBounds(CoursePass pass)
@@ -143,17 +143,17 @@ namespace WindowsFormsApp1
             }
         }
 
-        private void Draw(CoursePass pass)
+        private void Draw()
         { 
             Graphics graphics = _panel1.CreateGraphics();
             graphics.Clear(_panel1.BackColor);
 
-            DrawCourseBounds(pass);
+            DrawCourseBounds(_pass);
 
-            DrawCourseFeature(graphics, Color.Green, pass.Course.PreGates);
-            DrawCourseFeature(graphics, Color.Red, pass.Course.Gates);
-            DrawCourseFeature(graphics, Color.Red, pass.Course.Balls);
-            DrawCourseFeature(graphics, Color.Yellow, pass.Course.BoatMarkers);
+            DrawCourseFeature(graphics, Color.Green, _pass.Course.PreGates);
+            DrawCourseFeature(graphics, Color.Red, _pass.Course.Gates);
+            DrawCourseFeature(graphics, Color.Red, _pass.Course.Balls);
+            DrawCourseFeature(graphics, Color.Yellow, _pass.Course.BoatMarkers);
 
             // Draw Center Line.
             graphics.DrawLine(new Pen(Color.Gray, 1), new Point((int)11.5 * ScaleFactor, 0), 
@@ -162,12 +162,12 @@ namespace WindowsFormsApp1
             Pen inCoursePen = new Pen(Color.Green, 3);
             Pen outCoursePen = new Pen(Color.Pink, 3);
 
-            for (int i = 0; i < pass.Measurements.Count-2; i++)
+            for (int i = 0; i < _pass.Measurements.Count-2; i++)
             {
-                var m = pass.Measurements[i];
+                var m = _pass.Measurements[i];
                 Pen coursePen = m.InCourse ? inCoursePen : outCoursePen;
                 Point start = PointFromCoursePosition(m.HandlePosition);
-                Point end = PointFromCoursePosition(pass.Measurements[i + 1].HandlePosition);
+                Point end = PointFromCoursePosition(_pass.Measurements[i + 1].HandlePosition);
                 if (start != Point.Empty && end != Point.Empty)
                     graphics.DrawLine(coursePen, start, end);
             }
@@ -187,8 +187,10 @@ namespace WindowsFormsApp1
 
             //const string FilePath = @"\\files.local\video\GOPRO271.csv";
             string FilePath =  open.FileName;// @"\\files.local\video\GOPR0403.csv";
-            CoursePass pass = CoursePassFromCSV.Load(FilePath, double.Parse(this._txtHeadingOffset.Text));
-            Draw(pass);
+            _pass = CoursePassFromCSV.Load(FilePath, 
+                double.Parse(this._txtHeadingOffset.Text), 
+                (Rope)this._cmbRopeM.SelectedItem);
+            Draw();
         }
 
         private void _panel1_Paint_1(object sender, PaintEventArgs e)

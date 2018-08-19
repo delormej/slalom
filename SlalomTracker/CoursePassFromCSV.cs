@@ -13,12 +13,17 @@ namespace SlalomTracker
             double.TryParse(row[(int)column], out result);
         }
 
-        public static CoursePass Load(string path, double centerLineDegreeOffset)
+        public static CoursePass Load(string path)
+        {
+            return Load(path, 0, Rope.Off(22));
+        }
+
+        public static CoursePass Load(string path, double centerLineDegreeOffset, Rope rope)
         {
             Course course = new Course();
             course.SetCourseEntry(42.289087, -71.359124);
             course.SetCourseExit(42.287023, -71.359394);
-            CoursePass pass = new CoursePass(course, Rope.Off(22), centerLineDegreeOffset);
+            CoursePass pass = new CoursePass(course, rope, centerLineDegreeOffset);
 
             using (StreamReader sr = new StreamReader(path))
             {
