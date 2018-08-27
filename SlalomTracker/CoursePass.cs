@@ -204,6 +204,8 @@ namespace SlalomTracker
             current.BoatGeoCoordinate = boatPosition;
             current.RopeSwingSpeedRadS = ropeSwingRadS;
 
+            double ropeArcLength = 0;
+
             // All subsequent calculations are based on movement since the last measurement.
             if (previous != null)
             {
@@ -213,6 +215,7 @@ namespace SlalomTracker
                 // Convert radians per second to degrees per second.  
                 current.RopeAngleDegrees = previous.RopeAngleDegrees +
                     Util.RadToDeg(ropeSwingRadS * seconds);
+                ropeArcLength = GetRopeArcLength(current, previous);
             }
             else
             {
@@ -221,12 +224,35 @@ namespace SlalomTracker
 
             // Get handle position in x,y coordinates from the pilon.
             CoursePosition virtualHandlePos = Rope.GetHandlePosition(current.RopeAngleDegrees);
+
             // Actual handle position is calculated relative to the pilon/boat position, behind the boat.
             double y = current.BoatPosition.Y - virtualHandlePos.Y;
             current.HandlePosition = new CoursePosition(current.BoatPosition.X - virtualHandlePos.X, y);
             //virtualHandlePos.X += 11.5;
             //current.HandlePosition = virtualHandlePos;
             Measurements.Add(current);
+        }
+
+        public double GetRopeArcLength(Measurement current, Measurement previous)
+        {
+            // Calculate linear distance from previous.X,Y (A) to current.X,Y (B)
+            // In the center, draw a perpendicular line to a point Y away (C)
+            // Create a triangle between A->C, C->B
+            // Calculate the angle at C
+
+            // This is incorrect.
+            //double distance = current.BoatPosition.X - previous.BoatPosition.X;
+            //double angleDelta = Math.Abs(current.RopeAngleDegrees - previous.RopeAngleDegrees);
+            //return GetRopeArcLength(distance, Rope.LengthM, angleDelta);
+            return 0;
+        }
+
+        public double GetRopeArcLength(double boatDistance, double ropeLengthM, double angleDelta)
+        {
+            double radius = ropeLengthM;
+            double arcLength = (angleDelta / 360) * 2 * Math.PI * radius;
+            double distance = arcLength + boatDistance;
+            return distance;
         }
     }
 }

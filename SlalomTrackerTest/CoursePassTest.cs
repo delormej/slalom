@@ -99,5 +99,15 @@ namespace SlalomTracker
 
             Assert.IsTrue(position.X == 0, "Incorrect course position.");
         }
+
+        [TestMethod]
+        public void GetRopeArcLengthTest()
+        {
+            //current.RopeAngleDegrees = ;
+            double angleDelta = 42.6; // 74.23; // 22off == 42.6, 41off == 74.23
+            double boatDistance = 11.5;
+            // 34mph = 15.2778 meters per second
+            double len = _pass.GetRopeArcLength(boatDistance, Rope.Off(22).LengthM, angleDelta); // 41off == 24.9, 22off == 23.5
+        }
     }
 }
