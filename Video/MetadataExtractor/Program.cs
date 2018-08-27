@@ -36,13 +36,14 @@ namespace MetadataExtractor
             CloudStorageAccount account = null;
             string connection = Environment.GetEnvironmentVariable(ENV_SKIBLOBS);
             string blobName = Path.GetFileName(localFile);
+            CloudBlockBlob blob;
 
             if (CloudStorageAccount.TryParse(connection, out account))
             {
                 Console.WriteLine("Connection string OK!");
                 CloudBlobClient blobClient = account.CreateCloudBlobClient();
                 CloudBlobContainer blobContainer = blobClient.GetContainerReference(SKICONTAINER);
-                CloudBlockBlob blob = blobContainer.GetBlockBlobReference(blobName);
+                blob = blobContainer.GetBlockBlobReference(blobName);
                 var task = blob.UploadFromFileAsync(localFile);
                 task.Wait();
             }
@@ -56,7 +57,8 @@ namespace MetadataExtractor
                 throw new ApplicationException(error);
             }
 
-            return "DUMMY"; // URL to the uploaded video.
+            string uri = blob.SnapshotQualifiedUri.AbsoluteUri;
+            return uri; // URL to the uploaded video.
         }
 
         static string DownloadVideo(string videoUrl)
