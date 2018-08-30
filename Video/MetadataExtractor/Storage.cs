@@ -46,10 +46,9 @@ namespace MetadataExtractor
             return uri; // URL to the uploaded video.
         }
 
-        public string DownloadVideo(string videoUrl)
+        public static string DownloadVideo(string videoUrl)
         {
-            // Hard coded for now.
-            string path = "GOPR0194.MP4";
+            string path = GetLocalPath(videoUrl);
             if (File.Exists(path)) 
             {
                 Console.WriteLine("File already exists.");
@@ -58,6 +57,9 @@ namespace MetadataExtractor
             {
                 Console.Write("Requesting video: " + videoUrl + " ...");
 
+                string directory = Path.GetDirectoryName(path);
+                if (directory != String.Empty && !Directory.Exists(directory))
+                    Directory.CreateDirectory(directory);
                 WebClient client = new WebClient();
                 client.DownloadFile(videoUrl, path);
 
@@ -66,6 +68,24 @@ namespace MetadataExtractor
 
             return path;
         }        
+
+        private static string GetLocalPath(string videoUrl)
+        {
+            string path = "";
+            // Get second to last directory seperator.
+            int dirMarker = videoUrl.LastIndexOf('/');
+            if (dirMarker > 0)
+                dirMarker = videoUrl.LastIndexOf('/', dirMarker-1, dirMarker-1);
+            if (dirMarker < 0)
+            {
+                path = Path.GetFileName(videoUrl);
+            }
+            else
+            {
+                path = videoUrl.Substring(dirMarker + 1, videoUrl.Length - dirMarker - 1);
+            }
+            return path;
+        }
 
         private void WalkDirectories(string path) 
         {
