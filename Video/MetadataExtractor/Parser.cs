@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using SlalomTracker;
 
-
 namespace MetadataExtractor
 {
     public class Parser
@@ -16,7 +15,7 @@ namespace MetadataExtractor
         const string TIME = "TIME";
         const double gpsHz = 18; // GPS5 18.169 Hz
         const double gyroHz = 399;  // GYRO 403.846 Hz
-        const int gyrosPerGps = (int)(gpsHz / gyroHz);
+        const int gyrosPerGps = (int)(gyroHz / gpsHz);
 
         // Source: https://github.com/gopro/gpmf-parser
         enum Column {
@@ -36,7 +35,9 @@ namespace MetadataExtractor
 
         public List<Measurement> LoadFromFile(string path)
         {
-            string csv = ParseMetadata(path);
+            string csv = "";
+            using (var sr = File.OpenText(path))
+                 csv = sr.ReadToEnd();
             return Load(csv);
         }
 
@@ -46,9 +47,7 @@ namespace MetadataExtractor
 
             using (var sr = new StringReader(csv))
             {
-                string line = sr.ReadLine(); // Advance 1st line header.
-                ValidateHeader(line);
-
+                string line = "";
                 while ((line = sr.ReadLine()) != null)
                 {
                     string[] row = line.Split(',');
@@ -70,11 +69,6 @@ namespace MetadataExtractor
             }
 
             return measurements;
-        }
-
-        private void ValidateHeader(string line)
-        {
-
         }
 
         private void ProcessTime(string[] row)

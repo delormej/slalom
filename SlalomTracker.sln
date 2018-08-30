@@ -20,6 +20,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetadataExtractor", "Video\MetadataExtractor\MetadataExtractor.csproj", "{B97DD507-40F9-4753-A526-5567263B2FE7}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Video", "Video", "{63297DE1-4DA2-4C19-B837-BF34C7C8B71C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetadataExtractor.Tests", "Video\MetadataExtractor.Tests\MetadataExtractor.Tests.csproj", "{47BD6450-EAEC-40CC-8D7B-33046CA4C7F9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,9 +56,17 @@ Global
 		{B97DD507-40F9-4753-A526-5567263B2FE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B97DD507-40F9-4753-A526-5567263B2FE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B97DD507-40F9-4753-A526-5567263B2FE7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47BD6450-EAEC-40CC-8D7B-33046CA4C7F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47BD6450-EAEC-40CC-8D7B-33046CA4C7F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47BD6450-EAEC-40CC-8D7B-33046CA4C7F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47BD6450-EAEC-40CC-8D7B-33046CA4C7F9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B97DD507-40F9-4753-A526-5567263B2FE7} = {63297DE1-4DA2-4C19-B837-BF34C7C8B71C}
+		{47BD6450-EAEC-40CC-8D7B-33046CA4C7F9} = {63297DE1-4DA2-4C19-B837-BF34C7C8B71C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {58ADB923-61B4-4319-ACCB-1CA63C75565D}
