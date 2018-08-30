@@ -1,4 +1,4 @@
-using System;
+using System.IO;
 using System.Collections.Generic;
 using SlalomTracker;
 using MetadataExtractor;
@@ -13,10 +13,15 @@ namespace MetadataExtractor.Tests
         [TestMethod]
         public void TestLoadFromFile()
         {
+            const string csvPath = "../../../GOPR0194.csv";
             Parser parser = new Parser();
-            List<Measurement> measurements = parser.LoadFromFile("../../../GOPR0194.csv");
-            Assert.Equals(measurements.Count, 1177);
-            Assert.Equals(measurements[1000].BoatSpeedMps, 8.164);
+            string csv = "";
+            using (var sr = File.OpenText(csvPath))
+                csv = sr.ReadToEnd();
+
+            List<Measurement> measurements = parser.LoadFromCsv(csv);
+            Assert.AreEqual(measurements.Count, 1177);
+            Assert.AreEqual(measurements[1000].BoatSpeedMps, 8.164);
         }
     }
 }

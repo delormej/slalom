@@ -33,15 +33,12 @@ namespace MetadataExtractor
         int currentGpsCount, currentGyroCount;
         double start, accumZ;
 
-        public List<Measurement> LoadFromFile(string path)
+        public List<Measurement> LoadFromMp4(string path)
         {
-            string csv = "";
-            using (var sr = File.OpenText(path))
-                 csv = sr.ReadToEnd();
-            return Load(csv);
+            return null;
         }
 
-        public List<Measurement> Load(string csv)
+        public List<Measurement> LoadFromCsv(string csv)
         {
             measurements = new List<Measurement>();
 
@@ -121,7 +118,7 @@ namespace MetadataExtractor
                 int mIndex = gyrosPerGps - (currentGyroCount / gyrosPerGps);
                 if (measurements.Count <= mIndex)
                 {
-                    Console.WriteLine("Not enough measurements?"); // log error here
+                    //Console.WriteLine("Not enough measurements?"); // log error here
                     return;
                 }
                 measurements[measurements.Count - mIndex].RopeSwingSpeedRadS = radS;
@@ -144,8 +141,8 @@ namespace MetadataExtractor
                 }
             };
             process.Start();
-            string result = process.StandardOutput.ReadToEnd();
             process.WaitForExit();
+            string result = process.StandardOutput.ReadToEnd();
             return result;
         }
 
