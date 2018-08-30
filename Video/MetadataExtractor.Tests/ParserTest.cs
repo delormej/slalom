@@ -14,12 +14,25 @@ namespace MetadataExtractor.Tests
         public void TestLoadFromFile()
         {
             const string csvPath = "../../../GOPR0194.csv";
-            Parser parser = new Parser();
             string csv = "";
             using (var sr = File.OpenText(csvPath))
                 csv = sr.ReadToEnd();
-
+            Parser parser = new Parser();
             List<Measurement> measurements = parser.LoadFromCsv(csv);
+            AssertMeasurements(measurements);
+        }
+
+        [TestMethod]
+        public void TestLoadFromMp4()
+        {
+            const string mp4Path = "GOPR0194.MP4";
+            Parser parser = new Parser();
+            List<Measurement> measurements = parser.LoadFromMp4(mp4Path);
+            AssertMeasurements(measurements);
+        }
+
+        private void AssertMeasurements(List<Measurement> measurements)
+        {
             Assert.AreEqual(measurements.Count, 1177);
             Assert.AreEqual(measurements[1000].BoatSpeedMps, 8.164);
         }

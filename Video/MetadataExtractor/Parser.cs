@@ -35,7 +35,11 @@ namespace MetadataExtractor
 
         public List<Measurement> LoadFromMp4(string path)
         {
-            return null;
+            string csv = ParseMetadata(path);
+            if (csv != string.Empty)
+                return LoadFromCsv(csv);
+            else
+                throw new ApplicationException("No metadata found in: " + path);
         }
 
         public List<Measurement> LoadFromCsv(string csv)
@@ -127,22 +131,30 @@ namespace MetadataExtractor
             currentGyroCount++;
         }
 
-        private string ParseMetadata(string path)
+        private string ParseMetadata(string mp4Path)
         {
+            string exePath = "";
+            if (Directory.GetCurrentDirectory().Contains("netcoreapp"))
+                exePath = Directory.GetCurrentDirectory() + "/../../../";
+
+            if (!File.Exists(exePath + mp4Path))
+                throw new FileNotFoundException("MP4 file does not exist at: " + exePath + mp4Path);
+
             var process = new Process()
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = GPMFEXE,
-                    Arguments = path,
+                    FileName = exePath + GPMFEXE,
+                    Arguments = mp4Path,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                     CreateNoWindow = true,
+                    WorkingDirectory = exePath
                 }
             };
             process.Start();
-            process.WaitForExit();
             string result = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
             return result;
         }
 
