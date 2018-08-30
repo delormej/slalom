@@ -8,15 +8,15 @@ using SlalomTracker;
 
 namespace MetadataExtractor
 {
-    class Parser
+    public class Parser
     {
-        // GYRO 403.846 Hz
-        // GPS5 18.169 Hz
-
         const string GPMFEXE = "gpmfdemo";
         const string GYRO = "GYRO";
         const string GPS = "GPS5";
         const string TIME = "TIME";
+        const double gpsHz = 18; // GPS5 18.169 Hz
+        const double gyroHz = 399;  // GYRO 403.846 Hz
+        const int gyrosPerGps = (int)(gpsHz / gyroHz);
 
         // Source: https://github.com/gopro/gpmf-parser
         enum Column {
@@ -29,71 +29,111 @@ namespace MetadataExtractor
             Speed = 4,
         };
 
+        List<Measurement> measurements;
+        DateTime initialTime = DateTime.MinValue;
+        int currentGpsCount, currentGyroCount;
+        double start, accumZ;
+
+        public List<Measurement> LoadFromFile(string path)
+        {
+            string csv = ParseMetadata(path);
+            return Load(csv);
+        }
+
         public List<Measurement> Load(string csv)
         {
-            List<Measurement> measurements = new List<Measurement>();
+            measurements = new List<Measurement>();
 
             using (var sr = new StringReader(csv))
             {
                 string line = sr.ReadLine(); // Advance 1st line header.
-                Column currentItem = Column.Label;
-                Measurement currentMeasurement = null; 
-                DateTime initialTime = DateTime.MinValue;
-                double seconds, lat, lon, z, speed;
-                int currentItemCount = 0;
-                string rowLabel;
+                ValidateHeader(line);
 
                 while ((line = sr.ReadLine()) != null)
                 {
                     string[] row = line.Split(',');
-                    rowLabel = GetColumn(row, Column.Label);
+                    string rowLabel = GetColumn(row, Column.Label);
 
                     if (rowLabel == TIME)
                     {
-                        // Reset datapoint item count.
-                        currentItemCount = 0;
-
-                        double start = double.Parse(GetColumn(row, Column.SecondsIn));
-                        //double end = double.Parse(GetColumn(row, Column.SecondsOut));
-
-                        DateTime startTime = initialTime.AddSeconds(start);
-                        if (startTime == currentMeasurement.Timestamp)
-                            // if time matches current time, move to GYRO data.
-                            continue;
-                        else 
-                        {
-                            // Start a new measurement object
-                            if (currentMeasurement != null)
-                                measurements.Add(currentMeasurement);
-                            currentMeasurement = new Measurement();
-                            currentMeasurement.Timestamp = startTime;
-                        }
+                        ProcessTime(row);
                     }
                     else if (rowLabel == GPS)
                     {
-                        // Get all GPS, until
-                        while ((rowLabel == GPS)
-                        {
-
-                        }
+                        ProcessGps(row);
                     }
                     else if (rowLabel == GYRO)
                     {
-
+                        ProcessGyro(row);
                     }
-
-
-                        GetColumn(row, Column.Seconds, out seconds);
-                    GetColumn(row, Column.Lat, out lat);
-                    GetColumn(row, Column.Lon, out lon);
-                    GetColumn(row, Column.Speed, out speed);
-                    GetColumn(row, Column.Z, out z);
-                    DateTime timestamp = DateTime.Now.AddDays(-1).AddSeconds(seconds);
-                    pass.Track(timestamp, z, lat, lon, speed);
                 }
             }
 
-            return pass;
+            return measurements;
+        }
+
+        private void ValidateHeader(string line)
+        {
+
+        }
+
+        private void ProcessTime(string[] row)
+        {
+            // Reset datapoint item count.
+            currentGpsCount = 0;
+            currentGyroCount = 0;
+            accumZ = 0;
+            start = double.Parse(GetColumn(row, Column.SecondsIn));
+        }
+
+        /// <summary>
+        /// Add a measurement record for each GPS row.
+        /// </summary>
+        /// <param name="row"></param>
+        private void ProcessGps(string[] row)
+        {
+            // Don't grab more than x GPS entries.
+            if (currentGpsCount > gpsHz)
+                return;
+
+            // @ GPS Hz, get fractional seconds.
+            DateTime startTime = initialTime.AddSeconds(
+                start + (currentGpsCount / gpsHz));
+
+            Measurement m = new Measurement();
+            m.Timestamp = startTime;
+            m.BoatPosition = new CoursePosition(
+                double.Parse(GetColumn(row, Column.Lat)),
+                double.Parse(GetColumn(row, Column.Lon)));
+            m.BoatSpeedMps = double.Parse(GetColumn(row, Column.Speed));
+            measurements.Add(m);
+
+            currentGpsCount++;
+        }
+
+        /// <summary>
+        /// Calculate the average Z axis speed for each GPS measurement and update.
+        /// </summary>
+        /// <param name="row"></param>
+        private void ProcessGyro(string[] row)
+        {
+            accumZ += double.Parse(GetColumn(row, Column.Z));
+
+            // When we have the appropriate # of gyro's per a GPS measurement, calculate.
+            if (currentGyroCount > 0 && currentGyroCount % gyrosPerGps == 0)
+            {
+                // Update measurement.
+                double radS = accumZ / gyrosPerGps;
+                int mIndex = gyrosPerGps - (currentGyroCount / gyrosPerGps);
+                if (measurements.Count <= mIndex)
+                {
+                    Console.WriteLine("Not enough measurements?"); // log error here
+                    return;
+                }
+                measurements[measurements.Count - mIndex].RopeSwingSpeedRadS = radS;
+                accumZ = 0;
+            }
+            currentGyroCount++;
         }
 
         private string ParseMetadata(string path)
