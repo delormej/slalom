@@ -70,6 +70,7 @@ namespace MetadataExtractor
             task.Wait();
 
             string uri = blob.SnapshotQualifiedUri.AbsoluteUri;
+            QueueNewVideo(blobName, uri);
             return uri; // URL to the uploaded video.
         }
 
@@ -202,6 +203,12 @@ namespace MetadataExtractor
             CloudBlobContainer blobContainer = blobClient.GetContainerReference(SKICONTAINER);
             CloudBlockBlob blob = blobContainer.GetBlockBlobReference(blobName);
             return blob;
+        }
+
+        private void QueueNewVideo(string blobName, string url)
+        {
+            Queue queue = new Queue(_account);
+            queue.Add(blobName, url);
         }
     }    
 }
