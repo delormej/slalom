@@ -94,10 +94,11 @@ namespace SlalomTracker
             CoursePosition position2 = _pass.CoursePositionFromGeo(42.288066, -71.359257);
             CoursePosition position3 = _pass.CoursePositionFromGeo(42.285529, -71.359519);
             CoursePosition position4 = _pass.CoursePositionFromGeo(42.285165, -71.359369);
-            CoursePosition position5 = _pass.CoursePositionFromGeo(42.288937, -71.359136); 
+            CoursePosition position5 = _pass.CoursePositionFromGeo(42.288937, -71.359136);
 
-
-            Assert.IsTrue(position.X == 0, "Incorrect course position.");
+            // {X:11.5,Y:155.488584558511}
+            Assert.IsTrue(position.X == 11.5, "Incorrect course position.");
+            Assert.IsTrue((int)position.Y == 155, "Incorrect course position.");
         }
 
         [TestMethod]
