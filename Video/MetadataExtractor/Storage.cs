@@ -62,10 +62,9 @@ namespace MetadataExtractor
                     Directory.CreateDirectory(directory);
                 WebClient client = new WebClient();
                 client.DownloadFile(videoUrl, path);
-
-                Console.Write("DONE\n");
             }
 
+            Console.WriteLine("Files is here: " + path);
             return path;
         }        
 

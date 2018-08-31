@@ -140,6 +140,9 @@ namespace MetadataExtractor
             if (!File.Exists(exePath + mp4Path))
                 throw new FileNotFoundException("MP4 file does not exist at: " + exePath + mp4Path);
 
+            if (!File.Exists(exePath + GPMFEXE))
+                throw new FileNotFoundException("gpmfdemo doesn't exist at: " + exePath + GPMFEXE);
+
             var process = new Process()
             {
                 StartInfo = new ProcessStartInfo

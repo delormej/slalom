@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using SlalomTracker;
 using Microsoft.WindowsAzure.Storage;
-//using Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace MetadataExtractor
 {
@@ -46,8 +46,10 @@ namespace MetadataExtractor
             string path = Storage.DownloadVideo(videoUrl);
             Parser parser = new Parser();
             List<Measurement> measurements = parser.LoadFromMp4(path);
-            //string json = JsonConvert.SerializeObject(measurements);
+            string json = JsonConvert.SerializeObject(measurements);
+
             
+            Console.WriteLine(json);
             // Clean up video.
             //File.Delete(path);
         }
