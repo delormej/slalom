@@ -4,11 +4,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using SlalomTracker;
 using Microsoft.WindowsAzure.Storage;
-using Newtonsoft.Json;
 
 namespace MetadataExtractor
 {
-    class Program
+    public class Program
     {
         const string ENV_SKIBLOBS = "skiblobs";
 
@@ -36,8 +35,7 @@ namespace MetadataExtractor
 
         private static void UploadVideos(string path)
         {
-            CloudStorageAccount account = Connect();           
-            Storage storage = new Storage(account);
+            Storage storage = ConnectToStorage();
             storage.UploadVideos(path);
         }
 
@@ -46,15 +44,15 @@ namespace MetadataExtractor
             string path = Storage.DownloadVideo(videoUrl);
             Parser parser = new Parser();
             List<Measurement> measurements = parser.LoadFromMp4(path);
-            string json = JsonConvert.SerializeObject(measurements);
 
-            
-            Console.WriteLine(json);
+            Storage storage = ConnectToStorage();
+            storage.AddMetadata(path, measurements);
+
             // Clean up video.
             //File.Delete(path);
         }
 
-        private static CloudStorageAccount Connect()
+        public static Storage ConnectToStorage()
         {
             //Connect(@"DefaultEndpointsProtocol=https;AccountName=delormej;AccountKey=4Ewy9Alh/F4wqePCTtZl9Pd7o8JWXkKCMVOUCSVJs1p46z1lrBthq9/3tBB8bE+iIuXFOgELWfzpYACUA3LozQ==;EndpointSuffix=core.windows.net");
             string connection = Environment.GetEnvironmentVariable(ENV_SKIBLOBS);
@@ -68,7 +66,9 @@ namespace MetadataExtractor
                     "connection string as a value.";
                 throw new ApplicationException(error);
             }
-            return account;
+
+            Storage storage = new Storage(account);
+            return storage;            
         }
     }
 }

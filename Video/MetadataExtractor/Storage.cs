@@ -5,12 +5,38 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
+using Microsoft.WindowsAzure.Storage.Table;
+using System.Collections.Generic;
+//using Newtonsoft.Json;
+using SlalomTracker;
+
 
 namespace MetadataExtractor
 {
+    public class SkiVideoEntity : TableEntity
+    {
+        public SkiVideoEntity(string path, List<Measurement> measurements)
+        {
+            SetKeys(path);
+        }
+
+        public List<Measurement> Measurements { get; set; }
+
+        private void SetKeys(string path)
+        {
+            if (!path.Contains(Path.AltDirectorySeparatorChar))
+                throw new ApplicationException("path must contain <date>/Filename.");
+
+            int index = path.LastIndexOf(Path.AltDirectorySeparatorChar);
+            this.PartitionKey = path.Substring(0, index);
+            this.RowKey = path.Substring(index+1, path.Length - index - 1);
+        }
+    }
+
     public class Storage
     {
         const string SKICONTAINER = "ski";
+        const string SKITABLE = "skivideos";
         CloudStorageAccount _account;
         Queue _queue;
 
@@ -18,6 +44,21 @@ namespace MetadataExtractor
         {
             _account = account;
             _queue = new Queue(_account);
+        }
+
+        public void AddMetadata(string path, List<Measurement> measurements)
+        {
+            SkiVideoEntity entity = new SkiVideoEntity(path, measurements);
+            //string json = JsonConvert.SerializeObject(measurements);
+            //Console.WriteLine(json);
+
+            CloudTableClient client = _account.CreateCloudTableClient();
+            CloudTable table = client.GetTableReference(SKITABLE);
+            TableOperation insert = TableOperation.Insert(entity);
+            Task createTask = table.CreateIfNotExistsAsync();
+            createTask.Wait();
+            Task insertTask = table.ExecuteAsync(insert);
+            insertTask.Wait();
         }
 
         public void UploadVideos(string path)
