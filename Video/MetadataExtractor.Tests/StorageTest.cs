@@ -11,7 +11,7 @@ namespace MetadataExtractor.Tests
     [TestClass]
     public class StorageTest
     {
-        readonly string TESTPATH = "2018-08-24" + Path.DirectorySeparatorChar + "GOPR0565.MP4";
+        readonly string TESTPATH = "2018-08-24/GOPR0565.MP4";
         const string URL = "https://delormej.blob.core.windows.net/ski/2018-08-24/GOPR0565.MP4";
         const string BLOBNAME = "2018-08-24/GOPR0565.MP4";
 
@@ -25,7 +25,7 @@ namespace MetadataExtractor.Tests
         [TestMethod]
         public void TestUploadVideo()
         {
-            Storage storage = new Storage(Program.ConnectToStorage());
+            Storage storage = new Storage(Extract.ConnectToStorage());
             storage.UploadVideo(TESTPATH);
             Assert.IsTrue(storage.BlobNameExists(BLOBNAME), "Blob is missing: " + URL);
         }
@@ -41,7 +41,7 @@ namespace MetadataExtractor.Tests
             List<Measurement> list = parser.LoadFromCsv(csv);
 
             string path = "2018-08-24/GOPR0194.MP4";
-            Storage storage = new Storage(Program.ConnectToStorage());
+            Storage storage = new Storage(Extract.ConnectToStorage());
             storage.UploadMeasurements(path, list);
             storage.AddMetadata(path);
         }

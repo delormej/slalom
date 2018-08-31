@@ -7,7 +7,7 @@ using Microsoft.WindowsAzure.Storage;
 
 namespace MetadataExtractor
 {
-    public class Program
+    public class Extract
     {
         const string ENV_SKIBLOBS = "skiblobs";
 
@@ -33,13 +33,13 @@ namespace MetadataExtractor
             }
         }
 
-        private static void UploadVideos(string path)
+        public static void UploadVideos(string path)
         {
             Storage storage = new Storage(ConnectToStorage());
             storage.UploadVideos(path);
         }
 
-        private static void ExtractMetadata(string videoUrl)
+        public static void ExtractMetadata(string videoUrl)
         {
             string path = Storage.DownloadVideo(videoUrl);
             Parser parser = new Parser();
