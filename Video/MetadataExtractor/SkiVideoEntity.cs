@@ -3,19 +3,15 @@ using System.IO;
 using System.Collections.Generic;
 using Microsoft.WindowsAzure.Storage.Table;
 using SlalomTracker;
-using Newtonsoft.Json;
 
 namespace MetadataExtractor
 {
     public class SkiVideoEntity : TableEntity
     {
-        public SkiVideoEntity(string path, List<Measurement> measurements)
+        public SkiVideoEntity(string path)
         {
             SetKeys(path);
-            this.Measurements = JsonConvert.SerializeObject(measurements);
         }
-
-        public string Measurements { get; set; }
 
         public string Skier { get; set; }
 
@@ -23,9 +19,16 @@ namespace MetadataExtractor
 
         public double BoatSpeedMph { get; set; }
 
+        public bool HasCrash { get; set; }
+
+        public bool All6Balls { get; set; }
+
         private void SetKeys(string path)
         {
-            if (!path.Contains(Path.AltDirectorySeparatorChar))
+            if (path.Contains('\\'))
+                path = path.Replace('\\', '/');
+
+            if (!path.Contains('/'))
                 throw new ApplicationException("path must contain <date>/Filename.");
 
             int index = path.LastIndexOf(Path.AltDirectorySeparatorChar);

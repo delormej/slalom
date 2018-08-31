@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -10,35 +11,39 @@ namespace MetadataExtractor.Tests
     [TestClass]
     public class StorageTest
     {
-        const string TESTPATH = "2018-08-24/GOPR0565.MP4";
+        readonly string TESTPATH = "2018-08-24" + Path.DirectorySeparatorChar + "GOPR0565.MP4";
+        const string URL = "https://delormej.blob.core.windows.net/ski/2018-08-24/GOPR0565.MP4";
+        const string BLOBNAME = "2018-08-24/GOPR0565.MP4";
 
         [TestMethod]
         public void TestDownloadVideo()
         {
-            string url = "https://delormej.blob.core.windows.net/ski/2018-08-24/GOPR0565.MP4";
-            string localPath = Storage.DownloadVideo(url);
+            string localPath = Storage.DownloadVideo(URL);
             Assert.AreEqual(localPath, TESTPATH);
+        }
+
+        [TestMethod]
+        public void TestUploadVideo()
+        {
+            Storage storage = Program.ConnectToStorage();
+            storage.UploadVideo(TESTPATH);
+            Assert.IsTrue(storage.BlobNameExists(BLOBNAME), "Blob is missing: " + URL);
         }
 
         [TestMethod]
         public void TestAddMetadata()
         {
-            List<Measurement> list = new List<Measurement>();
-            list.Add(new Measurement()
-            {
-                BoatGeoCoordinate = new GeoCoordinatePortable.GeoCoordinate(72.1, 42.3),
-                BoatSpeedMps = 13.4,
-                RopeSwingSpeedRadS = -0.003
-            });
-            list.Add(new Measurement()
-            {
-                BoatGeoCoordinate = new GeoCoordinatePortable.GeoCoordinate(72.1, 42.31),
-                BoatSpeedMps = 13.3,
-                RopeSwingSpeedRadS = -0.0024
-            });
+            const string csvPath = "../../../GOPR0194.csv";
+            string csv = "";
+            using (var sr = File.OpenText(csvPath))
+                csv = sr.ReadToEnd();
+            Parser parser = new Parser();
+            List<Measurement> list = parser.LoadFromCsv(csv);
 
+            string path = "2018-08-24/GOPR0194.MP4";
             Storage storage = Program.ConnectToStorage();
-            storage.AddMetadata(TESTPATH, list);
+            storage.UploadMeasurements(path, list);
+            storage.AddMetadata(path);
         }
     }
 }

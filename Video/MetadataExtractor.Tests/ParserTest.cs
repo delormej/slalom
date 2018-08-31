@@ -20,8 +20,6 @@ namespace MetadataExtractor.Tests
             Parser parser = new Parser();
             List<Measurement> measurements = parser.LoadFromCsv(csv);
             AssertMeasurements(measurements);
-            Storage storage = Program.ConnectToStorage();
-            storage.AddMetadata("2018-08-21/GOPR0194.MP4", measurements);
         }
 
         [TestMethod]

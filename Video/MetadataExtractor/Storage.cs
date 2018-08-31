@@ -8,7 +8,7 @@ using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Table;
 using System.Collections.Generic;
 using SlalomTracker;
-
+using Newtonsoft.Json;
 
 namespace MetadataExtractor
 {
@@ -25,9 +25,9 @@ namespace MetadataExtractor
             _queue = new Queue(_account);
         }
 
-        public void AddMetadata(string path, List<Measurement> measurements)
+        public void AddMetadata(string path)
         {
-            SkiVideoEntity entity = new SkiVideoEntity(path, measurements);
+            SkiVideoEntity entity = new SkiVideoEntity(path);
             CloudTableClient client = _account.CreateCloudTableClient();
             CloudTable table = client.GetTableReference(SKITABLE);
             TableOperation insert = TableOperation.InsertOrReplace(entity);
@@ -35,6 +35,18 @@ namespace MetadataExtractor
             createTask.Wait();
             Task insertTask = table.ExecuteAsync(insert);
             insertTask.Wait();
+        }
+
+        public void UploadMeasurements(string path, List<Measurement> measurements)
+        {
+            if (!path.EndsWith(".MP4"))
+                throw new ApplicationException("Path to video must end with .MP4");
+
+            string fileName = path.Replace(".MP4", ".json");
+            string json = JsonConvert.SerializeObject(measurements);
+            CloudBlockBlob blob = GetBlobReference(fileName);
+            Task t = blob.UploadTextAsync(json);
+            t.Wait();
         }
 
         public void UploadVideos(string path)
@@ -53,14 +65,21 @@ namespace MetadataExtractor
         public string UploadVideo(string localFile)
         {
             string blobName = GetBlobName(localFile);
-            CloudBlobClient blobClient = _account.CreateCloudBlobClient();
-            CloudBlobContainer blobContainer = blobClient.GetContainerReference(SKICONTAINER);
-            CloudBlockBlob blob = blobContainer.GetBlockBlobReference(blobName);
+            CloudBlockBlob blob = GetBlobReference(blobName);
             var task = blob.UploadFromFileAsync(localFile);
             task.Wait();
 
             string uri = blob.SnapshotQualifiedUri.AbsoluteUri;
             return uri; // URL to the uploaded video.
+        }
+
+        public bool BlobNameExists(string blobName)
+        {
+            // NOTE: this is not the full URL, only the name, i.e. 2018-08-24/GOPRO123.MP4
+            CloudBlockBlob blob = GetBlobReference(blobName);
+            Task<bool> t = blob.ExistsAsync();
+            t.Wait();
+            return t.Result;
         }
 
         public static string DownloadVideo(string videoUrl)
@@ -170,11 +189,19 @@ namespace MetadataExtractor
                         break;
                     }
                 }
-                dir = localFile.Substring(end + 1, start - (end + 1));
+                dir = localFile.Substring(end, (start - end));
             }
             if (dir != string.Empty)
                 dir += "/";
             return dir;
+        }
+
+        private CloudBlockBlob GetBlobReference(string blobName)
+        {
+            CloudBlobClient blobClient = _account.CreateCloudBlobClient();
+            CloudBlobContainer blobContainer = blobClient.GetContainerReference(SKICONTAINER);
+            CloudBlockBlob blob = blobContainer.GetBlockBlobReference(blobName);
+            return blob;
         }
     }    
 }
