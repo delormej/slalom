@@ -25,7 +25,7 @@ namespace MetadataExtractor.Tests
         [TestMethod]
         public void TestUploadVideo()
         {
-            Storage storage = Program.ConnectToStorage();
+            Storage storage = new Storage(Program.ConnectToStorage());
             storage.UploadVideo(TESTPATH);
             Assert.IsTrue(storage.BlobNameExists(BLOBNAME), "Blob is missing: " + URL);
         }
@@ -41,7 +41,7 @@ namespace MetadataExtractor.Tests
             List<Measurement> list = parser.LoadFromCsv(csv);
 
             string path = "2018-08-24/GOPR0194.MP4";
-            Storage storage = Program.ConnectToStorage();
+            Storage storage = new Storage(Program.ConnectToStorage());
             storage.UploadMeasurements(path, list);
             storage.AddMetadata(path);
         }

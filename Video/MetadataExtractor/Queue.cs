@@ -2,10 +2,11 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Queue;
+using Newtonsoft.Json;
 
 namespace MetadataExtractor
 {
-    class Queue
+    public class Queue
     {
         const string BLOB_QUEUE = "skiqueue";
         CloudQueue _queue;
@@ -20,10 +21,9 @@ namespace MetadataExtractor
 
         public void Add(string blobName, string fullUri)
         {
-            string format = @"{ 'Name:' {0}, 'Url': {1} }";
-            string value = string.Format(format, blobName, fullUri);
-
-            CloudQueueMessage message = new CloudQueueMessage(value);
+            var obj = new { Name = blobName, Url = fullUri };
+            string json = JsonConvert.SerializeObject(obj);
+            CloudQueueMessage message = new CloudQueueMessage(json);
             Task task = _queue.AddMessageAsync(message);
             task.Wait();
         }
@@ -35,7 +35,7 @@ namespace MetadataExtractor
             return task.Result;
         }
 
-        public void Finish(CloudQueueMessage message)
+        public void Delete(CloudQueueMessage message)
         {
             Task task = _queue.DeleteMessageAsync(message);
             task.Wait();

@@ -35,7 +35,7 @@ namespace MetadataExtractor
 
         private static void UploadVideos(string path)
         {
-            Storage storage = ConnectToStorage();
+            Storage storage = new Storage(ConnectToStorage());
             storage.UploadVideos(path);
         }
 
@@ -45,7 +45,7 @@ namespace MetadataExtractor
             Parser parser = new Parser();
             List<Measurement> measurements = parser.LoadFromMp4(path);
 
-            Storage storage = ConnectToStorage();
+            Storage storage = new Storage(ConnectToStorage());
             storage.UploadMeasurements(path, measurements);
             storage.AddMetadata(path);
 
@@ -53,7 +53,7 @@ namespace MetadataExtractor
             //File.Delete(path);
         }
 
-        public static Storage ConnectToStorage()
+        public static CloudStorageAccount ConnectToStorage()
         {
             //Connect(@"DefaultEndpointsProtocol=https;AccountName=delormej;AccountKey=4Ewy9Alh/F4wqePCTtZl9Pd7o8JWXkKCMVOUCSVJs1p46z1lrBthq9/3tBB8bE+iIuXFOgELWfzpYACUA3LozQ==;EndpointSuffix=core.windows.net");
             string connection = Environment.GetEnvironmentVariable(ENV_SKIBLOBS);
@@ -67,9 +67,7 @@ namespace MetadataExtractor
                     "connection string as a value.";
                 throw new ApplicationException(error);
             }
-
-            Storage storage = new Storage(account);
-            return storage;            
+            return account;
         }
     }
 }
