@@ -10,7 +10,7 @@ namespace SlalomTracker
     {
         CoursePass _pass;
 
-        public CoursePass TestTrack(double ropeM, double swingSpeedRadS, double boatSpeedMps)
+        public static CoursePass TestTrack(double ropeM, double swingSpeedRadS, double boatSpeedMps)
         {
             Rope rope = new Rope(ropeM);
             CoursePass pass = new CoursePass(CourseTest.CreateTestCoursePass().Course, rope);

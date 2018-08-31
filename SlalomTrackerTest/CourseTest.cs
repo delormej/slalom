@@ -29,12 +29,12 @@ namespace SlalomTracker
         /// Dummy course for testing.
         /// </summary>
         /// <returns></returns>
-        internal static CoursePass CreateTestCoursePass()
+        public static CoursePass CreateTestCoursePass()
         {
             return CoursePassFromCSV.Load("..\\..\\..\\GOPR0403.csv");
         }
 
-        internal static Course CreateTestCourse()
+        public static Course CreateTestCourse()
         {
             return CreateTestCoursePass().Course;
         }
