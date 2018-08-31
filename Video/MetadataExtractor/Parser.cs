@@ -4,6 +4,7 @@ using System.Net;
 using System.Diagnostics;
 using System.Collections.Generic;
 using SlalomTracker;
+using GeoCoordinatePortable;
 
 namespace MetadataExtractor
 {
@@ -97,7 +98,7 @@ namespace MetadataExtractor
 
             Measurement m = new Measurement();
             m.Timestamp = startTime;
-            m.BoatPosition = new CoursePosition(
+            m.BoatGeoCoordinate = new GeoCoordinate(
                 double.Parse(GetColumn(row, Column.Lat)),
                 double.Parse(GetColumn(row, Column.Lon)));
             m.BoatSpeedMps = double.Parse(GetColumn(row, Column.Speed));
