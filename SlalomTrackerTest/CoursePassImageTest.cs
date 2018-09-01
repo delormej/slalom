@@ -10,8 +10,8 @@ namespace SlalomTracker
         public void TestDraw()
         {
             CoursePass pass = CoursePassTest.TestTrack(14.0, 0, 13.0);
-            CoursePassImage image = new CoursePassImage();
-            image.Draw(pass);
+            //CoursePassImage image = new CoursePassImage();
+            //image.Draw(pass);
         }
     }
 }

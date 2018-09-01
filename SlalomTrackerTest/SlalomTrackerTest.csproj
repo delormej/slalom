@@ -123,6 +123,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CoursePassImageTest.cs" />
     <Compile Include="RopeTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CoursePassTest.cs" />
