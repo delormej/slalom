@@ -189,7 +189,7 @@ namespace WindowsFormsApp1
 
             //const string FilePath = @"\\files.local\video\GOPRO271.csv";
             string FilePath =  open.FileName;// @"\\files.local\video\GOPR0403.csv";
-            _pass = CoursePassFromCSV.LoadFromJson(FilePath, 
+            _pass = CoursePassFromFile.Load(FilePath, 
                 double.Parse(this._txtHeadingOffset.Text), 
                 (Rope)this._cmbRopeM.SelectedItem);
             Draw();

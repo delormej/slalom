@@ -31,7 +31,7 @@ namespace SlalomTracker
         /// <returns></returns>
         public static CoursePass CreateTestCoursePass()
         {
-            return CoursePassFromCSV.Load("..\\..\\..\\GOPR0403.csv");
+            return CoursePassFromFile.Load("..\\..\\..\\GOPR0403.csv");
         }
 
         public static Course CreateTestCourse()
