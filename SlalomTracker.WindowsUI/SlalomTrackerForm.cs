@@ -184,9 +184,12 @@ namespace WindowsFormsApp1
             open.Multiselect = false;
             var result = open.ShowDialog();
 
+            if (result != DialogResult.OK)
+                return;
+
             //const string FilePath = @"\\files.local\video\GOPRO271.csv";
             string FilePath =  open.FileName;// @"\\files.local\video\GOPR0403.csv";
-            _pass = CoursePassFromCSV.Load(FilePath, 
+            _pass = CoursePassFromCSV.LoadFromJson(FilePath, 
                 double.Parse(this._txtHeadingOffset.Text), 
                 (Rope)this._cmbRopeM.SelectedItem);
             Draw();
