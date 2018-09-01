@@ -9,15 +9,29 @@ namespace SlalomTracker
     public class CoursePassImage
     {
         private CoursePass _pass;
-        Graphics _graphics;
+        private Graphics _graphics;
+        private Bitmap _bitmap;
 
-        public CoursePassImage(CoursePass pass, Graphics graphics)
+        public static readonly double CenterOffset = 23;
+        public static readonly double LengthOffset = 10; // buffer top & bottom.
+
+        public int Width { get; private set; }
+        public int Height { get; private set; }
+        public int ScaleFactor { get; private set; }
+
+        public CoursePassImage(CoursePass pass, int scaleFactor)
         {
             _pass = pass;
-            _graphics = graphics;
+            ScaleFactor = scaleFactor;
+            double widthFactor = CenterOffset * 2;
+            double heightFactor = LengthOffset * 2;
+            Width = (int)(scaleFactor * (Course.WidthM + widthFactor));
+            Height = (int)(scaleFactor * (Course.LengthM + heightFactor));
+            _bitmap = new Bitmap(Width, Height);
+            _graphics = Graphics.FromImage(_bitmap);
         }
 
-        public void Draw()
+        public Bitmap Draw()
         {
             DrawCourseBounds();
 
@@ -27,8 +41,9 @@ namespace SlalomTracker
             DrawCourseFeature(Color.Yellow, _pass.Course.BoatMarkers);
 
             // Draw Center Line.
-            _graphics.DrawLine(new Pen(Color.Gray, 1), new Point((int)11.5, 0),
-                new Point((int)11.5, (int)Course.LengthM));
+            _graphics.DrawLine(new Pen(Color.Gray, 1),
+                PointFromCoursePosition(new CoursePosition(11.5, 0)),
+                PointFromCoursePosition(new CoursePosition(11.5, Course.LengthM)));
 
             Pen inCoursePen = new Pen(Color.Green, 3);
             Pen outCoursePen = new Pen(Color.Pink, 3);
@@ -42,6 +57,8 @@ namespace SlalomTracker
                 if (start != Point.Empty && end != Point.Empty)
                     _graphics.DrawLine(coursePen, start, end);
             }
+
+            return _bitmap;
         }
 
         private void DrawCourseBounds()
@@ -89,7 +106,9 @@ namespace SlalomTracker
         /// <returns></returns>
         private Point PointFromCoursePosition(CoursePosition position)
         {
-            return new Point((int)(position.X), (int)(position.Y));
+            // Image is 46m wider (23 on each side).
+            return new Point((int)((position.X + CenterOffset) * ScaleFactor), 
+                (int)((position.Y + LengthOffset) * ScaleFactor));
         }
     }
 }

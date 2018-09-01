@@ -100,7 +100,7 @@ namespace WindowsFormsApp1
 
         private void DrawCoursePass(double ropeM, double swingSpeedRadS, double boatSpeedRadS)
         {
-            _pass = CoursePassTest.TestTrack(ropeM, swingSpeedRadS, boatSpeedRadS);
+            
         }
 
         private void DrawCourseBounds(CoursePass pass)
