@@ -95,7 +95,7 @@ namespace SlalomTracker
             foreach (var position in positions)
             {
                 Point point = PointFromCoursePosition(position);
-                _graphics.DrawEllipse(pen, point.X, point.Y, 2, 2);
+                _graphics.DrawEllipse(pen, point.X-1, point.Y-1, 2, 2);
             }
         }
 
