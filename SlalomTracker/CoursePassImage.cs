@@ -11,7 +11,7 @@ namespace SlalomTracker
         private CoursePass _pass;
         private Graphics _graphics;
         private Bitmap _bitmap;
-
+        private const int DefaultScaleFactor = 5;
         public static readonly double CenterOffset = 23;
         public static readonly double LengthOffset = 10; // buffer top & bottom.
 
@@ -19,14 +19,14 @@ namespace SlalomTracker
         public int Height { get; private set; }
         public int ScaleFactor { get; private set; }
 
-        public CoursePassImage(CoursePass pass, int scaleFactor)
+        public CoursePassImage(CoursePass pass)
         {
             _pass = pass;
-            ScaleFactor = scaleFactor;
+            ScaleFactor = DefaultScaleFactor;
             double widthFactor = CenterOffset * 2;
             double heightFactor = LengthOffset * 2;
-            Width = (int)(scaleFactor * (Course.WidthM + widthFactor));
-            Height = (int)(scaleFactor * (Course.LengthM + heightFactor));
+            Width = (int)(ScaleFactor * (Course.WidthM + widthFactor));
+            Height = (int)(ScaleFactor * (Course.LengthM + heightFactor));
             _bitmap = new Bitmap(Width, Height);
             _graphics = Graphics.FromImage(_bitmap);
         }

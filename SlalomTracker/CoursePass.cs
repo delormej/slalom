@@ -78,7 +78,7 @@ namespace SlalomTracker
             double courseHeading = Course.GetCourseHeadingDeg();
             double deltaHeading = Math.Abs(courseHeading - boatHeading);
 
-            return (deltaHeading < 5.0 && distance <= 55.0);
+            return (deltaHeading < 6.0 && distance <= 56.0);
         }
 
         /// <summary>
@@ -108,13 +108,12 @@ namespace SlalomTracker
             if (IsBoatBetween55andGates(boatPosition))
             {
                 // We're heading for the course
-                distance = Math.Abs(distance - 55);
+                distance = Math.Abs(55 - distance);
             }
             else
             {
                 distance += 55;
             }
-
             // TODO: Right now we're hardcoded to center of the course.
             return new CoursePosition(11.5, distance);
         }
