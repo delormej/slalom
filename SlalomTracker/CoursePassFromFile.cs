@@ -1,9 +1,11 @@
 ﻿using System;
 using System.IO;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace SlalomTracker
 {
-    public class CoursePassFromCSV
+    public class CoursePassFromFile
     {
         enum Column { Seconds = 0, Lat, Lon, Speed, Z };
 
@@ -20,28 +22,23 @@ namespace SlalomTracker
 
         public static CoursePass Load(string path, double centerLineDegreeOffset, Rope rope)
         {
+            string json = "";
+            using (var sr = File.OpenText(path))
+                json = sr.ReadToEnd();
+            if (json == "")
+                throw new ApplicationException("Json file was empty: " + path);
+
             Course course = new Course();
             course.SetCourseEntry(42.289087, -71.359124);
             course.SetCourseExit(42.287023, -71.359394);
             CoursePass pass = new CoursePass(course, rope, centerLineDegreeOffset);
 
-            using (StreamReader sr = new StreamReader(path))
+            var result = (List<Measurement>)JsonConvert.DeserializeObject(json, typeof(List<Measurement>));
+            foreach (var r in result)
             {
-                string line = sr.ReadLine(); // Advance 1st line header.
-                double seconds, lat, lon, z, speed;
-                while ((line = sr.ReadLine()) != null)
-                {
-                    string[] row = line.Split(',');
-                    GetColumn(row, Column.Seconds, out seconds);
-                    GetColumn(row, Column.Lat, out lat);
-                    GetColumn(row, Column.Lon, out lon);
-                    GetColumn(row, Column.Speed, out speed);
-                    GetColumn(row, Column.Z, out z);
-                    DateTime timestamp = DateTime.Now.AddDays(-1).AddSeconds(seconds);
-                    pass.Track(timestamp, z, lat, lon, speed);
-                }
+                pass.Track(r);
             }
-
+            
             return pass;
         }
     }

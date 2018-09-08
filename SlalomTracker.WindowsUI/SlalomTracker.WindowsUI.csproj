@@ -80,10 +80,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SlalomTrackerTest\SlalomTrackerTest.csproj">
-      <Project>{034b0b40-89d9-41a2-9365-7899599565d8}</Project>
-      <Name>SlalomTrackerTest</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SlalomTracker\SlalomTracker.csproj">
       <Project>{4c11a895-1730-4698-b186-250991a34a62}</Project>
       <Name>SlalomTracker</Name>

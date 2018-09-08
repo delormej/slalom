@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace SlalomTracker
 {
     // struct CourseDimensions { double Width = 23; Height = 259; }
-
+    
     /// <summary>
     /// X,Y coorinates in relative meters to the rectangle that represents the ski course.
     /// https://www.thinkwaterski.com/dox/slalom_tolerances.pdf
