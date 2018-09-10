@@ -11,7 +11,7 @@ namespace SlalomTracker
         [TestMethod]
         public void TestDraw()
         {
-            CoursePass pass = CoursePassFromFile.Load("..\\..\\..\\..\\Video\\MetadataExtractor\\GOPR0565.json", 0, 
+            CoursePass pass = CoursePassFactory.FromFile("..\\..\\..\\..\\Video\\MetadataExtractor\\GOPR0565.json", 0, 
                 Rope.Off(32));
             CoursePassImage image = new CoursePassImage(pass);
             Bitmap bitmap = image.Draw();

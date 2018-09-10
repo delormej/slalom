@@ -5,22 +5,16 @@ using Newtonsoft.Json;
 
 namespace SlalomTracker
 {
-    public class CoursePassFromFile
+    public class CoursePassFactory
     {
         enum Column { Seconds = 0, Lat, Lon, Speed, Z };
 
-        private static void GetColumn(string[] row, Column column, out double result)
+        public static CoursePass FromFile(string path)
         {
-            result = 0;
-            double.TryParse(row[(int)column], out result);
+            return FromFile(path, 0, Rope.Off(22));
         }
 
-        public static CoursePass Load(string path)
-        {
-            return Load(path, 0, Rope.Off(22));
-        }
-
-        public static CoursePass Load(string path, double centerLineDegreeOffset, Rope rope)
+        public static CoursePass FromFile(string path, double centerLineDegreeOffset, Rope rope)
         {
             string json = "";
             using (var sr = File.OpenText(path))
@@ -28,6 +22,11 @@ namespace SlalomTracker
             if (json == "")
                 throw new ApplicationException("Json file was empty: " + path);
 
+            return FromJson(json, centerLineDegreeOffset, rope);
+        }
+
+        public static CoursePass FromJson(string json, double centerLineDegreeOffset, Rope rope)
+        { 
             Course course = new Course();
             course.SetCourseEntry(42.289087, -71.359124);
             course.SetCourseExit(42.287023, -71.359394);
@@ -40,6 +39,12 @@ namespace SlalomTracker
             }
             
             return pass;
+        }
+
+        private static void GetColumn(string[] row, Column column, out double result)
+        {
+            result = 0;
+            double.TryParse(row[(int)column], out result);
         }
     }
 }
