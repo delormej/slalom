@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SlalomTracker
@@ -66,7 +67,6 @@ namespace SlalomTracker
         [TestMethod]
         public void TestGenerateCourseFeatures()
         {
-            _course.GenerateCourseFeatures();
             // Quick spot check.
             //Ball[5] = { X: 23,Y: 287}
             //PreGate[3] = { X: 12.75,Y: 369}
@@ -85,6 +85,16 @@ namespace SlalomTracker
             Course outside = Course.ByName("outside");
             Assert.IsTrue(outside.CourseExitCL.Longitude == -71.36498477);
             double outsideHeading = outside.GetCourseHeadingDeg();
+        }
+
+        [TestMethod]
+        public void TestFindCourse()
+        {
+            CoursePass pass = CoursePassFactory.FromFile("..\\..\\..\\GOPR0565.json");
+            List<Measurement> measurements = pass.Measurements;
+            Course course = Course.FindCourse(measurements);
+            Assert.IsNotNull(course);
+
         }
     }
 }

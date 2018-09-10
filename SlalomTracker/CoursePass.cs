@@ -47,29 +47,6 @@ namespace SlalomTracker
             Measurements = new List<Measurement>();
         }
 
-        /// <summary>
-        /// Determines if the boat is within the course geofenced area, inclusive of pre-gates.
-        /// </summary>
-        /// <param name="boatPosition"></param>
-        /// <returns></returns>
-        private bool IsBoatInCourse(GeoCoordinate point)
-        {
-            List<GeoCoordinate> poly = Course.GetPolygon();
-            int i, j;
-            bool c = false;
-            for (i = 0, j = poly.Count - 1; i < poly.Count; j = i++)
-            {
-                if ((((poly[i].Latitude <= point.Latitude) && (point.Latitude < poly[j].Latitude))
-                        || ((poly[j].Latitude <= point.Latitude) && (point.Latitude < poly[i].Latitude)))
-                        && (point.Longitude < (poly[j].Longitude - poly[i].Longitude) * (point.Latitude - poly[i].Latitude)
-                            / (poly[j].Latitude - poly[i].Latitude) + poly[i].Longitude))
-
-                    c = !c;
-            }
-
-            return c;
-        }
-
         private bool IsBoatBetween55andGates(GeoCoordinate boatPosition)
         {
             // Determine if boat has yet to enter the gates or has past the gates.
@@ -179,7 +156,7 @@ namespace SlalomTracker
             // Block on this to enure only the first event entering the course gets recorded.
             lock (this)
             {
-                inCourse = IsBoatInCourse(current.BoatGeoCoordinate);
+                inCourse = this.Course.IsBoatInCourse(current.BoatGeoCoordinate);
                 if (inCourse && !m_enteredCourse)
                 {
                     // Boat pilon is now in the course.

@@ -16,32 +16,42 @@ namespace SlalomTracker
         public static readonly double WidthM = 23;
         public static readonly double LengthM = 259 + (55 * 2); // Course + pregates
 
+        private static List<Course> _knownCourses;
+
+        private List<GeoCoordinate> _polygon;
+
         /// <summary>
         /// Lat/Long of the pilon as you enter & exit the course.
         /// </summary>
         public GeoCoordinate CourseEntryCL { get; set; }
         public GeoCoordinate CourseExitCL { get; set; }
 
-        public static Course ByName(string name)
+        static Course()
         {
-            Course[] courses = {
-                // cove
-                new Course(
+            _knownCourses = new List<Course>();
+            Course cove = new Course(
                     new GeoCoordinate(42.28908285, -71.35913251),
                     new GeoCoordinate(42.28668895, -71.35943147)
-                ),
-                // oustide
+                );
+            cove.Name = "cove";
+            _knownCourses.Add(cove);
+
+            Course outside = // oustide
                 new Course(
                     new GeoCoordinate(42.28564438, -71.36237765),
                     new GeoCoordinate(42.28689601, -71.36498477)
-                ) };
+                );
+            outside.Name = "outside";
+            _knownCourses.Add(outside);
+        }
 
-            if (name == "cove")
-                return courses[0];
-            else if (name == "outside")
-                return courses[1];
-            else
-                throw new ApplicationException("Course name not found.");
+        public static Course ByName(string name)
+        {
+            foreach (Course c in _knownCourses)
+                if (c.Name == name)
+                    return c;
+
+            throw new ApplicationException("Course name not found.");
         }
 
         public Course() : this(new GeoCoordinate(), new GeoCoordinate())
@@ -54,12 +64,13 @@ namespace SlalomTracker
             CourseExitCL = exit;
 
             GenerateCourseFeatures();
+            _polygon = GetPolygon();
         }
 
         /// <summary>
         /// Generates Balls, BoatMarkers, Gates once Course Entry & Exit coordinates are available.
         /// </summary>
-        public void GenerateCourseFeatures()
+        private void GenerateCourseFeatures()
         {
             PreGates = new CoursePosition[4];
             Gates = new CoursePosition[4];
@@ -147,6 +158,46 @@ namespace SlalomTracker
 
         }
 
+        public static Course FindCourse(List<Measurement> measurements)
+        {
+            List<Course> courses = new List<Course>();
+            courses.Add(Course.ByName("cove"));
+            courses.Add(Course.ByName("outside"));
+
+            foreach (var m in measurements)
+            {
+                foreach (Course course in courses)
+                {
+                    if (course.IsBoatInCourse(m.BoatGeoCoordinate))
+                        return course;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Determines if the boat is within the course geofenced area, inclusive of pre-gates.
+        /// </summary>
+        /// <param name="boatPosition"></param>
+        /// <returns></returns>
+        public bool IsBoatInCourse(GeoCoordinate point)
+        {
+            int i, j;
+            bool c = false;
+            for (i = 0, j = _polygon.Count - 1; i < _polygon.Count; j = i++)
+            {
+                if ((((_polygon[i].Latitude <= point.Latitude) && (point.Latitude < _polygon[j].Latitude))
+                        || ((_polygon[j].Latitude <= point.Latitude) && (point.Latitude < _polygon[i].Latitude)))
+                        && (point.Longitude < (_polygon[j].Longitude - _polygon[i].Longitude) * (point.Latitude - _polygon[i].Latitude)
+                            / (_polygon[j].Latitude - _polygon[i].Latitude) + _polygon[i].Longitude))
+
+                    c = !c;
+            }
+
+            return c;
+        }
+
         //
         // Maintain a virtual course map in x,y coordinates for all course elements (entry/exit gates, balls[1-6], boat markers)
         // 
@@ -157,6 +208,8 @@ namespace SlalomTracker
         // Balls[5] (x,y coordinates)
         // BoatMarkers[10] (x,y coordiantes)
         // BoatGuides[4] -- the course entry / exit guides, what are these called? Green balls..
+
+        public string Name { get; set; }
 
         public CoursePosition[] Balls { get; private set; }
 
