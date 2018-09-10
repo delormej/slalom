@@ -47,17 +47,6 @@ namespace SlalomTracker
             Measurements = new List<Measurement>();
         }
 
-        private bool IsBoatBetween55andGates(GeoCoordinate boatPosition)
-        {
-            // Determine if boat has yet to enter the gates or has past the gates.
-            double distance = boatPosition.GetDistanceTo(Course.CourseEntryCL);
-            double boatHeading = Util.GetHeading(boatPosition, Course.CourseEntryCL);
-            double courseHeading = Course.GetCourseHeadingDeg();
-            double deltaHeading = Math.Abs(courseHeading - boatHeading);
-
-            return (deltaHeading < 6.0 && distance <= 56.0);
-        }
-
         /// <summary>
         /// Given the boat's position, calculate in the matrix (x,y) relative to the course. 
         /// </summary>
@@ -79,18 +68,8 @@ namespace SlalomTracker
             if (!m_enteredCourse)
                 return CoursePosition.Empty;
 
-            double distance = boatPosition.GetDistanceTo(Course.CourseEntryCL);
+            double distance = boatPosition.GetDistanceTo(Course.Course55EntryCL);
 
-            // Adjust 0 distance to @55s, instead of course entry.
-            if (IsBoatBetween55andGates(boatPosition))
-            {
-                // We're heading for the course
-                distance = Math.Abs(55 - distance);
-            }
-            else
-            {
-                distance += 55;
-            }
             // TODO: Right now we're hardcoded to center of the course.
             return new CoursePosition(11.5, distance);
         }

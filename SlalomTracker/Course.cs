@@ -21,25 +21,29 @@ namespace SlalomTracker
         private List<GeoCoordinate> _polygon;
 
         /// <summary>
-        /// Lat/Long of the pilon as you enter & exit the course.
+        /// Lat/Long of the pilon as you enter & exit the 55s (pregates) of the course.
         /// </summary>
-        public GeoCoordinate CourseEntryCL { get; set; }
-        public GeoCoordinate CourseExitCL { get; set; }
+        public GeoCoordinate Course55EntryCL { get; set; }
+        public GeoCoordinate Course55ExitCL { get; set; }
 
         static Course()
         {
             _knownCourses = new List<Course>();
             Course cove = new Course(
-                    new GeoCoordinate(42.28908285, -71.35913251),
+                    new GeoCoordinate(42.28951425, -71.35905441),
                     new GeoCoordinate(42.28668895, -71.35943147)
+                    //new GeoCoordinate(42.28908285, -71.35913251), /* actual entry */
+                    //new GeoCoordinate(42.28668895, -71.35943147) /* actual exit */
                 );
             cove.Name = "cove";
             _knownCourses.Add(cove);
 
             Course outside = // oustide
                 new Course(
-                    new GeoCoordinate(42.28564438, -71.36237765),
-                    new GeoCoordinate(42.28689601, -71.36498477)
+                    new GeoCoordinate(42.28530973, -71.36180685),
+                    new GeoCoordinate(42.28721409, -71.36553574)
+                    //new GeoCoordinate(42.28564438, -71.36237765), /* actual entry */
+                    //new GeoCoordinate(42.28689601, -71.36498477) /* actual exit */
                 );
             outside.Name = "outside";
             _knownCourses.Add(outside);
@@ -60,8 +64,8 @@ namespace SlalomTracker
 
         public Course(GeoCoordinate entry, GeoCoordinate exit)
         {
-            CourseEntryCL = entry;
-            CourseExitCL = exit;
+            Course55EntryCL = entry;
+            Course55ExitCL = exit;
 
             GenerateCourseFeatures();
             _polygon = GetPolygon();
@@ -111,7 +115,7 @@ namespace SlalomTracker
         /// <returns></returns>
         public double GetCourseHeadingDeg()
         {
-            return Util.GetHeading(CourseEntryCL, CourseExitCL);
+            return Util.GetHeading(Course55EntryCL, Course55ExitCL);
         }
 
         /// <summary>
@@ -126,35 +130,26 @@ namespace SlalomTracker
 
             // From the 55's.
             List<GeoCoordinate> poly = new List<GeoCoordinate>(4);
-            poly.Add(Util.CalculateDerivedPosition(
-                Util.CalculateDerivedPosition(this.CourseEntryCL, 5.0, left), 
-                -55, heading));
-            poly.Add(Util.CalculateDerivedPosition(
-                Util.CalculateDerivedPosition(this.CourseEntryCL, 5.0, right),
-                -55, heading));
-
-            poly.Add(Util.CalculateDerivedPosition(
-                Util.CalculateDerivedPosition(this.CourseExitCL, 5.0, left),
-                55, heading));
-            poly.Add(Util.CalculateDerivedPosition(
-                Util.CalculateDerivedPosition(this.CourseExitCL, 5.0, right),
-                55, heading));
+            poly.Add(Util.CalculateDerivedPosition(this.Course55EntryCL, 5.0, left));
+            poly.Add(Util.CalculateDerivedPosition(this.Course55EntryCL, 5.0, right));
+            poly.Add(Util.CalculateDerivedPosition(this.Course55ExitCL, 5.0, left));
+            poly.Add(Util.CalculateDerivedPosition(this.Course55ExitCL, 5.0, right));
             return poly;
         }
 
         public void SetCourseEntry(double latitude, double longitude)
         {
-            CourseEntryCL.Latitude = latitude;
-            CourseEntryCL.Longitude = longitude;
+            Course55EntryCL.Latitude = latitude;
+            Course55EntryCL.Longitude = longitude;
         }
 
         public void SetCourseExit(double latitude, double longitude)
         {
-            CourseExitCL.Latitude = latitude;
-            CourseExitCL.Longitude = longitude;
+            Course55ExitCL.Latitude = latitude;
+            Course55ExitCL.Longitude = longitude;
 
             // TODO validate that it is 259 meters!
-            double length = CourseEntryCL.GetDistanceTo(CourseExitCL);
+            double length = Course55EntryCL.GetDistanceTo(Course55ExitCL);
 
         }
 
