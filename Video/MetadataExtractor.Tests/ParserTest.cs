@@ -42,6 +42,8 @@ namespace MetadataExtractor.Tests
             List<Measurement> list = parser.LoadFromCsv(csv);
             string json = GpmfParser.MeasurementsToJson(list);
             Assert.IsTrue(json.Length == 389790);
+
+            //File.WriteAllText(@"..\..\..\..\MetadataExtractor\GOPR0565.json", json);
         }
 
         private void AssertMeasurements(List<Measurement> measurements)

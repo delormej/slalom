@@ -30,10 +30,8 @@ namespace SlalomTracker
         {
             _knownCourses = new List<Course>();
             Course cove = new Course(
-                    new GeoCoordinate(42.28951425, -71.35905441),
-                    new GeoCoordinate(42.28668895, -71.35943147)
-                    //new GeoCoordinate(42.28908285, -71.35913251), /* actual entry */
-                    //new GeoCoordinate(42.28668895, -71.35943147) /* actual exit */
+                    new GeoCoordinate(42.28958014, -71.35911924),
+                    new GeoCoordinate(42.28622924, -71.35950488)
                 );
             cove.Name = "cove";
             _knownCourses.Add(cove);
@@ -42,8 +40,6 @@ namespace SlalomTracker
                 new Course(
                     new GeoCoordinate(42.28530973, -71.36180685),
                     new GeoCoordinate(42.28721409, -71.36553574)
-                    //new GeoCoordinate(42.28564438, -71.36237765), /* actual entry */
-                    //new GeoCoordinate(42.28689601, -71.36498477) /* actual exit */
                 );
             outside.Name = "outside";
             _knownCourses.Add(outside);
@@ -66,6 +62,12 @@ namespace SlalomTracker
         {
             Course55EntryCL = entry;
             Course55ExitCL = exit;
+            double length = Course55EntryCL.GetDistanceTo(Course55ExitCL);
+
+            // 3 meter tolerance?
+            //if (length > (LengthM + 3) ||
+            //        length < (LengthM - 3))
+            //    throw new ApplicationException(string.Format(@"Course length: {0} is not within tolerance.", length));
 
             GenerateCourseFeatures();
             _polygon = GetPolygon();
@@ -137,21 +139,6 @@ namespace SlalomTracker
             return poly;
         }
 
-        public void SetCourseEntry(double latitude, double longitude)
-        {
-            Course55EntryCL.Latitude = latitude;
-            Course55EntryCL.Longitude = longitude;
-        }
-
-        public void SetCourseExit(double latitude, double longitude)
-        {
-            Course55ExitCL.Latitude = latitude;
-            Course55ExitCL.Longitude = longitude;
-
-            // TODO validate that it is 259 meters!
-            double length = Course55EntryCL.GetDistanceTo(Course55ExitCL);
-
-        }
 
         public static Course FindCourse(List<Measurement> measurements)
         {
