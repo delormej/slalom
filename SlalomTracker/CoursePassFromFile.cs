@@ -27,13 +27,10 @@ namespace SlalomTracker
 
         public static CoursePass FromJson(string json, double centerLineDegreeOffset, Rope rope)
         { 
-            Course course = new Course();
-            course.SetCourseEntry(42.289087, -71.359124);
-            course.SetCourseExit(42.287023, -71.359394);
+            var measurements = (List<Measurement>)JsonConvert.DeserializeObject(json, typeof(List<Measurement>));
+            Course course = Course.FindCourse(measurements);
             CoursePass pass = new CoursePass(course, rope, centerLineDegreeOffset);
-
-            var result = (List<Measurement>)JsonConvert.DeserializeObject(json, typeof(List<Measurement>));
-            foreach (var r in result)
+            foreach (var r in measurements)
             {
                 pass.Track(r);
             }
