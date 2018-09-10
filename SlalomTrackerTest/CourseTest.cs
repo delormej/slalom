@@ -73,5 +73,18 @@ namespace SlalomTracker
             Assert.IsTrue(_course.Balls[5].X == 23 && _course.Balls[5].Y == 287, "Balls are in wrong CoursePosition.");
             Assert.IsTrue(_course.PreGates[3].X == 12.75 && _course.PreGates[3].Y == 369, "PreGates are in wrong CoursePosition.");
         }
+
+        [TestMethod]
+        public void TestByName()
+        {
+            Course cove = Course.ByName("cove");
+            Assert.IsTrue(cove.CourseEntryCL.Latitude == 42.28908285);
+            double coveHeading = cove.GetCourseHeadingDeg();
+            var poly = cove.GetPolygon();
+
+            Course outside = Course.ByName("outside");
+            Assert.IsTrue(outside.CourseExitCL.Longitude == -71.36498477);
+            double outsideHeading = outside.GetCourseHeadingDeg();
+        }
     }
 }

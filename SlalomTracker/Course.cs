@@ -7,50 +7,6 @@ namespace SlalomTracker
     // struct CourseDimensions { double Width = 23; Height = 259; }
     
     /// <summary>
-    /// X,Y coorinates in relative meters to the rectangle that represents the ski course.
-    /// https://www.thinkwaterski.com/dox/slalom_tolerances.pdf
-    /// Lower left of course is 0,0 meters.  Upper right is 23,369.
-    /// Matrix is inclusive of the pregates (55's).
-    /// </summary>
-    public class CoursePosition
-    {
-        public double X, Y;
-
-        public CoursePosition(double x, double y)
-        {
-            this.X = x;
-            this.Y = y;
-        }
-
-        /// <summary>
-        /// Overrides the + operator between two CoursePositions and returns a new one 
-        /// representing the sum of both X & Y.
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static CoursePosition operator +(CoursePosition a, CoursePosition b)
-        {
-            return new CoursePosition(a.X + b.X, a.Y + b.Y);
-        }
-
-        public static CoursePosition Empty
-        {
-            get { return new CoursePosition(0, 0); }
-        }
-
-        public override string ToString()
-        {
-            return string.Format("X:{0},Y:{1}", this.X, this.Y);
-        }
-    }
-
-    //public struct GeoCoordinate
-    //{
-    //    public double Latitude, Longitude;
-    //}
-
-    /// <summary>
     /// Represents the entry & exit gates for a course and the rectangle that surrounds.
     /// </summary>
     public class Course
@@ -66,10 +22,36 @@ namespace SlalomTracker
         public GeoCoordinate CourseEntryCL { get; set; }
         public GeoCoordinate CourseExitCL { get; set; }
 
-        public Course()
+        public static Course ByName(string name)
         {
-            CourseEntryCL = new GeoCoordinate();
-            CourseExitCL = new GeoCoordinate();
+            Course[] courses = {
+                // cove
+                new Course(
+                    new GeoCoordinate(42.28908285, -71.35913251),
+                    new GeoCoordinate(42.28668895, -71.35943147)
+                ),
+                // oustide
+                new Course(
+                    new GeoCoordinate(42.28564438, -71.36237765),
+                    new GeoCoordinate(42.28689601, -71.36498477)
+                ) };
+
+            if (name == "cove")
+                return courses[0];
+            else if (name == "outside")
+                return courses[1];
+            else
+                throw new ApplicationException("Course name not found.");
+        }
+
+        public Course() : this(new GeoCoordinate(), new GeoCoordinate())
+        {
+        }
+
+        public Course(GeoCoordinate entry, GeoCoordinate exit)
+        {
+            CourseEntryCL = entry;
+            CourseExitCL = exit;
 
             GenerateCourseFeatures();
         }
