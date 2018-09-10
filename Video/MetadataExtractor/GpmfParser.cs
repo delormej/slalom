@@ -8,7 +8,10 @@ using Newtonsoft.Json;
 
 namespace MetadataExtractor
 {
-    public class Parser
+    /// <summary>
+    /// Extracts metadata from MP4 file.
+    /// </summary>
+    public class GpmfParser
     {
         const string GPMFEXE = "gpmfdemo";
         const string GYRO = "GYRO";

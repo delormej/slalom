@@ -17,7 +17,7 @@ namespace MetadataExtractor.Tests
             string csv = "";
             using (var sr = File.OpenText(csvPath))
                 csv = sr.ReadToEnd();
-            Parser parser = new Parser();
+            GpmfParser parser = new GpmfParser();
             List<Measurement> measurements = parser.LoadFromCsv(csv);
             AssertMeasurements(measurements);
         }
@@ -26,7 +26,7 @@ namespace MetadataExtractor.Tests
         public void TestLoadFromMp4()
         {
             const string mp4Path = "GOPR0194.MP4";
-            Parser parser = new Parser();
+            GpmfParser parser = new GpmfParser();
             List<Measurement> measurements = parser.LoadFromMp4(mp4Path);
             AssertMeasurements(measurements);
         }
@@ -38,9 +38,9 @@ namespace MetadataExtractor.Tests
             using (var sr = File.OpenText(csvPath))
                 csv = sr.ReadToEnd();
 
-            Parser parser = new Parser();
+            GpmfParser parser = new GpmfParser();
             List<Measurement> list = parser.LoadFromCsv(csv);
-            string json = Parser.MeasurementsToJson(list);
+            string json = GpmfParser.MeasurementsToJson(list);
             Assert.IsTrue(json.Length == 389790);
         }
 

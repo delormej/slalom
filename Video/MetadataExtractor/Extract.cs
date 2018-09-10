@@ -31,6 +31,8 @@ namespace MetadataExtractor
                 // eg. MetadataExtractor -d https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4
                 ExtractMetadata(args[1]);
             }
+            else
+                throw new ApplicationException("Missing execution parameters.");
         }
 
         public static void UploadVideos(string path)
@@ -42,11 +44,11 @@ namespace MetadataExtractor
         public static void ExtractMetadata(string videoUrl)
         {
             string path = Storage.DownloadVideo(videoUrl);
-            Parser parser = new Parser();
+            GpmfParser parser = new GpmfParser();
             List<Measurement> measurements = parser.LoadFromMp4(path);
 
             Storage storage = new Storage(ConnectToStorage());
-            string json = Parser.MeasurementsToJson(measurements);
+            string json = GpmfParser.MeasurementsToJson(measurements);
             storage.UploadMeasurements(path, json);
             storage.AddMetadata(path);
 

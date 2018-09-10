@@ -37,12 +37,12 @@ namespace MetadataExtractor.Tests
             string csv = "";
             using (var sr = File.OpenText(csvPath))
                 csv = sr.ReadToEnd();
-            Parser parser = new Parser();
+            GpmfParser parser = new GpmfParser();
             List<Measurement> list = parser.LoadFromCsv(csv);
 
             string path = "2018-08-24/GOPR0194.MP4";
             Storage storage = new Storage(Extract.ConnectToStorage());
-            string json = Parser.MeasurementsToJson(list);
+            string json = GpmfParser.MeasurementsToJson(list);
             storage.UploadMeasurements(path, json);
             storage.AddMetadata(path);
         }
