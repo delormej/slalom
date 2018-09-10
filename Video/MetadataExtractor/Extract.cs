@@ -46,7 +46,8 @@ namespace MetadataExtractor
             List<Measurement> measurements = parser.LoadFromMp4(path);
 
             Storage storage = new Storage(ConnectToStorage());
-            storage.UploadMeasurements(path, measurements);
+            string json = Parser.MeasurementsToJson(measurements);
+            storage.UploadMeasurements(path, json);
             storage.AddMetadata(path);
 
             // Clean up video.

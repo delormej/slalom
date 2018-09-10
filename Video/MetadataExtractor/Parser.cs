@@ -1,10 +1,10 @@
 using System;
 using System.IO;
-using System.Net;
 using System.Diagnostics;
 using System.Collections.Generic;
 using SlalomTracker;
 using GeoCoordinatePortable;
+using Newtonsoft.Json;
 
 namespace MetadataExtractor
 {
@@ -33,6 +33,12 @@ namespace MetadataExtractor
         DateTime initialTime = DateTime.MinValue;
         int currentGpsCount, currentGyroCount;
         double start, accumZ;
+
+        public static string MeasurementsToJson(List<Measurement> measurements)
+        {
+            string json = JsonConvert.SerializeObject(measurements);
+            return json;
+        }
 
         public List<Measurement> LoadFromMp4(string path)
         {

@@ -8,7 +8,6 @@ using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Table;
 using System.Collections.Generic;
 using SlalomTracker;
-using Newtonsoft.Json;
 
 namespace MetadataExtractor
 {
@@ -37,13 +36,12 @@ namespace MetadataExtractor
             insertTask.Wait();
         }
 
-        public void UploadMeasurements(string path, List<Measurement> measurements)
+        public void UploadMeasurements(string path, string json)
         {
             if (!path.EndsWith(".MP4"))
                 throw new ApplicationException("Path to video must end with .MP4");
 
             string fileName = path.Replace(".MP4", ".json");
-            string json = JsonConvert.SerializeObject(measurements);
             CloudBlockBlob blob = GetBlobReference(fileName);
             Task t = blob.UploadTextAsync(json);
             t.Wait();

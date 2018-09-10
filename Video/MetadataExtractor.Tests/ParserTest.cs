@@ -31,6 +31,19 @@ namespace MetadataExtractor.Tests
             AssertMeasurements(measurements);
         }
 
+        [TestMethod]
+        public void TestMeasurementsToJson()
+        {
+            string csv, csvPath = @"..\..\..\..\MetadataExtractor\GOPR0565.csv";
+            using (var sr = File.OpenText(csvPath))
+                csv = sr.ReadToEnd();
+
+            Parser parser = new Parser();
+            List<Measurement> list = parser.LoadFromCsv(csv);
+            string json = Parser.MeasurementsToJson(list);
+            Assert.IsTrue(json.Length == 389790);
+        }
+
         private void AssertMeasurements(List<Measurement> measurements)
         {
             Assert.AreEqual(measurements.Count, 1177);

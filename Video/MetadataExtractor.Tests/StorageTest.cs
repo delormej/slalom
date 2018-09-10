@@ -42,7 +42,8 @@ namespace MetadataExtractor.Tests
 
             string path = "2018-08-24/GOPR0194.MP4";
             Storage storage = new Storage(Extract.ConnectToStorage());
-            storage.UploadMeasurements(path, list);
+            string json = Parser.MeasurementsToJson(list);
+            storage.UploadMeasurements(path, json);
             storage.AddMetadata(path);
         }
     }
