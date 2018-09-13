@@ -80,7 +80,7 @@ namespace SlalomTracker
             Course cove = Course.ByName("cove");
             Assert.IsTrue(cove.Course55EntryCL.Latitude == 42.28908285);
             double coveHeading = cove.GetCourseHeadingDeg();
-            var poly = cove.GetPolygon();
+            var poly = cove.Polygon;
 
             Course outside = Course.ByName("outside");
             Assert.IsTrue(outside.Course55ExitCL.Longitude == -71.36498477);

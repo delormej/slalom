@@ -63,24 +63,29 @@ namespace SlalomTracker
 
         private void DrawCourseBounds()
         {
-            List<GeoCoordinate> list = _pass.Course.GetPolygon();
+            List<GeoCoordinate> list = _pass.Course.Polygon;
             // Convert geos to relative course positions, then to absolute screen points.
             List<Point> points = new List<Point>(list.Count);
-            for (int i = 0; i < list.Count; i++)
-            {
-                CoursePosition position = _pass.CoursePositionFromGeo(list[i]);
+            //for (int i = 0; i < list.Count; i++)
+            //{
+            //    CoursePosition position = _pass.CoursePositionFromGeo(list[i]);
 
-                if (i == 0 || i == 2)
-                {
-                    position.X = 0;
-                }
-                else
-                {
-                    position.X = 23;
-                }
+            //    if (i == 0 || i == 2)
+            //    {
+            //        position.X = 0;
+            //    }
+            //    else
+            //    {
+            //        position.X = 23;
+            //    }
 
-                points.Add(PointFromCoursePosition(position));
-            }
+            //    points.Add(PointFromCoursePosition(position));
+            //}
+
+            points.Add(PointFromCoursePosition(new CoursePosition(0, 0))); //0
+            points.Add(PointFromCoursePosition(new CoursePosition(23, 0))); //1
+            points.Add(PointFromCoursePosition(new CoursePosition(0, 259 + 110))); //2
+            points.Add(PointFromCoursePosition(new CoursePosition(23, 259 + 110))); //3
 
             Pen pen = new Pen(Color.Green, 0.6F);
             _graphics.DrawLine(pen, points[0], points[1]);

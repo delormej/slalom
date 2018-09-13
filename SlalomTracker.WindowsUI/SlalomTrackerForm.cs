@@ -105,7 +105,7 @@ namespace WindowsFormsApp1
 
         private void DrawCourseBounds(CoursePass pass)
         {
-            List<GeoCoordinate> list = pass.Course.GetPolygon();
+            List<GeoCoordinate> list = pass.Course.Polygon;
             // Convert geos to relative course positions, then to absolute screen points.
             List<Point> points = new List<Point>(list.Count);
             for (int i = 0; i < list.Count; i++)

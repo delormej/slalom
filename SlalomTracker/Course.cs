@@ -25,6 +25,7 @@ namespace SlalomTracker
         /// </summary>
         public GeoCoordinate Course55EntryCL { get; set; }
         public GeoCoordinate Course55ExitCL { get; set; }
+        public List<GeoCoordinate> Polygon { get { return _polygon; } }
 
         static Course()
         {
@@ -124,7 +125,7 @@ namespace SlalomTracker
         /// Create a list of points that represent the corners of a rectangle inclusive of the pre-gates.
         /// </summary>
         /// <returns></returns>
-        public List<GeoCoordinate> GetPolygon()
+        private List<GeoCoordinate> GetPolygon()
         {
             double left, right, heading = this.GetCourseHeadingDeg();
             right = (heading + 90 + 360) % 360;
@@ -142,13 +143,9 @@ namespace SlalomTracker
 
         public static Course FindCourse(List<Measurement> measurements)
         {
-            List<Course> courses = new List<Course>();
-            courses.Add(Course.ByName("cove"));
-            courses.Add(Course.ByName("outside"));
-
             foreach (var m in measurements)
             {
-                foreach (Course course in courses)
+                foreach (Course course in _knownCourses)
                 {
                     if (course.IsBoatInCourse(m.BoatGeoCoordinate))
                         return course;
