@@ -63,7 +63,8 @@ namespace MetadataExtractor.Tests
         public void TestUploadVideo()
         {
             Storage storage = new Storage(Extract.ConnectToStorage());
-            storage.UploadVideo(TESTPATH);
+            if (!storage.BlobNameExists(TESTPATH))
+                storage.UploadVideo(TESTPATH);
             Assert.IsTrue(storage.BlobNameExists(BLOBNAME), "Blob is missing: " + URL);
         }
 

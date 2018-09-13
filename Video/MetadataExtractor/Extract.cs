@@ -58,7 +58,7 @@ namespace MetadataExtractor
 
         public static CloudStorageAccount ConnectToStorage()
         {
-            //Connect(@"DefaultEndpointsProtocol=https;AccountName=delormej;AccountKey=4Ewy9Alh/F4wqePCTtZl9Pd7o8JWXkKCMVOUCSVJs1p46z1lrBthq9/3tBB8bE+iIuXFOgELWfzpYACUA3LozQ==;EndpointSuffix=core.windows.net");
+            //skiblobs = @"DefaultEndpointsProtocol=https;AccountName=delormej;AccountKey=4Ewy9Alh/F4wqePCTtZl9Pd7o8JWXkKCMVOUCSVJs1p46z1lrBthq9/3tBB8bE+iIuXFOgELWfzpYACUA3LozQ==;EndpointSuffix=core.windows.net"
             string connection = Environment.GetEnvironmentVariable(ENV_SKIBLOBS);
             CloudStorageAccount account = null;
             if (!CloudStorageAccount.TryParse(connection, out account))
