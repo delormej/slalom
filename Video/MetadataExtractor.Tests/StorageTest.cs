@@ -15,12 +15,12 @@ namespace MetadataExtractor.Tests
         const string URL = "https://delormej.blob.core.windows.net/ski/2018-08-24/GOPR0565.MP4";
         const string BLOBNAME = "2018-08-24/GOPR0565.MP4";
 
-        [TestMethod]
+        /*[TestMethod]
         public void TestDownloadVideo()
         {
             string localPath = Storage.DownloadVideo(URL);
             Assert.AreEqual(localPath, TESTPATH);
-        }
+        }*/
 
         [TestMethod]
         public void TestGetBlobDirectory()

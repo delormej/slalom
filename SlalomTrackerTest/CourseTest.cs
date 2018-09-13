@@ -51,7 +51,7 @@ namespace SlalomTracker
         public void TestGetCourseHeadingDeg()
         {
             double heading = _course.GetCourseHeadingDeg();
-            Assert.IsTrue((int)heading == 185, "heading is not equal");
+            Assert.IsTrue(Math.Round(heading) == 185.0, "heading is not equal");
         }
 
         [TestMethod]
@@ -78,12 +78,12 @@ namespace SlalomTracker
         public void TestByName()
         {
             Course cove = Course.ByName("cove");
-            Assert.IsTrue(cove.Course55EntryCL.Latitude == 42.28908285);
+            Assert.IsTrue(cove.Course55EntryCL.Latitude == 42.28958014);
             double coveHeading = cove.GetCourseHeadingDeg();
             var poly = cove.Polygon;
 
             Course outside = Course.ByName("outside");
-            Assert.IsTrue(outside.Course55ExitCL.Longitude == -71.36498477);
+            Assert.IsTrue(outside.Course55ExitCL.Longitude == -71.36553574);
             double outsideHeading = outside.GetCourseHeadingDeg();
         }
 

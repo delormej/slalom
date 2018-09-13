@@ -90,15 +90,18 @@ namespace SlalomTracker
 
             // 15.02, 42.288937, -71.359136, 14.33, 0.77112 <-- boat is passing through the 55s.
 
-            CoursePosition position = _pass.CoursePositionFromGeo(42.289983, -71.358973);
-            CoursePosition position2 = _pass.CoursePositionFromGeo(42.288066, -71.359257);
-            CoursePosition position3 = _pass.CoursePositionFromGeo(42.285529, -71.359519);
-            CoursePosition position4 = _pass.CoursePositionFromGeo(42.285165, -71.359369);
-            CoursePosition position5 = _pass.CoursePositionFromGeo(42.288937, -71.359136);
+            //42.2867806,"Longitude":-71.3594418 == Chet @ 15 seconds into the GOPR0565.mp4
+            // .\slalom\SlalomTracker\Video\MetadataExtractor\GOPR0565.json
+            CoursePass pass = CoursePassFactory.FromFile(@"..\..\..\..\Video\MetadataExtractor\GOPR0565.json");
+            // Reverse entry/exit.
+            var entry = pass.Course.Course55ExitCL;
+            var exit = pass.Course.Course55EntryCL;
+            pass.Course.Course55EntryCL = entry;
+            pass.Course.Course55ExitCL = exit;
+            CoursePosition position = pass.CoursePositionFromGeo(42.2867806, -71.3594418);
 
-            // {X:11.5,Y:155.488584558511}
             Assert.IsTrue(position.X == 11.5, "Incorrect course position.");
-            Assert.IsTrue((int)position.Y == 155, "Incorrect course position.");
+            Assert.IsTrue((int)position.Y == 61, "Incorrect course position.");
         }
 
         [TestMethod]

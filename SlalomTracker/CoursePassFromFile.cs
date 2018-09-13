@@ -9,11 +9,23 @@ namespace SlalomTracker
     {
         enum Column { Seconds = 0, Lat, Lon, Speed, Z };
 
+        /// <summary>
+        /// Loads an object of List<Measurment> from a JSON file.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
         public static CoursePass FromFile(string path)
         {
             return FromFile(path, 0, Rope.Off(22));
         }
 
+        /// <summary>
+        /// Loads an object of List<Measurment> from a JSON file.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="centerLineDegreeOffset"></param>
+        /// <param name="rope"></param>
+        /// <returns></returns>
         public static CoursePass FromFile(string path, double centerLineDegreeOffset, Rope rope)
         {
             string json = "";
@@ -25,6 +37,13 @@ namespace SlalomTracker
             return FromJson(json, centerLineDegreeOffset, rope);
         }
 
+        /// <summary>
+        /// Loads a List<Measurment> collection serialized as JSON in the string.
+        /// </summary>
+        /// <param name="json"></param>
+        /// <param name="centerLineDegreeOffset"></param>
+        /// <param name="rope"></param>
+        /// <returns></returns>
         public static CoursePass FromJson(string json, double centerLineDegreeOffset, Rope rope)
         { 
             var measurements = (List<Measurement>)JsonConvert.DeserializeObject(json, typeof(List<Measurement>));
