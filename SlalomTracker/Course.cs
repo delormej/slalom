@@ -19,6 +19,8 @@ namespace SlalomTracker
         private static List<Course> _knownCourses;
 
         private List<GeoCoordinate> _polygon;
+        private List<GeoCoordinate> _entryPolygon;
+        private List<GeoCoordinate> _exitPolygon;
 
         /// <summary>
         /// Lat/Long of the pilon as you enter & exit the 55s (pregates) of the course.
@@ -71,15 +73,17 @@ namespace SlalomTracker
             //    throw new ApplicationException(string.Format(@"Course length: {0} is not within tolerance.", length));
 
             GenerateCourseFeatures();
-            _polygon = GetPolygon();
+            GeneratePolygons();
         }
 
-        public void ReverseDirection()
+        private void ReverseDirection()
         {
             GeoCoordinate reverseEntry = Course55ExitCL;
             GeoCoordinate reverseExit = Course55EntryCL;
             Course55EntryCL = reverseEntry;
             Course55ExitCL = reverseExit;
+            // regenerate the polygons.
+            GeneratePolygons();
         }
 
         /// <summary>
@@ -129,11 +133,19 @@ namespace SlalomTracker
             return Util.GetHeading(Course55EntryCL, Course55ExitCL);
         }
 
+        private void GeneratePolygons()
+        {
+            double reverseHeading = (GetCourseHeadingDeg() + 180) % 360;
+            _polygon = GetCoursePolygon();
+            _entryPolygon = Get55mPolygon(Course55EntryCL, GetCourseHeadingDeg());
+            _exitPolygon = Get55mPolygon(Course55ExitCL, reverseHeading);
+        }
+
         /// <summary>
         /// Create a list of points that represent the corners of a rectangle inclusive of the pre-gates.
         /// </summary>
         /// <returns></returns>
-        private List<GeoCoordinate> GetPolygon()
+        private List<GeoCoordinate> GetCoursePolygon()
         {
             double left, right, heading = this.GetCourseHeadingDeg();
             right = (heading + 90 + 360) % 360;
@@ -148,6 +160,25 @@ namespace SlalomTracker
             return poly;
         }
 
+        /// <summary>
+        /// Returns a polygon as wide as the course and 55m long, relative to the reference coordinate.
+        /// </summary>
+        private List<GeoCoordinate> Get55mPolygon(GeoCoordinate reference, double heading)
+        {
+            double left, right;
+            right = (heading + 90 + 360) % 360;
+            left = (right + 180) % 360;
+
+            // From the 55's.
+            List<GeoCoordinate> poly = new List<GeoCoordinate>(4);
+            poly.Add(Util.CalculateDerivedPosition(reference, 5.0, left));
+            poly.Add(Util.CalculateDerivedPosition(reference, 5.0, right));
+            poly.Add(Util.CalculateDerivedPosition(
+                Util.CalculateDerivedPosition(reference,  55, heading), 5.0, left));
+            poly.Add(Util.CalculateDerivedPosition(
+                Util.CalculateDerivedPosition(reference, 55, heading), 5.0, right));
+            return poly;
+        }
 
         public static Course FindCourse(List<Measurement> measurements)
         {
@@ -155,8 +186,13 @@ namespace SlalomTracker
             {
                 foreach (Course course in _knownCourses)
                 {
-                    if (course.IsBoatInCourse(m.BoatGeoCoordinate))
+                    if (course.IsBoatInEntry(m.BoatGeoCoordinate))
                         return course;
+                    else if (course.IsBoatInExit(m.BoatGeoCoordinate))
+                    {
+                        course.ReverseDirection();
+                        return course;
+                    }
                 }
             }
 
@@ -170,14 +206,29 @@ namespace SlalomTracker
         /// <returns></returns>
         public bool IsBoatInCourse(GeoCoordinate point)
         {
+            return IsPointInPoly(point, _polygon);
+        }
+
+        private bool IsBoatInEntry(GeoCoordinate point)
+        {
+            return IsPointInPoly(point, _entryPolygon);
+        }
+
+        private bool IsBoatInExit(GeoCoordinate point)
+        {
+            return IsPointInPoly(point, _exitPolygon);
+        }
+
+        private bool IsPointInPoly(GeoCoordinate point, List<GeoCoordinate> polygon)
+        {
             int i, j;
             bool c = false;
-            for (i = 0, j = _polygon.Count - 1; i < _polygon.Count; j = i++)
+            for (i = 0, j = polygon.Count - 1; i < polygon.Count; j = i++)
             {
-                if ((((_polygon[i].Latitude <= point.Latitude) && (point.Latitude < _polygon[j].Latitude))
-                        || ((_polygon[j].Latitude <= point.Latitude) && (point.Latitude < _polygon[i].Latitude)))
-                        && (point.Longitude < (_polygon[j].Longitude - _polygon[i].Longitude) * (point.Latitude - _polygon[i].Latitude)
-                            / (_polygon[j].Latitude - _polygon[i].Latitude) + _polygon[i].Longitude))
+                if ((((polygon[i].Latitude <= point.Latitude) && (point.Latitude < polygon[j].Latitude))
+                        || ((polygon[j].Latitude <= point.Latitude) && (point.Latitude < polygon[i].Latitude)))
+                        && (point.Longitude < (polygon[j].Longitude - polygon[i].Longitude) * (point.Latitude - polygon[i].Latitude)
+                            / (polygon[j].Latitude - polygon[i].Latitude) + polygon[i].Longitude))
 
                     c = !c;
             }
