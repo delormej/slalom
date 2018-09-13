@@ -157,7 +157,7 @@ namespace MetadataExtractor
                 return true;
         }
 
-        private string GetBlobName(string localFile)
+        public static string GetBlobName(string localFile)
         {
             if (!File.Exists(localFile))
                 throw new FileNotFoundException("Video file does not exist: " + localFile);
@@ -167,7 +167,12 @@ namespace MetadataExtractor
             return blob;
         }
 
-        private string GetBlobDirectory(string localFile)
+        /// <summary>
+        /// Returns a date followed by '/', eg: "YYYY-MM-DD/"
+        /// </summary>
+        /// <param name="localFile"></param>
+        /// <returns></returns>
+        public static string GetBlobDirectory(string localFile)
         {
             // Remove HERO5 Black x directory.
             int heroMonikerStart = localFile.IndexOf("HERO");
@@ -177,21 +182,13 @@ namespace MetadataExtractor
             }
 
             string dir = "";
-            int end = 0, start = localFile.LastIndexOf(Path.DirectorySeparatorChar);
-            if (start >= 0)
+            int start = 0, end = localFile.LastIndexOf(Path.DirectorySeparatorChar);
+            if (end >= 0)
             {
-                for (int i = start - 1; i > 0; i--)
-                {
-                    if (localFile[i] == Path.DirectorySeparatorChar)
-                    {
-                        end = i;
-                        break;
-                    }
-                }
-                dir = localFile.Substring(end, (start - end));
+                start = localFile.LastIndexOf(Path.DirectorySeparatorChar, end - 1);
+                dir = localFile.Substring(start + 1, (end - start) - 1);
             }
-            if (dir != string.Empty)
-                dir += "/";
+            dir += "/";
             return dir;
         }
 

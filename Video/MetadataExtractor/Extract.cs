@@ -17,7 +17,7 @@ namespace MetadataExtractor
             {
                 Console.WriteLine("Usage:\n\t" +
                     "MetadataExtractor -d https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4)\n\t" +
-                    "MetadataExtractor - u //files/Go Pro/2018-08-20\n");
+                    "MetadataExtractor -u //files/Go Pro/2018-08-20\n");
                 return;
             }
 
