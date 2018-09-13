@@ -74,6 +74,14 @@ namespace SlalomTracker
             _polygon = GetPolygon();
         }
 
+        public void ReverseDirection()
+        {
+            GeoCoordinate reverseEntry = Course55ExitCL;
+            GeoCoordinate reverseExit = Course55EntryCL;
+            Course55EntryCL = reverseEntry;
+            Course55ExitCL = reverseExit;
+        }
+
         /// <summary>
         /// Generates Balls, BoatMarkers, Gates once Course Entry & Exit coordinates are available.
         /// </summary>

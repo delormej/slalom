@@ -48,6 +48,8 @@ namespace SlalomTracker
         { 
             var measurements = (List<Measurement>)JsonConvert.DeserializeObject(json, typeof(List<Measurement>));
             Course course = Course.FindCourse(measurements);
+            // TODO: Temporary, need to detect this on load.
+            course.ReverseDirection();
             CoursePass pass = new CoursePass(course, rope, centerLineDegreeOffset);
             foreach (var r in measurements)
             {

@@ -48,7 +48,9 @@ namespace SlalomTracker
             Pen inCoursePen = new Pen(Color.Green, 3);
             Pen outCoursePen = new Pen(Color.Pink, 3);
 
-            for (int i = 0; i < _pass.Measurements.Count - 2; i++)
+            int i = FirstInCourse(_pass.Measurements);
+            int last = LastInCourse(_pass.Measurements) - 2;
+            for (; i < last; i++)
             {
                 var m = _pass.Measurements[i];
                 Pen coursePen = m.InCourse ? inCoursePen : outCoursePen;
@@ -59,6 +61,20 @@ namespace SlalomTracker
             }
 
             return _bitmap;
+        }
+
+        private int FirstInCourse(List<Measurement> measurements)
+        {
+            int i = 0;
+            while (!measurements[i++].InCourse && i < measurements.Count);
+            return i;
+        }
+
+        private int LastInCourse(List<Measurement> measurements)
+        {
+            int i = measurements.Count - 1;
+            while (!measurements[i--].InCourse && i > 0);
+            return i;
         }
 
         private void DrawCourseBounds()

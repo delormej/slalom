@@ -93,11 +93,7 @@ namespace SlalomTracker
             //42.2867806,"Longitude":-71.3594418 == Chet @ 15 seconds into the GOPR0565.mp4
             // .\slalom\SlalomTracker\Video\MetadataExtractor\GOPR0565.json
             CoursePass pass = CoursePassFactory.FromFile(@"..\..\..\..\Video\MetadataExtractor\GOPR0565.json");
-            // Reverse entry/exit.
-            var entry = pass.Course.Course55ExitCL;
-            var exit = pass.Course.Course55EntryCL;
-            pass.Course.Course55EntryCL = entry;
-            pass.Course.Course55ExitCL = exit;
+            pass.Course.ReverseDirection();
             CoursePosition position = pass.CoursePositionFromGeo(42.2867806, -71.3594418);
 
             Assert.IsTrue(position.X == 11.5, "Incorrect course position.");
