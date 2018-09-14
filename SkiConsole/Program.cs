@@ -3,6 +3,7 @@ using SlalomTracker;
 using MetadataExtractor;
 using System.Drawing.Imaging;
 using System.Drawing;
+using System.Diagnostics;
 
 namespace SkiConsole
 {
@@ -33,22 +34,46 @@ namespace SkiConsole
             else if (args[0] == "-i")
             {
                 string jsonPath = args[1];
-                string imagePath = GetImagePath(jsonPath);
                 double clOffset = args.Length > 2 ? double.Parse(args[2]) : 0;
-                double rope = args.Length > 3 ? int.Parse(args[3]) : 22;
-
-                CoursePass pass = CoursePassFactory.FromFile(jsonPath, clOffset, Rope.Off(rope));
-                CoursePassImage image = new CoursePassImage(pass);
-                Bitmap bitmap = image.Draw();
-                bitmap.Save(imagePath, ImageFormat.Png);
+                int rope = args.Length > 3 ? int.Parse(args[3]) : 22;
+                string imagePath = CreateImage(jsonPath, clOffset, rope);
+                //LaunchImageViewer(imagePath);
             }
             else
                 throw new ApplicationException("Missing execution parameters.");
         }
 
+        private static string CreateImage(string jsonPath, double clOffset, int rope)
+        {
+            string imagePath = GetImagePath(jsonPath);
+            CoursePass pass = CoursePassFactory.FromFile(jsonPath, clOffset, Rope.Off(rope));
+            CoursePassImage image = new CoursePassImage(pass);
+            Bitmap bitmap = image.Draw();
+            bitmap.Save(imagePath, ImageFormat.Png);
+
+            return imagePath;
+        }
+
         private static string GetImagePath(string jsonPath)
         {
             return jsonPath.Replace(".json", ".png");
+        }
+
+        private static void LaunchImageViewer(string imagePath)
+        {
+            var process = new Process()
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = imagePath,
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = false
+                }
+            };
+            process.Start();
+            string result = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
         }
     }
 }
