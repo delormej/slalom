@@ -9,30 +9,6 @@ namespace MetadataExtractor
     {
         const string ENV_SKIBLOBS = "skiblobs";
 
-        static void Main(string[] args)
-        {
-            if (args.Length < 2)
-            {
-                Console.WriteLine("Usage:\n\t" +
-                    "MetadataExtractor -d https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4)\n\t" +
-                    "MetadataExtractor -u //files/Go Pro/2018-08-20\n");
-                return;
-            }
-
-            if (args[0] == "-u")
-            {
-                // eg. MetadataExtractor -u //files/Go Pro/2018-08-20"
-                UploadVideos(args[1]);
-            }
-            else if (args[0] == "-d")
-            {
-                // eg. MetadataExtractor -d https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4
-                ExtractMetadata(args[1]);
-            }
-            else
-                throw new ApplicationException("Missing execution parameters.");
-        }
-
         public static void UploadVideos(string path)
         {
             Storage storage = new Storage(ConnectToStorage());
