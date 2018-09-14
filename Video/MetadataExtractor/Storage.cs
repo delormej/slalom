@@ -62,8 +62,17 @@ namespace MetadataExtractor
         {
             string blobName = GetBlobName(localFile);
             CloudBlockBlob blob = GetBlobReference(blobName);
-            var task = blob.UploadFromFileAsync(localFile);
-            task.Wait();
+            Task<bool> existsTask = blob.ExistsAsync();
+            existsTask.Wait();
+            if (!existsTask.Result)
+            {
+                var task = blob.UploadFromFileAsync(localFile);
+                task.Wait();
+            }
+            else
+            {
+                Console.WriteLine("File already existed: " + blobName);
+            }
 
             string uri = blob.SnapshotQualifiedUri.AbsoluteUri;
             QueueNewVideo(blobName, uri);
