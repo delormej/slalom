@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using GeoCoordinatePortable;
+using Newtonsoft.Json;
 
 namespace SlalomTracker
 {
@@ -49,5 +51,11 @@ namespace SlalomTracker
         /// Position of the handle relative to the course in X,Y coordinates.
         /// </summary>
         public CoursePosition HandlePosition { get; set; }
+
+        public static string ToJson(List<Measurement> measurements)
+        {
+            string json = JsonConvert.SerializeObject(measurements);
+            return json;
+        }
     }
 }

@@ -37,12 +37,6 @@ namespace MetadataExtractor
         int currentGpsCount, currentGyroCount;
         double start, accumZ;
 
-        public static string MeasurementsToJson(List<Measurement> measurements)
-        {
-            string json = JsonConvert.SerializeObject(measurements);
-            return json;
-        }
-
         public List<Measurement> LoadFromMp4(string path)
         {
             string csv = ParseMetadata(path);

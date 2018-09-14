@@ -80,7 +80,7 @@ namespace MetadataExtractor.Tests
 
             string path = "2018-08-24/GOPR0194.MP4";
             Storage storage = new Storage(Extract.ConnectToStorage());
-            string json = GpmfParser.MeasurementsToJson(list);
+            string json = Measurement.ToJson(list);
             storage.UploadMeasurements(path, json);
             storage.AddMetadata(path);
         }

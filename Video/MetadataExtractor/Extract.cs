@@ -46,7 +46,7 @@ namespace MetadataExtractor
             List<Measurement> measurements = parser.LoadFromMp4(path);
 
             Storage storage = new Storage(ConnectToStorage());
-            string json = GpmfParser.MeasurementsToJson(measurements);
+            string json = Measurement.ToJson(measurements);
             storage.UploadMeasurements(path, json);
             storage.AddMetadata(path);
 
