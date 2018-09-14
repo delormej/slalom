@@ -47,9 +47,12 @@ namespace SkiConsole
         {
             string imagePath = GetImagePath(jsonPath);
             CoursePass pass = CoursePassFactory.FromFile(jsonPath, clOffset, Rope.Off(rope));
+            pass = GetBestFit(pass);
             CoursePassImage image = new CoursePassImage(pass);
             Bitmap bitmap = image.Draw();
             bitmap.Save(imagePath, ImageFormat.Png);
+
+            Console.WriteLine("Gate precision == {0} for {1}", pass.GetGatePrecision(), jsonPath);
 
             return imagePath;
         }
@@ -74,6 +77,13 @@ namespace SkiConsole
             process.Start();
             string result = process.StandardOutput.ReadToEnd();
             process.WaitForExit();
+        }
+
+        private static CoursePass GetBestFit(CoursePass pass)
+        {
+            CoursePass bestPass = CoursePassFactory.FitPass(pass.Measurements, pass.Course, pass.Rope);
+            Console.WriteLine("Best pass is {0} CL offset.", bestPass.CenterLineDegreeOffset);
+            return bestPass;
         }
     }
 }

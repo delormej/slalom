@@ -108,5 +108,15 @@ namespace SlalomTracker
             // 34mph = 15.2778 meters per second
             double len = _pass.GetRopeArcLength(boatDistance, Rope.Off(22).LengthM, angleDelta); // 41off == 24.9, 22off == 23.5
         }
+
+        [TestMethod]
+        public void GetBestFitTest()
+        {
+            CoursePass pass = CoursePassFactory.FromFile(@"..\..\..\..\Video\MetadataExtractor\GOPR0565.json");
+            CoursePass best = CoursePassFactory.FitPass(pass.Measurements, pass.Course, pass.Rope);
+            double precision = best.GetGatePrecision();
+
+            Assert.IsTrue(precision == 1.0F);
+        }
     }
 }

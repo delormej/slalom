@@ -213,5 +213,27 @@ namespace SlalomTracker
             double distance = arcLength + boatDistance;
             return distance;
         }
+
+        public double GetGatePrecision()
+        {
+            var entryM = FindHandleAtY(Course.Gates[0].Y);
+            var exitM = FindHandleAtY(Course.Gates[3].Y);
+            if (entryM == null || exitM == null)
+                return double.MaxValue;
+
+            // Get the differene between
+            double dEntry = Math.Pow(Math.Abs(entryM.HandlePosition.X - 11.5), 2);
+            double dExit = Math.Pow(Math.Abs(exitM.HandlePosition.X - 11.5), 2);
+
+            return Math.Sqrt(dEntry + dExit);
+        }
+    
+        private Measurement FindHandleAtY(double y)
+        {
+            foreach (var m in this.Measurements)
+                if ((int)m.HandlePosition.Y == (int)y)
+                    return m;
+            return null;
+        }
     }
 }

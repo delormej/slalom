@@ -48,12 +48,51 @@ namespace SlalomTracker
         { 
             var measurements = (List<Measurement>)JsonConvert.DeserializeObject(json, typeof(List<Measurement>));
             Course course = Course.FindCourse(measurements);
+            return CreatePass(measurements, course, centerLineDegreeOffset, rope);
+        }
+
+        /// <summary>
+        /// Does a linear regression to fit the best centerline offset based on entry/exit gates.
+        /// </summary>
+        /// <param name="measurements"></param>
+        /// <param name="course"></param>
+        /// <returns></returns>
+        public static CoursePass FitPass(List<Measurement> measurements, Course course, Rope rope)
+        {
+            const int MAX = 45;
+            const int MIN = -45;
+            CoursePass bestPass = null;
+            double bestPrecision = 0;
+
+            for (int i = MIN; i <= MAX; i++)
+            {
+                CoursePass pass = CreatePass(measurements, course, i, rope);
+                if (bestPass == null)
+                {
+                    bestPass = pass;
+                    bestPrecision = pass.GetGatePrecision();
+                }
+                else
+                {
+                    double p = pass.GetGatePrecision();
+                    if (p < bestPrecision)
+                    {
+                        bestPass = pass;
+                        bestPrecision = p;
+                    }
+                }
+            }
+            return bestPass;
+        }
+
+        private static CoursePass CreatePass(List<Measurement> measurements, Course course, double centerLineDegreeOffset, Rope rope)
+        {
             CoursePass pass = new CoursePass(course, rope, centerLineDegreeOffset);
             foreach (var r in measurements)
             {
                 pass.Track(r);
             }
-            
+
             return pass;
         }
 
