@@ -1,8 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Collections.Generic;
 using Microsoft.WindowsAzure.Storage.Table;
-using SlalomTracker;
 
 namespace MetadataExtractor
 {

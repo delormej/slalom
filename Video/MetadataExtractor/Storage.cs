@@ -1,13 +1,11 @@
 using System;
 using System.IO;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Table;
-using System.Collections.Generic;
-using SlalomTracker;
+
 
 namespace MetadataExtractor
 {
