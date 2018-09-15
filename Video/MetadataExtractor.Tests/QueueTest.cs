@@ -10,10 +10,10 @@ namespace MetadataExtractor.Tests
         [TestMethod]
         public void TestAdd()
         {
-            Queue queue = new Queue(Extract.ConnectToStorage());
+            Storage storage = new Storage();
             string blobName = "2018-08-24/GOPR0565.MP4";
             string url = "https://delormej.blob.core.windows.net/ski/2018-08-24/GOPR0565.MP4";
-            queue.Add(blobName, url);
+            storage.Queue.Add(blobName, url);
         }
     }
 }

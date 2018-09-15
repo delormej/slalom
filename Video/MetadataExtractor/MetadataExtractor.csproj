@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SlalomTracker\SlalomTracker.csproj" />
+    <Content Include=".\gpmfdemo" CopyToOutputDirectory="Always" />
   </ItemGroup>
 
 </Project>

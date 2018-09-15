@@ -8,15 +8,11 @@ namespace MetadataExtractor
 {
     public class Queue
     {
-        const string BLOB_QUEUE = "skiqueue";
         CloudQueue _queue;
 
-        public Queue(CloudStorageAccount account)
+        internal Queue(CloudQueue queue)
         {
-            CloudQueueClient client = account.CreateCloudQueueClient();
-            _queue = client.GetQueueReference(BLOB_QUEUE);
-            Task task = _queue.CreateIfNotExistsAsync();
-            task.Wait();
+            _queue = queue;
         }
 
         public void Add(string blobName, string fullUri)

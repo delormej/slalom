@@ -51,7 +51,7 @@ namespace SlalomTracker
         public void TestGetCourseHeadingDeg()
         {
             double heading = _course.GetCourseHeadingDeg();
-            Assert.IsTrue(Math.Round(heading) == 185.0, "heading is not equal");
+            Assert.IsTrue(Math.Round(heading) == 5.0, "heading is not equal");
         }
 
         [TestMethod]
@@ -94,7 +94,6 @@ namespace SlalomTracker
             List<Measurement> measurements = pass.Measurements;
             Course course = Course.FindCourse(measurements);
             Assert.IsNotNull(course);
-
         }
     }
 }

@@ -137,12 +137,10 @@ namespace MetadataExtractor
 
         private string ParseMetadata(string mp4Path)
         {
-            string exePath = "";
-            if (Directory.GetCurrentDirectory().Contains("netcoreapp"))
-                exePath = Directory.GetCurrentDirectory() + "/../../../";
+            string exePath = Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location) + "/";
 
-            if (!File.Exists(exePath + mp4Path))
-                throw new FileNotFoundException("MP4 file does not exist at: " + exePath + mp4Path);
+            if (!File.Exists(mp4Path))
+                throw new FileNotFoundException("MP4 file does not exist at: " + mp4Path);
 
             if (!File.Exists(exePath + GPMFEXE))
                 throw new FileNotFoundException("gpmfdemo doesn't exist at: " + exePath + GPMFEXE);
@@ -155,8 +153,8 @@ namespace MetadataExtractor
                     Arguments = mp4Path,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
-                    CreateNoWindow = true,
-                    WorkingDirectory = exePath
+                    CreateNoWindow = true /*,
+                    WorkingDirectory = */
                 }
             };
             process.Start();

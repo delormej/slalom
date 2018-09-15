@@ -62,7 +62,7 @@ namespace MetadataExtractor.Tests
         [TestMethod]
         public void TestUploadVideo()
         {
-            Storage storage = new Storage(Extract.ConnectToStorage());
+            Storage storage = new Storage();
             if (!storage.BlobNameExists(TESTPATH))
                 storage.UploadVideo(TESTPATH);
             Assert.IsTrue(storage.BlobNameExists(BLOBNAME), "Blob is missing: " + URL);
@@ -79,7 +79,7 @@ namespace MetadataExtractor.Tests
             List<Measurement> list = parser.LoadFromCsv(csv);
 
             string path = "2018-08-24/GOPR0194.MP4";
-            Storage storage = new Storage(Extract.ConnectToStorage());
+            Storage storage = new Storage();
             string json = Measurement.ToJson(list);
             storage.UploadMeasurements(path, json);
             storage.AddMetadata(path);

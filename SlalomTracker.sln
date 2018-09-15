@@ -9,8 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlalomTracker.WindowsUI", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlalomTracker.Android", "SlalomTracker.Android\SlalomTracker.Android.csproj", "{FB7CAF13-AE6C-4D58-9E95-F836A48F34A1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageExtractor", "..\Video\ImageExtractor\ImageExtractor.csproj", "{234DC23E-C557-4B70-BB8D-6050E81AE6B1}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{234B0062-94AD-4383-875C-030F1402F1A8}"
 	ProjectSection(SolutionItems) = preProject
 		GOPR0403.csv = GOPR0403.csv
@@ -24,7 +22,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetadataExtractor.Tests", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlalomTrackerTest", "SlalomTrackerTest\SlalomTrackerTest.csproj", "{336AEC22-4BB4-4B68-90C2-F7771EAA487C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkiConsole", "SkiConsole\SkiConsole.csproj", "{02AE139F-95FD-4787-9186-D4057923AF68}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SkiConsole", "SkiConsole\SkiConsole.csproj", "{02AE139F-95FD-4787-9186-D4057923AF68}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,10 +44,6 @@ Global
 		{FB7CAF13-AE6C-4D58-9E95-F836A48F34A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FB7CAF13-AE6C-4D58-9E95-F836A48F34A1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FB7CAF13-AE6C-4D58-9E95-F836A48F34A1}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{234DC23E-C557-4B70-BB8D-6050E81AE6B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{234DC23E-C557-4B70-BB8D-6050E81AE6B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{234DC23E-C557-4B70-BB8D-6050E81AE6B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{234DC23E-C557-4B70-BB8D-6050E81AE6B1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B97DD507-40F9-4753-A526-5567263B2FE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B97DD507-40F9-4753-A526-5567263B2FE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B97DD507-40F9-4753-A526-5567263B2FE7}.Release|Any CPU.ActiveCfg = Release|Any CPU

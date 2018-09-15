@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Table;
-
+using Microsoft.WindowsAzure.Storage.Queue;
 
 namespace MetadataExtractor
 {
@@ -13,14 +13,20 @@ namespace MetadataExtractor
     {
         const string SKICONTAINER = "ski";
         const string SKITABLE = "skivideos";
+        const string ENV_SKIBLOBS = "skiblobs";
+        const string BLOB_QUEUE = "skiqueue";
+
         CloudStorageAccount _account;
         Queue _queue;
 
-        public Storage(CloudStorageAccount account)
+        public Storage()
         {
-            _account = account;
-            _queue = new Queue(_account);
+            Connect();
+            ConnectToQueue();
         }
+
+        public CloudStorageAccount Account { get { return _account; } }
+        public Queue Queue { get { return _queue; } }
 
         public void AddMetadata(string path)
         {
@@ -207,10 +213,33 @@ namespace MetadataExtractor
             return blob;
         }
 
+        private void Connect()
+        {
+            //skiblobs = @"DefaultEndpointsProtocol=https;AccountName=delormej;AccountKey=4Ewy9Alh/F4wqePCTtZl9Pd7o8JWXkKCMVOUCSVJs1p46z1lrBthq9/3tBB8bE+iIuXFOgELWfzpYACUA3LozQ==;EndpointSuffix=core.windows.net"
+            string connection = Environment.GetEnvironmentVariable(ENV_SKIBLOBS);
+            if (!CloudStorageAccount.TryParse(connection, out _account))
+            {
+                // Otherwise, let the user know that they need to define the environment variable.
+                string error =
+                    "A connection string has not been defined in the system environment variables. " +
+                    "Add a environment variable named 'skiblobs' with your storage " +
+                    "connection string as a value.";
+                throw new ApplicationException(error);
+            }
+        }
+
+        private void ConnectToQueue()
+        {
+            CloudQueueClient client = _account.CreateCloudQueueClient();
+            CloudQueue queue = client.GetQueueReference(BLOB_QUEUE);
+            Task task = queue.CreateIfNotExistsAsync();
+            task.Wait();
+            _queue = new Queue(queue);
+        }
+
         private void QueueNewVideo(string blobName, string url)
         {
-            Queue queue = new Queue(_account);
-            queue.Add(blobName, url);
+            _queue.Add(blobName, url);
         }
     }    
 }

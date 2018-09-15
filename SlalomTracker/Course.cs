@@ -76,16 +76,6 @@ namespace SlalomTracker
             GeneratePolygons();
         }
 
-        private void ReverseDirection()
-        {
-            GeoCoordinate reverseEntry = Course55ExitCL;
-            GeoCoordinate reverseExit = Course55EntryCL;
-            Course55EntryCL = reverseEntry;
-            Course55ExitCL = reverseExit;
-            // regenerate the polygons.
-            GeneratePolygons();
-        }
-
         /// <summary>
         /// Generates Balls, BoatMarkers, Gates once Course Entry & Exit coordinates are available.
         /// </summary>
@@ -190,8 +180,9 @@ namespace SlalomTracker
                         return course;
                     else if (course.IsBoatInExit(m.BoatGeoCoordinate))
                     {
-                        course.ReverseDirection();
-                        return course;
+                        Course reversed = new Course(course.Course55ExitCL, course.Course55EntryCL);
+                        reversed.Name = course.Name + "_reverse";
+                        return reversed;
                     }
                 }
             }
