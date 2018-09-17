@@ -81,7 +81,7 @@ namespace SlalomTracker.Cloud
             }
 
             string uri = blob.SnapshotQualifiedUri.AbsoluteUri;
-            QueueNewVideo(blobName, uri);
+            //QueueNewVideo(blobName, uri);
             return uri; // URL to the uploaded video.
         }
 
