@@ -1,8 +1,8 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MetadataExtractor;
+using SlalomTracker.Cloud;
 
-namespace MetadataExtractor.Tests
+namespace SlalomTracker.Cloud.Tests
 {
     [TestClass]
     public class QueueTest

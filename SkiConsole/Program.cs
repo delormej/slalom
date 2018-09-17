@@ -1,5 +1,6 @@
 ﻿using System;
 using SlalomTracker;
+using SlalomTracker.Cloud;
 using MetadataExtractor;
 using System.Drawing.Imaging;
 using System.Drawing;

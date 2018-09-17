@@ -7,7 +7,7 @@ using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Table;
 using Microsoft.WindowsAzure.Storage.Queue;
 
-namespace MetadataExtractor
+namespace SlalomTracker.Cloud
 {
     public class Storage
     {
@@ -172,9 +172,6 @@ namespace MetadataExtractor
 
         public static string GetBlobName(string localFile)
         {
-            if (!File.Exists(localFile))
-                throw new FileNotFoundException("Video file does not exist: " + localFile);
-
             string dir = GetBlobDirectory(localFile);
             string blob = dir + Path.GetFileName(localFile);
             return blob;

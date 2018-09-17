@@ -4,7 +4,7 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Queue;
 using Newtonsoft.Json;
 
-namespace MetadataExtractor
+namespace SlalomTracker.Cloud
 {
     public class Queue
     {

@@ -3,10 +3,9 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MetadataExtractor;
-using SlalomTracker;
+using SlalomTracker.Cloud;
 
-namespace MetadataExtractor.Tests
+namespace SlalomTracker.Cloud.Tests
 {
     [TestClass]
     public class StorageTest
@@ -66,23 +65,6 @@ namespace MetadataExtractor.Tests
             if (!storage.BlobNameExists(TESTPATH))
                 storage.UploadVideo(TESTPATH);
             Assert.IsTrue(storage.BlobNameExists(BLOBNAME), "Blob is missing: " + URL);
-        }
-
-        [TestMethod]
-        public void TestAddMetadata()
-        {
-            const string csvPath = "../../../GOPR0194.csv";
-            string csv = "";
-            using (var sr = File.OpenText(csvPath))
-                csv = sr.ReadToEnd();
-            GpmfParser parser = new GpmfParser();
-            List<Measurement> list = parser.LoadFromCsv(csv);
-
-            string path = "2018-08-24/GOPR0194.MP4";
-            Storage storage = new Storage();
-            string json = Measurement.ToJson(list);
-            storage.UploadMeasurements(path, json);
-            storage.AddMetadata(path);
         }
     }
 }

@@ -2,7 +2,7 @@
 using System.IO;
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace MetadataExtractor
+namespace SlalomTracker.Cloud
 {
     public class SkiVideoEntity : TableEntity
     {
@@ -23,10 +23,10 @@ namespace MetadataExtractor
 
         private void SetKeys(string path)
         {
-            if (path.Contains('\\'))
+            if (path.Contains(@"\"))
                 path = path.Replace('\\', '/');
 
-            if (!path.Contains('/'))
+            if (!path.Contains(@"/"))
                 throw new ApplicationException("path must contain <date>/Filename.");
 
             int index = path.LastIndexOf(Path.AltDirectorySeparatorChar);
