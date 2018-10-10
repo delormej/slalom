@@ -37,13 +37,13 @@ namespace MetadataExtractor
         int currentGpsCount, currentGyroCount;
         double start, accumZ;
 
-        public List<Measurement> LoadFromMp4(string path)
+        public List<Measurement> LoadFromMp4(string mp4Path)
         {
-            string csv = ParseMetadata(path);
+            string csv = ParseMetadata(mp4Path);
             if (csv != string.Empty)
                 return LoadFromCsv(csv);
             else
-                throw new ApplicationException("No metadata found in: " + path);
+                throw new ApplicationException("No metadata found in: " + mp4Path);
         }
 
         public List<Measurement> LoadFromCsv(string csv)
