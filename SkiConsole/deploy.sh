@@ -6,3 +6,5 @@ make
 mv ./gpmfdemo ../../slalom/SkiConsole/
 cd ../../slalom/SkiConsole/
 dotnet build ./SkiConsole.csproj
+dotnet publish 
+docker build -f Dockerfile ./bin/Debug/netcoreapp2.1/publish/
