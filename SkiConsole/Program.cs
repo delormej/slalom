@@ -12,6 +12,12 @@ namespace SkiConsole
     {
         static void Main(string[] args)
         {
+            if (args.Length < 1)
+            {
+                ShowUsage();
+                return;
+            }
+            
             if (args[0] == "-u" && args.Length >= 2)
             {
                 // eg. ski -u //files/Go Pro/2018-08-20"
@@ -46,8 +52,8 @@ namespace SkiConsole
         {
             Console.WriteLine("Usage:\n\t" +
                                 "ski -d https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4)\n\t" +
-                                "ski -u //files/Go Pro/2018-08-20\n" +
-                                "ski -e 2018-06-20/GOPR0194.MP4 GOPR0194.json\n" +
+                                "ski -u //files/Go Pro/2018-08-20\n\t" +
+                                "ski -e 2018-06-20/GOPR0194.MP4 GOPR0194.json\n\t" +
                                 "ski -i GOPR0194.json 0 22\n"
                             );
         }
