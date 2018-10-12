@@ -51,9 +51,13 @@ namespace SkiConsole
         private static void ShowUsage()
         {
             Console.WriteLine("Usage:\n\t" +
+                                "Download a video from cloud storage:\n\t\t" +
                                 "ski -d https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4)\n\t" +
+                                "Upload video or directory of videos:\n\t\t" +
                                 "ski -u //files/Go Pro/2018-08-20\n\t" +
+                                "Extract metadata from MP4 GOPRO file:\n\t\t" +
                                 "ski -e 2018-06-20/GOPR0194.MP4 GOPR0194.json\n\t" +
+                                "Generate an image of skiers path from video <center line offset>, <rope length>:\n\t\t" +
                                 "ski -i GOPR0194.json 0 22\n"
                             );
         }
