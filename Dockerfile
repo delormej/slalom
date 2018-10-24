@@ -4,6 +4,7 @@ COPY ./ ./ski
 WORKDIR /ski
 RUN dotnet publish ./SkiConsole/SkiConsole.csproj -o /ski/build/
 
+# create the runtime image (smaller, doesn't need the full sdk for building)
 FROM microsoft/dotnet:2.1-runtime as runtime
 COPY --from=build /ski/build ./ski
 WORKDIR /ski
