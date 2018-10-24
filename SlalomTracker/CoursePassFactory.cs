@@ -51,6 +51,13 @@ namespace SlalomTracker
             return CreatePass(measurements, course, centerLineDegreeOffset, rope);
         }
 
+        public static CoursePass FromJson(string json, double ropeOffLength = 15)
+        {
+            CoursePass pass = FromJson(json, 0, Rope.Off(ropeOffLength));
+            CoursePass betterPass = FitPass(pass.Measurements, pass.Course, pass.Rope);
+            return betterPass;
+        }
+
         /// <summary>
         /// Does a linear regression to fit the best centerline offset based on entry/exit gates.
         /// </summary>

@@ -35,14 +35,23 @@ namespace SkiConsole
                 // eg. ski -e 2018-06-20/GOPR0194.MP4 GOPR0194.json
                 ExtractMetadataAsJson(args[1], args[2]);
             }
-            else if (args[0] == "-i" && args.Length >= 4)
+            else if (args[0] == "-i")
             {
-                // eg. ski -i GOPR0194.json 0 22
-                string jsonPath = args[1];
-                double clOffset = args.Length > 2 ? double.Parse(args[2]) : 0;
-                int rope = args.Length > 3 ? int.Parse(args[3]) : 22;
+                if (args.Length >= 4)
+                {
+                    // eg. ski -i GOPR0194.json 0 22
+                    string jsonPath = args[1];
+                    double clOffset = args.Length > 2 ? double.Parse(args[2]) : 0;
+                    int rope = args.Length > 3 ? int.Parse(args[3]) : 22;
 
-                string imagePath = CreateImage(jsonPath, clOffset, rope);
+                    string imagePath = CreateImage(jsonPath, clOffset, rope);
+                }
+                else
+                {
+                    // eg. ski -i https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4
+                    // does it all
+                    string imagePath = DownloadAndCreateImage(args[1]);
+                }
             }
             else
                 ShowUsage();
@@ -58,8 +67,21 @@ namespace SkiConsole
                                 "Extract metadata from MP4 GOPRO file:\n\t\t" +
                                 "ski -e 2018-06-20/GOPR0194.MP4 GOPR0194.json\n\t" +
                                 "Generate an image of skiers path from video <center line offset>, <rope length>:\n\t\t" +
-                                "ski -i GOPR0194.json 0 22\n"
+                                "ski -i GOPR0194.json 0 22\n\t\t" +
+                                "ski -i https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4\n"
                             );
+        }
+
+        private static string DownloadAndCreateImage(string url)
+        {
+            string localPath = Storage.DownloadVideo(url);
+            string json = Extract.ExtractMetadata(localPath);
+            CoursePass pass = CoursePassFactory.FromJson(json);
+            CoursePassImage image = new CoursePassImage(pass);
+            Bitmap bitmap = image.Draw();
+            string imagePath = localPath.Replace(".MP4", ".png");
+            bitmap.Save(imagePath, ImageFormat.Png);
+            return imagePath;
         }
 
         private static void UploadVideos(string localPath)
@@ -93,7 +115,7 @@ namespace SkiConsole
         {
             string imagePath = GetImagePath(jsonPath);
             CoursePass pass = CoursePassFactory.FromFile(jsonPath, clOffset, Rope.Off(rope));
-            pass = GetBestFit(pass);
+            pass = GetBestCoursePass(pass);
             CoursePassImage image = new CoursePassImage(pass);
             Bitmap bitmap = image.Draw();
             bitmap.Save(imagePath, ImageFormat.Png);
@@ -116,7 +138,7 @@ namespace SkiConsole
             return jsonPath.Replace(".json", ".png");
         }
 
-        private static CoursePass GetBestFit(CoursePass pass)
+        private static CoursePass GetBestCoursePass(CoursePass pass)
         {
             CoursePass bestPass = CoursePassFactory.FitPass(pass.Measurements, pass.Course, pass.Rope);
             Console.WriteLine("Best pass is {0} CL offset.", bestPass.CenterLineDegreeOffset);
