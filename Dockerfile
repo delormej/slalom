@@ -7,7 +7,10 @@ RUN dotnet publish ./SkiConsole/SkiConsole.csproj -o /ski/build/
 FROM microsoft/dotnet:2.1-runtime as runtime
 COPY --from=build /ski/build ./ski
 WORKDIR /ski
-# copy the gpmf output here as well
-#COPY ./build/gpmfdemo ./ski/
+
+# Workaround, dependencies for graphics libraries, per this issue: https://github.com/dotnet/corefx/issues/25102
+RUN apt-get update \
+    &&  apt-get install -y libgdiplus \
+    &&  apt-get install -y --no-install-recommends libc6-dev
 
 #ENTRYPOINT [ "dotnet", "ski.dll" ]
