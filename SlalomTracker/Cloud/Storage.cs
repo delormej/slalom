@@ -13,7 +13,7 @@ namespace SlalomTracker.Cloud
     {
         const string SKICONTAINER = "ski";
         const string SKITABLE = "skivideos";
-        const string ENV_SKIBLOBS = "skiblobs";
+        const string ENV_SKIBLOBS = "SKIBLOBS";
         const string BLOB_QUEUE = "skiqueue";
 
         CloudStorageAccount _account;
@@ -28,27 +28,11 @@ namespace SlalomTracker.Cloud
         public CloudStorageAccount Account { get { return _account; } }
         public Queue Queue { get { return _queue; } }
 
-        public void AddMetadata(string path)
+        public void AddMetadata(string videoUrl, string json)
         {
-            SkiVideoEntity entity = new SkiVideoEntity(path);
-            CloudTableClient client = _account.CreateCloudTableClient();
-            CloudTable table = client.GetTableReference(SKITABLE);
-            TableOperation insert = TableOperation.InsertOrReplace(entity);
-            Task createTask = table.CreateIfNotExistsAsync();
-            createTask.Wait();
-            Task insertTask = table.ExecuteAsync(insert);
-            insertTask.Wait();
-        }
-
-        public void UploadMeasurements(string path, string json)
-        {
-            if (!path.EndsWith(".MP4"))
-                throw new ApplicationException("Path to video must end with .MP4");
-
-            string fileName = path.Replace(".MP4", ".json");
-            CloudBlockBlob blob = GetBlobReference(fileName);
-            Task t = blob.UploadTextAsync(json);
-            t.Wait();
+            string blobName = GetBlobName(videoUrl);
+            AddTableEntity(blobName);
+            UploadMeasurements(blobName, json);
         }
 
         public void UploadVideos(string path)
@@ -212,7 +196,7 @@ namespace SlalomTracker.Cloud
 
         private void Connect()
         {
-            //skiblobs = @"DefaultEndpointsProtocol=https;AccountName=delormej;AccountKey=4Ewy9Alh/F4wqePCTtZl9Pd7o8JWXkKCMVOUCSVJs1p46z1lrBthq9/3tBB8bE+iIuXFOgELWfzpYACUA3LozQ==;EndpointSuffix=core.windows.net"
+            //ENV SKIBLOBS = @"DefaultEndpointsProtocol=https;AccountName=delormej;AccountKey=4Ewy9Alh/F4wqePCTtZl9Pd7o8JWXkKCMVOUCSVJs1p46z1lrBthq9/3tBB8bE+iIuXFOgELWfzpYACUA3LozQ==;EndpointSuffix=core.windows.net"
             string connection = Environment.GetEnvironmentVariable(ENV_SKIBLOBS);
             if (!CloudStorageAccount.TryParse(connection, out _account))
             {
@@ -237,6 +221,29 @@ namespace SlalomTracker.Cloud
         private void QueueNewVideo(string blobName, string url)
         {
             _queue.Add(blobName, url);
+        }
+
+        private void AddTableEntity(string blobName)
+        {
+            SkiVideoEntity entity = new SkiVideoEntity(blobName);
+            CloudTableClient client = _account.CreateCloudTableClient();
+            CloudTable table = client.GetTableReference(SKITABLE);
+            TableOperation insert = TableOperation.InsertOrReplace(entity);
+            Task createTask = table.CreateIfNotExistsAsync();
+            createTask.Wait();
+            Task insertTask = table.ExecuteAsync(insert);
+            insertTask.Wait();
+        }
+
+        private void UploadMeasurements(string blobName, string json)
+        {
+            if (!blobName.EndsWith(".MP4"))
+                throw new ApplicationException("Path to video must end with .MP4");
+
+            string fileName = blobName.Replace(".MP4", ".json");
+            CloudBlockBlob blob = GetBlobReference(fileName);
+            Task t = blob.UploadTextAsync(json);
+            t.Wait();
         }
     }    
 }

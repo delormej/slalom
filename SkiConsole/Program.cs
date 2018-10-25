@@ -35,7 +35,7 @@ namespace SkiConsole
                 // eg. ski -e 2018-06-20/GOPR0194.MP4 GOPR0194.json
                 ExtractMetadataAsJson(args[1], args[2]);
             }
-            else if (args[0] == "-i")
+            else if (args[0] == "-i" && args.Length >= 2)
             {
                 if (args.Length >= 4)
                 {
@@ -46,12 +46,17 @@ namespace SkiConsole
 
                     string imagePath = CreateImage(jsonPath, clOffset, rope);
                 }
-                else
+                else if (args.Length == 2)
                 {
                     // eg. ski -i https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4
                     // does it all
                     string imagePath = DownloadAndCreateImage(args[1]);
                 }
+            }
+            else if (args[0] == "-p" && args.Length >= 2)
+            {
+                // eg. ski -p https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4
+                ProcessVideoMetadata(args[1]);
             }
             else
                 ShowUsage();
@@ -68,7 +73,9 @@ namespace SkiConsole
                                 "ski -e 2018-06-20/GOPR0194.MP4 GOPR0194.json\n\t" +
                                 "Generate an image of skiers path from video <center line offset>, <rope length>:\n\t\t" +
                                 "ski -i GOPR0194.json 0 22\n\t\t" +
-                                "ski -i https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4\n"
+                                "ski -i https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4\n\t" +
+                                "Download video, process and upload metadata.\n\t\t" +
+                                "ski -p https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4\n"
                             );
         }
 
@@ -82,6 +89,15 @@ namespace SkiConsole
             string imagePath = localPath.Replace(".MP4", ".png");
             bitmap.Save(imagePath, ImageFormat.Png);
             return imagePath;
+        }
+
+        private static void ProcessVideoMetadata(string url)
+        {
+            string localPath = Storage.DownloadVideo(url);
+            string json = Extract.ExtractMetadata(localPath);
+            Storage storage = new Storage();
+            string blobName = Storage.GetBlobName(localPath);
+            storage.AddMetadata(blobName, json);
         }
 
         private static void UploadVideos(string localPath)
