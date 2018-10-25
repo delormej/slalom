@@ -9,7 +9,7 @@ docker run --rm -v "$PWD"/../gpmf:/gpmf -w /gpmf/demo gcc:4.9 make
 cp ../gpmf/demo/gpmfdemo ./build
 
 # multi-stage build of dotnet container to build and release skiconsole.
-docker build -t skiconsole -f Dockerfile . 
+docker build -t skiconsole  --build-arg ski_blobs_connection="$SKIBLOBS" -f Dockerfile . 
 
 ####
 # Example of running this container, mapping local dir to /share in the container (i.e. to get the MP4):

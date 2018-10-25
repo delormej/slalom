@@ -14,4 +14,9 @@ RUN apt-get update \
     &&  apt-get install -y libgdiplus \
     &&  apt-get install -y --no-install-recommends libc6-dev
 
+ARG ski_blobs_connection
+
+# Environment Variables
+ENV SKIBLOBS=${ski_blobs_connection}
+
 #ENTRYPOINT [ "dotnet", "ski.dll" ]
