@@ -15,3 +15,14 @@ docker build -t skiconsole  --build-arg ski_blobs_connection="$SKIBLOBS" -f Dock
 # Example of running this container, mapping local dir to /share in the container (i.e. to get the MP4):
 # docker run -it -v "$PWD":/share skiconsole
 ####
+
+####
+# Deploying to Azure Container Instance:
+# https://docs.microsoft.com/en-us/azure/container-registry/container-registry-get-started-azure-cli
+# 0. Tag docker image: docker tag skiconsole jasondelacr.azurecr.io/skiconsole:v1
+# 1. Create Azure Container Registry
+# 2. $ docker login jasondelacr.azurecr.io -u jasondelAcr -p XXXXXXX
+#        (user admin user and password enabled when you use --enable-admin=true during ACR create)
+# 3. docker push jasondelacr.azurecr.io/skiconsole:v1
+# 4. Create the aci:
+#       az container create --resource-group MyAcrGroup --name aci-skiconsole --image jasondelacr.azurecr.io/skiconsole:v1 --cpu 1 --memory 1 --registry-usernamejasondelAcr --registry-password XXXXXX --dns-name-label aci-skiconsole --ports 5000
