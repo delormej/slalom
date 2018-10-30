@@ -149,10 +149,10 @@ namespace SlalomTracker
                 }
                 else
                 {
-                    System.Diagnostics.Trace.WriteLine(
+                    /* System.Diagnostics.Trace.WriteLine(
                         string.Format("In Course? {3}. {0}: {1},{2}", 
                         current.Timestamp, current.BoatGeoCoordinate.Latitude, 
-                        current.BoatGeoCoordinate.Longitude, inCourse));
+                        current.BoatGeoCoordinate.Longitude, inCourse));*/
                 }
             }
 
