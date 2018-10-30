@@ -42,7 +42,7 @@ namespace SkiConsole
                     // eg. ski -i GOPR0194.json 0 22
                     string jsonPath = args[1];
                     double clOffset = args.Length > 2 ? double.Parse(args[2]) : 0;
-                    int rope = args.Length > 3 ? int.Parse(args[3]) : 22;
+                    double rope = args.Length > 3 ? double.Parse(args[3]) : 22;
 
                     string imagePath = CreateImage(jsonPath, clOffset, rope);
                 }
@@ -73,6 +73,7 @@ namespace SkiConsole
                                 "ski -e 2018-06-20/GOPR0194.MP4 GOPR0194.json\n\t" +
                                 "Generate an image of skiers path from video <center line offset>, <rope length>:\n\t\t" +
                                 "ski -i GOPR0194.json 0 22\n\t\t" +
+                                "ski -i https://delormej.blob.core.windows.net/ski/2018-08-24/GOPR0565.json 0 22\n\t\t" +
                                 "ski -i https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4\n\t" +
                                 "Download video, process and upload metadata.\n\t\t" +
                                 "ski -p https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4\n"
@@ -127,11 +128,16 @@ namespace SkiConsole
             System.IO.File.WriteAllText(jsonPath, json);
         }
 
-        private static string CreateImage(string jsonPath, double clOffset, int rope)
+        private static string CreateImage(string jsonPath, double clOffset, double rope)
         {
+            CoursePass pass;
+
+            if (jsonPath.StartsWith("http"))
+                pass = CoursePassFactory.FromUrl(jsonPath, clOffset, rope);
+            else
+                pass = CoursePassFactory.FromFile(jsonPath, clOffset, Rope.Off(rope));
+
             string imagePath = GetImagePath(jsonPath);
-            CoursePass pass = CoursePassFactory.FromFile(jsonPath, clOffset, Rope.Off(rope));
-            pass = GetBestCoursePass(pass);
             CoursePassImage image = new CoursePassImage(pass);
             Bitmap bitmap = image.Draw();
             bitmap.Save(imagePath, ImageFormat.Png);
@@ -151,7 +157,8 @@ namespace SkiConsole
 
         private static string GetImagePath(string jsonPath)
         {
-            return jsonPath.Replace(".json", ".png");
+            string file = System.IO.Path.GetFileName(jsonPath);
+            return file.Replace(".json", ".png");
         }
 
         private static CoursePass GetBestCoursePass(CoursePass pass)

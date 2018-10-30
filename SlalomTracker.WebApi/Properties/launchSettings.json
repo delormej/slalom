@@ -20,8 +20,8 @@
     "SlalomTracker.WebApi": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "api/values",
-      "applicationUrl": "http://0.0.0.0:5000",
+      "launchUrl": "api/image",
+      "applicationUrl": "http://0.0.0.0:5009",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

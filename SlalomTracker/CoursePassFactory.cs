@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Net;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
@@ -56,6 +57,16 @@ namespace SlalomTracker
             CoursePass pass = FromJson(json, 0, Rope.Off(ropeOffLength));
             CoursePass betterPass = FitPass(pass.Measurements, pass.Course, pass.Rope);
             return betterPass;
+        }
+
+        public static CoursePass FromUrl(string url, double centerLineDegreeOffset = 0, double ropeOffLength = 15)
+        {
+            WebClient client = new WebClient();
+            string json = client.DownloadString(url);
+            if (string.IsNullOrEmpty(json))
+                throw new ApplicationException("No JSON file at url: " + url);
+            
+            return FromJson(json, centerLineDegreeOffset, Rope.Off(ropeOffLength));
         }
 
         /// <summary>

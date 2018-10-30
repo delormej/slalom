@@ -8,4 +8,6 @@ RUN apt-get update \
     &&  apt-get install -y libgdiplus \
     &&  apt-get install -y --no-install-recommends libc6-dev
 
+EXPOSE 5000
+
 ENTRYPOINT ["dotnet", "run"]
