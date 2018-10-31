@@ -20,8 +20,8 @@ ARG ski_blobs_connection
 ENV SKIBLOBS=${ski_blobs_connection}
 ENV ASPNETCORE_URLS=http://0.0.0.0:5000
 
-# This does not appear to work, you still need to run container as such:
+# EXPOSE does not appear to work, you still need to run container as such:
 # docker run -it -p 5000:5000 skiconsole
-#EXPOSE 5000 
+#EXPOSE 5000
 
 ENTRYPOINT ["dotnet", "SlalomTracker.WebApi.dll"]
