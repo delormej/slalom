@@ -196,7 +196,7 @@ namespace SlalomTracker.Cloud
 
         private void Connect()
         {
-            //ENV SKIBLOBS = @"DefaultEndpointsProtocol=https;AccountName=delormej;AccountKey=4Ewy9Alh/F4wqePCTtZl9Pd7o8JWXkKCMVOUCSVJs1p46z1lrBthq9/3tBB8bE+iIuXFOgELWfzpYACUA3LozQ==;EndpointSuffix=core.windows.net"
+            //ENV SKIBLOBS = "DefaultEndpointsProtocol=https;AccountName=skivideostorage;AccountKey=74gV///fVtd/ZL+PzXZU6nsOVzIvt6XC59T9elFnY91vCVqmitlHxNA9QLbQsedTmnCzSR0BhtL0J8dwOVSWvA==;EndpointSuffix=core.windows.net"
             string connection = Environment.GetEnvironmentVariable(ENV_SKIBLOBS);
             if (!CloudStorageAccount.TryParse(connection, out _account))
             {
