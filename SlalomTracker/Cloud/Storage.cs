@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
@@ -33,6 +34,15 @@ namespace SlalomTracker.Cloud
             string blobName = GetBlobName(videoUrl);
             AddTableEntity(blobName);
             UploadMeasurements(blobName, json);
+        }
+
+        public async Task<List<SkiVideoEntity>> GetAllMetdata()
+        {
+            CloudTableClient client = _account.CreateCloudTableClient();
+            CloudTable table = client.GetTableReference(SKITABLE);
+            TableQuery<SkiVideoEntity> query = new TableQuery<SkiVideoEntity>().Where("");
+            TableQuerySegment<SkiVideoEntity> result = await table.ExecuteQuerySegmentedAsync(query, null);
+            return result.Results;
         }
 
         public void UploadVideos(string path)
