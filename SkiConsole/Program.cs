@@ -5,6 +5,8 @@ using MetadataExtractor;
 using System.Drawing.Imaging;
 using System.Drawing;
 using System.Diagnostics;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SkiConsole
 {
@@ -58,6 +60,10 @@ namespace SkiConsole
                 // eg. ski -p https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4
                 ProcessVideoMetadata(args[1]);
             }
+            else if (args[0] == "-m")
+            {
+                PrintAllMetadata();
+            }
             else
                 ShowUsage();
         }
@@ -71,6 +77,8 @@ namespace SkiConsole
                                 "ski -u //files/Go Pro/2018-08-20\n\t" +
                                 "Extract metadata from MP4 GOPRO file:\n\t\t" +
                                 "ski -e 2018-06-20/GOPR0194.MP4 GOPR0194.json\n\t" +
+                                "List all metadata stored for videos:\n\t\t" +
+                                "ski -m\n\t" +
                                 "Generate an image of skiers path from video <center line offset>, <rope length>:\n\t\t" +
                                 "ski -i GOPR0194.json 0 22\n\t\t" +
                                 "ski -i https://delormej.blob.core.windows.net/ski/2018-08-24/GOPR0565.json 0 22\n\t\t" +
@@ -166,6 +174,18 @@ namespace SkiConsole
             CoursePass bestPass = CoursePassFactory.FitPass(pass.Measurements, pass.Course, pass.Rope);
             Console.WriteLine("Best pass is {0} CL offset.", bestPass.CenterLineDegreeOffset);
             return bestPass;
+        }
+
+        private static void PrintAllMetadata()
+        {
+            Storage storage = new Storage();
+            Task<List<SkiVideoEntity>> result = storage.GetAllMetdata();
+            result.Wait();
+            Console.WriteLine("Videos available:");
+            foreach (SkiVideoEntity e in result.Result)
+            {
+                Console.WriteLine("\t{0}\\{1}", e.PartitionKey, e.RowKey);
+            }
         }
     }
 }
