@@ -6,10 +6,17 @@ namespace SlalomTracker.Cloud
 {
     public class SkiVideoEntity : TableEntity
     {
+        public SkiVideoEntity()
+        {
+            
+        }
         public SkiVideoEntity(string path)
         {
+            this.Url = path;
             SetKeys(path);
         }
+
+        public string Url { get; set; }
 
         public string Skier { get; set; }
 
