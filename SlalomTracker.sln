@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26730.15
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.452
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlalomTracker", "SlalomTracker\SlalomTracker.csproj", "{4C11A895-1730-4698-B186-250991A34A62}"
 EndProject
@@ -23,6 +23,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlalomTrackerTest", "SlalomTrackerTest\SlalomTrackerTest.csproj", "{336AEC22-4BB4-4B68-90C2-F7771EAA487C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SkiConsole", "SkiConsole\SkiConsole.csproj", "{02AE139F-95FD-4787-9186-D4057923AF68}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlalomTracker.WebApi", "SlalomTracker.WebApi\SlalomTracker.WebApi.csproj", "{36A2092E-5574-4B9E-9F31-540CA86F39E8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlalomTracker.OnVideoQueued", "SlalomTracker.OnVideoQueued\SlalomTracker.OnVideoQueued.csproj", "{DB2C64E5-749A-4A38-A98B-6D40D24A0A40}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -60,6 +64,14 @@ Global
 		{02AE139F-95FD-4787-9186-D4057923AF68}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{02AE139F-95FD-4787-9186-D4057923AF68}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{02AE139F-95FD-4787-9186-D4057923AF68}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36A2092E-5574-4B9E-9F31-540CA86F39E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36A2092E-5574-4B9E-9F31-540CA86F39E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36A2092E-5574-4B9E-9F31-540CA86F39E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36A2092E-5574-4B9E-9F31-540CA86F39E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB2C64E5-749A-4A38-A98B-6D40D24A0A40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB2C64E5-749A-4A38-A98B-6D40D24A0A40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB2C64E5-749A-4A38-A98B-6D40D24A0A40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB2C64E5-749A-4A38-A98B-6D40D24A0A40}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

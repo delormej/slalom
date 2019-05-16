@@ -3,6 +3,9 @@
     <AssemblyName>MetadataExtractor</AssemblyName>
     <OutputType>Library</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <OutputPath>build</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <ApplicationIcon />
     <StartupObject />
   </PropertyGroup>
@@ -14,4 +17,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\SlalomTracker\SlalomTracker.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+      <Content Include="gpmfdemo" 
+        CopyToOutputDirectory="Always"
+        CopyToPublishDirectory="Never" />
+    </ItemGroup>
 </Project>

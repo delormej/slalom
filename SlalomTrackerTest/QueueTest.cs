@@ -12,7 +12,7 @@ namespace SlalomTracker.Cloud.Tests
         {
             Storage storage = new Storage();
             string blobName = "2018-08-24/GOPR0565.MP4";
-            string url = "https://delormej.blob.core.windows.net/ski/2018-08-24/GOPR0565.MP4";
+            string url = "https://skivideostorage.blob.core.windows.net/ski/2018-08-24/GOPR0565.MP4";
             storage.Queue.Add(blobName, url);
         }
     }

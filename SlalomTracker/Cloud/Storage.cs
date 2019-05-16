@@ -7,6 +7,7 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Table;
 using Microsoft.WindowsAzure.Storage.Queue;
+using System.Text.RegularExpressions;
 
 namespace SlalomTracker.Cloud
 {
@@ -34,6 +35,7 @@ namespace SlalomTracker.Cloud
             string blobName = GetBlobName(videoUrl);
             AddTableEntity(blobName);
             UploadMeasurements(blobName, json);
+            Console.WriteLine("Uploaded metadata for video:" + videoUrl);
         }
 
         public async Task<List<SkiVideoEntity>> GetAllMetdata()
@@ -108,9 +110,29 @@ namespace SlalomTracker.Cloud
 
             Console.WriteLine("Files is here: " + path);
             return path;
-        }        
+        }       
 
-        private static string GetLocalPath(string videoUrl)
+        public List<String> GetAllBlobUris()
+        {
+            return BlobRestApi.GetBlobs(
+                _account.Credentials.AccountName, 
+                GetAccountKey(),
+                SKICONTAINER);
+        } 
+
+        private static string GetAccountKey()
+        {
+            string connection = GetConnectionString();
+            string pattern = @"AccountKey=([^;]+)";
+            string accountKey = "";
+            var match = Regex.Match(connection, pattern);
+            if (match != null && match.Groups.Count > 0)
+                accountKey = match.Groups[1].Value;
+
+            return accountKey;
+        }
+
+        public static string GetLocalPath(string videoUrl)
         {
             string path = "";
             // Get second to last directory seperator.
@@ -198,25 +220,35 @@ namespace SlalomTracker.Cloud
 
         private CloudBlockBlob GetBlobReference(string blobName)
         {
-            CloudBlobClient blobClient = _account.CreateCloudBlobClient();
-            CloudBlobContainer blobContainer = blobClient.GetContainerReference(SKICONTAINER);
+            CloudBlobContainer blobContainer = GetBlobContainer();
             CloudBlockBlob blob = blobContainer.GetBlockBlobReference(blobName);
             return blob;
         }
 
+        private CloudBlobContainer GetBlobContainer()
+        {
+            CloudBlobClient blobClient = _account.CreateCloudBlobClient();
+            return blobClient.GetContainerReference(SKICONTAINER);
+        }
+
         private void Connect()
         {
-            //ENV SKIBLOBS = "DefaultEndpointsProtocol=https;AccountName=skivideostorage;AccountKey=74gV///fVtd/ZL+PzXZU6nsOVzIvt6XC59T9elFnY91vCVqmitlHxNA9QLbQsedTmnCzSR0BhtL0J8dwOVSWvA==;EndpointSuffix=core.windows.net"
-            string connection = Environment.GetEnvironmentVariable(ENV_SKIBLOBS);
+            string connection = GetConnectionString();
             if (!CloudStorageAccount.TryParse(connection, out _account))
             {
                 // Otherwise, let the user know that they need to define the environment variable.
                 string error =
                     "A connection string has not been defined in the system environment variables. " +
-                    "Add a environment variable named 'skiblobs' with your storage " +
+                    "Add a environment variable named '" + ENV_SKIBLOBS + "' with your storage " +
                     "connection string as a value.";
                 throw new ApplicationException(error);
             }
+        }
+
+        private static string GetConnectionString()
+        {
+            return Environment.GetEnvironmentVariable(ENV_SKIBLOBS);
+            //ENV SKIBLOBS = "DefaultEndpointsProtocol=https;AccountName=skivideostorage;AccountKey=74gV///fVtd/ZL+PzXZU6nsOVzIvt6XC59T9elFnY91vCVqmitlHxNA9QLbQsedTmnCzSR0BhtL0J8dwOVSWvA==;EndpointSuffix=core.windows.net"
         }
 
         private void ConnectToQueue()

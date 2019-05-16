@@ -2,28 +2,19 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net471</TargetFramework>
+    <TargetFramework>net462</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>bin\</OutputPath>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Accord.Video.FFMPEG" Version="3.8.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="AForge">
-      <HintPath>bin\AForge\Release\AForge.dll</HintPath>
-    </Reference>
-    <Reference Include="AForge.Video">
-      <HintPath>bin\AForge\Release\AForge.Video.dll</HintPath>
-    </Reference>
-    <Reference Include="AForge.Video.FFMPEG">
-      <HintPath>bin\AForge\Release\AForge.Video.FFMPEG.dll</HintPath>
-    </Reference>
+    <PackageReference Include="Accord.Audio" Version="3.8.2-alpha" />
+    <PackageReference Include="Accord.Math" Version="3.8.2-alpha" />
+    <PackageReference Include="Accord.Video.FFMPEG.x64" Version="3.8.2-alpha" />
   </ItemGroup>
 
 </Project>

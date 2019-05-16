@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ImageExtractor": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\Users\\delor\\dev\\slalom\\Video\\MetadataExtractor\\GOPR0570.MP4 15"
+    }
+  }
+}

@@ -49,6 +49,10 @@ namespace SlalomTracker
         { 
             var measurements = (List<Measurement>)JsonConvert.DeserializeObject(json, typeof(List<Measurement>));
             Course course = Course.FindCourse(measurements);
+            if (course == null)
+            {
+                throw new ApplicationException("Unable to find a course for this ski run.");
+            }
             return CreatePass(measurements, course, centerLineDegreeOffset, rope);
         }
 

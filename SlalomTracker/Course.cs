@@ -145,8 +145,9 @@ namespace SlalomTracker
             List<GeoCoordinate> poly = new List<GeoCoordinate>(4);
             poly.Add(Util.CalculateDerivedPosition(this.Course55EntryCL, 5.0, left));
             poly.Add(Util.CalculateDerivedPosition(this.Course55EntryCL, 5.0, right));
-            poly.Add(Util.CalculateDerivedPosition(this.Course55ExitCL, 5.0, left));
             poly.Add(Util.CalculateDerivedPosition(this.Course55ExitCL, 5.0, right));
+            poly.Add(Util.CalculateDerivedPosition(this.Course55ExitCL, 5.0, left));
+            
             return poly;
         }
 
@@ -164,9 +165,10 @@ namespace SlalomTracker
             poly.Add(Util.CalculateDerivedPosition(reference, 5.0, left));
             poly.Add(Util.CalculateDerivedPosition(reference, 5.0, right));
             poly.Add(Util.CalculateDerivedPosition(
-                Util.CalculateDerivedPosition(reference,  55, heading), 5.0, left));
-            poly.Add(Util.CalculateDerivedPosition(
                 Util.CalculateDerivedPosition(reference, 55, heading), 5.0, right));
+            poly.Add(Util.CalculateDerivedPosition(
+                Util.CalculateDerivedPosition(reference,  55, heading), 5.0, left));
+
             return poly;
         }
 

@@ -28,6 +28,8 @@ namespace SlalomTracker.Cloud
 
         public bool All6Balls { get; set; }
 
+        public string CourseName { get; set; }
+
         private void SetKeys(string path)
         {
             if (path.Contains(@"\"))
