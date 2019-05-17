@@ -34,6 +34,8 @@ namespace SlalomTracker
         public Bitmap Draw()
         {
             //DrawCourseBounds();
+            DrawCourseBounds(_pass.Course.EntryPolygon, Color.Green);
+            DrawCourseBounds(_pass.Course.ExitPolygon, Color.Red);
 
             DrawCourseFeature(Color.Green, _pass.Course.PreGates);
             DrawCourseFeature(Color.Red, _pass.Course.Gates);
@@ -77,9 +79,8 @@ namespace SlalomTracker
             return i;
         }
 
-        private void DrawCourseBounds()
+        private void DrawCourseBounds(List<GeoCoordinate> list, Color color)
         {
-            List<GeoCoordinate> list = _pass.Course.Polygon;
             // Convert geos to relative course positions, then to absolute screen points.
             List<Point> points = new List<Point>(list.Count);
             for (int i = 0; i < list.Count; i++)
@@ -103,7 +104,7 @@ namespace SlalomTracker
             //points.Add(PointFromCoursePosition(new CoursePosition(0, 259 + 110))); //2
             //points.Add(PointFromCoursePosition(new CoursePosition(23, 259 + 110))); //3
 
-            Pen pen = new Pen(Color.Green, 0.6F);
+            Pen pen = new Pen(color, 0.6F);
             _graphics.DrawLine(pen, points[0], points[1]);
             _graphics.DrawLine(pen, points[0], points[2]);
             _graphics.DrawLine(pen, points[2], points[3]);

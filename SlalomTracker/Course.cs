@@ -28,6 +28,8 @@ namespace SlalomTracker
         public GeoCoordinate Course55EntryCL { get; set; }
         public GeoCoordinate Course55ExitCL { get; set; }
         public List<GeoCoordinate> Polygon { get { return _polygon; } }
+        public List<GeoCoordinate> EntryPolygon { get { return _entryPolygon; } }
+        public List<GeoCoordinate> ExitPolygon { get { return _exitPolygon; } }
 
         static Course()
         {
@@ -66,7 +68,7 @@ namespace SlalomTracker
             Course55EntryCL = entry;
             Course55ExitCL = exit;
             double length = Course55EntryCL.GetDistanceTo(Course55ExitCL);
-
+            Console.WriteLine("Course length: " + length);
             // 3 meter tolerance?
             //if (length > (LengthM + 3) ||
             //        length < (LengthM - 3))
@@ -152,7 +154,7 @@ namespace SlalomTracker
         }
 
         /// <summary>
-        /// Returns a polygon as wide as the course and 55m long, relative to the reference coordinate.
+        /// Returns a polygon as wide as the course and 1m long, relative to the reference coordinate.
         /// </summary>
         private List<GeoCoordinate> Get55mPolygon(GeoCoordinate reference, double heading)
         {
@@ -162,12 +164,17 @@ namespace SlalomTracker
 
             // From the 55's.
             List<GeoCoordinate> poly = new List<GeoCoordinate>(4);
-            poly.Add(Util.CalculateDerivedPosition(reference, 5.0, left));
-            poly.Add(Util.CalculateDerivedPosition(reference, 5.0, right));
+            // Create a poly that is 1 meter long, 5 meters wide.
+            
+            // Course entry is 55m from the reference passed in.
+            GeoCoordinate entryCL = Util.CalculateDerivedPosition(reference, 54.5, heading);
+            
+            poly.Add(Util.CalculateDerivedPosition(entryCL, 5.0, left));
+            poly.Add(Util.CalculateDerivedPosition(entryCL, 5.0, right));
             poly.Add(Util.CalculateDerivedPosition(
-                Util.CalculateDerivedPosition(reference, 55, heading), 5.0, right));
+                Util.CalculateDerivedPosition(entryCL, 1.0, heading), 5.0, right));
             poly.Add(Util.CalculateDerivedPosition(
-                Util.CalculateDerivedPosition(reference,  55, heading), 5.0, left));
+                Util.CalculateDerivedPosition(entryCL,  1.0, heading), 5.0, left));
 
             return poly;
         }
