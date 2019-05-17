@@ -22,6 +22,14 @@ namespace SlalomTracker.Cloud.Tests
         }*/
 
         [TestMethod]
+        public void AddMetadataTest()
+        {
+            Storage storage = new Storage();
+            string json = File.ReadAllText(@"GOPR0565.json");
+            storage.AddMetadata(URL, json);
+        }
+
+        [TestMethod]
         public void TestGetBlobDirectory()
         {
             // Only test if this is Windows:

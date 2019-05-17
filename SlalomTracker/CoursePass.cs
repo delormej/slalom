@@ -251,7 +251,7 @@ namespace SlalomTracker
             }
 
             double speedMps = distance / duration.TotalSeconds;
-            AverageBoatSpeed = speedMps * MPS_TO_MPH;
+            AverageBoatSpeed = Math.Round(speedMps * MPS_TO_MPH, 1);
         }
     }
 }

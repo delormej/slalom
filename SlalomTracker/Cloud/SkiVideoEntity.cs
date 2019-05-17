@@ -10,10 +10,12 @@ namespace SlalomTracker.Cloud
         {
             
         }
-        public SkiVideoEntity(string path)
+        public SkiVideoEntity(string path, CoursePass pass)
         {
             this.Url = path;
             SetKeys(path);
+            BoatSpeedMph = pass.AverageBoatSpeed;
+            CourseName = pass.Course.Name;
         }
 
         public string Url { get; set; }

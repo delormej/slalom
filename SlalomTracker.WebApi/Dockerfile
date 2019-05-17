@@ -15,6 +15,11 @@ RUN dotnet publish ./SlalomTracker.WebApi.csproj -o /ski/build/
 
 # create the runtime image (smaller, doesn't need the full sdk for building)
 FROM microsoft/dotnet:2.1-aspnetcore-runtime as runtime
+ARG ski_blobs_connection
+# Environment Variables
+ENV SKIBLOBS=${ski_blobs_connection}
+ENV ASPNETCORE_URLS=http://0.0.0.0:80
+RUN echo conn: $SKIBLOBS, ${ski_blobs_connection}
 
 # Workaround, dependencies for graphics libraries, per this issue: https://github.com/dotnet/corefx/issues/25102
 RUN apt-get update \
@@ -23,10 +28,6 @@ RUN apt-get update \
 
 COPY --from=build /ski/build ./ski
 WORKDIR /ski
-
-# # Environment Variables
-ENV SKIBLOBS=${ski_blobs_connection}
-ENV ASPNETCORE_URLS=http://0.0.0.0:80
 
 ENTRYPOINT ["dotnet", "SlalomTracker.WebApi.dll"]
 
