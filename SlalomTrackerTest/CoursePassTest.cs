@@ -118,5 +118,11 @@ namespace SlalomTracker
 
             //Assert.IsTrue(precision == 1.0F);
         }
+
+        [TestMethod]
+        public void GetAverageBoatSpeedTest()
+        {
+            Assert.AreEqual(Math.Round(_pass.AverageBoatSpeed, 1), 28.6d);
+        }
     }
 }

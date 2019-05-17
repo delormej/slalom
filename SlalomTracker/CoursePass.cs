@@ -27,7 +27,9 @@ namespace SlalomTracker
         /// <summary>
         /// Average boat speed (i.e. 30.4,32.3,34.2,36 mph) for the course.
         /// </summary>
-        public double AverageBoatSpeed { get; }
+        public double AverageBoatSpeed { get; private set; }
+
+        const double MPS_TO_MPH = 2.23694d;
 
         /// <summary>
         /// Calibration offset in degrees from which rope angle is calculated from.  
@@ -149,7 +151,7 @@ namespace SlalomTracker
                         this.Course.IsBoatInExit(current.BoatGeoCoordinate))
                 {
                     m_courseExit = current;
-                    // Calculate speed.
+                    CalculateCoursePassSpeed();
                 }
 
                 // In course if we've entered and have not exited.
@@ -235,6 +237,21 @@ namespace SlalomTracker
                 if ((int)m.HandlePosition.Y == (int)y)
                     return m;
             return null;
+        }
+
+        private void CalculateCoursePassSpeed()
+        {
+            TimeSpan duration = m_courseExit.Timestamp.Subtract(m_courseEntry.Timestamp);
+            double distance = m_courseExit.BoatGeoCoordinate.GetDistanceTo(
+                m_courseEntry.BoatGeoCoordinate);
+            
+            if (duration == null || duration.Seconds <= 0 || distance <= 0)
+            {
+                throw new ApplicationException("Could not calculate time and distance for course entry/exit.");
+            }
+
+            double speedMps = distance / duration.TotalSeconds;
+            AverageBoatSpeed = speedMps * MPS_TO_MPH;
         }
     }
 }
