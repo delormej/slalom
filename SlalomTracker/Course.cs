@@ -202,12 +202,12 @@ namespace SlalomTracker
             return IsPointInPoly(point, _polygon);
         }
 
-        private bool IsBoatInEntry(GeoCoordinate point)
+        public bool IsBoatInEntry(GeoCoordinate point)
         {
             return IsPointInPoly(point, _entryPolygon);
         }
 
-        private bool IsBoatInExit(GeoCoordinate point)
+        public bool IsBoatInExit(GeoCoordinate point)
         {
             return IsPointInPoly(point, _exitPolygon);
         }

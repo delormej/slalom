@@ -135,25 +135,26 @@ namespace SlalomTracker
             // Block on this to enure only the first event entering the course gets recorded.
             lock (this)
             {
-                inCourse = this.Course.IsBoatInCourse(current.BoatGeoCoordinate);
-                if (inCourse && !m_enteredCourse)
+                if (!m_enteredCourse && this.Course.IsBoatInCourse(current.BoatGeoCoordinate))
                 {
-                    // Boat pilon is now in the course.
                     m_enteredCourse = true;
+                }
+
+                if (CourseEntryTimestamp == DateTime.MinValue && 
+                        this.Course.IsBoatInEntry(current.BoatGeoCoordinate))
+                {
                     CourseEntryTimestamp = current.Timestamp;
                 }
-                else if (!inCourse && m_enteredCourse)
+                else if (CourseExitTimestamp == DateTime.MinValue &&
+                        this.Course.IsBoatInExit(current.BoatGeoCoordinate))
                 {
-                    // record exit time.
                     CourseExitTimestamp = current.Timestamp;
+                    // Calculate speed.
                 }
-                else
-                {
-                    /* System.Diagnostics.Trace.WriteLine(
-                        string.Format("In Course? {3}. {0}: {1},{2}", 
-                        current.Timestamp, current.BoatGeoCoordinate.Latitude, 
-                        current.BoatGeoCoordinate.Longitude, inCourse));*/
-                }
+
+                // In course if we've entered and have not exited.
+                inCourse = (CourseEntryTimestamp != DateTime.MinValue &&
+                    CourseExitTimestamp == DateTime.MinValue);
             }
 
             // Calculate measurements.

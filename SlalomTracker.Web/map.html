@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
   <head>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
@@ -49,6 +49,14 @@
           fillOpacity: 0.35
         });
         bermudaTriangle.setMap(map);
+
+        var entryCood = { lat: 42.286229, lng: -71.359497 };
+
+        var marker = new google.maps.Marker({
+            position: entryCood,
+            map: map,
+            title: 'Entry'
+          });
       }
     </script>
     <script async defer
