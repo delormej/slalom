@@ -24,7 +24,16 @@ namespace SlalomTracker.Cloud.Tests
         [TestMethod]
         public void TestGetBlobDirectory()
         {
+            // Only test if this is Windows:
+            if (!System.Runtime.InteropServices.RuntimeInformation
+                .IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
+            {
+                Console.WriteLine("This test only runs on Windows.");
+                return;
+            }
+
             string localPath = @"\\files\video\GoPro Import\2018-08-23\GOPR0563.MP4";
+            Console.WriteLine("local: " + Path.GetFullPath(localPath));
             string dir = Storage.GetBlobDirectory(localPath);
             Assert.AreEqual<string>("2018-08-23/", dir);
 
@@ -33,6 +42,7 @@ namespace SlalomTracker.Cloud.Tests
             Assert.AreEqual<string>("2018-08-24/", dir);
 
             string relativePath = @"2018-08-24\GOPR0565.MP4";
+            Console.WriteLine("relative: " + Path.GetFullPath(relativePath));
             dir = Storage.GetBlobDirectory(relativePath);
             Assert.AreEqual<string>("2018-08-24/", dir);
         }
@@ -40,6 +50,13 @@ namespace SlalomTracker.Cloud.Tests
         [TestMethod]
         public void TestGetBlobName()
         {
+            if (!System.Runtime.InteropServices.RuntimeInformation
+                .IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
+            {
+                Console.WriteLine("This test only runs on Windows.");
+                return;
+            }
+                        
             // Remote without the HERO5 Black 3 directory.
             string localPath = @"\\files\video\GoPro Import\2018-08-23\GOPR0563.MP4";
             string blobName = Storage.GetBlobName(localPath);
