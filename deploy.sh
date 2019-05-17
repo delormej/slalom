@@ -4,16 +4,16 @@
 : ${1?"Specify version tag"}
 
 # multi-stage build of dotnet container to build and release web api.
-docker build -t jasondelacr.azurecr.io/skiwebapi:$1 --build-arg ski_blobs_connection="$SKIBLOBS" -f ./SlalomTracker.WebApi/Dockerfile .
+docker build -t jasondelacr.azurecr.io/skiwebapi:$1 --build-arg ski_blobs_connection=$SKIBLOBS -f ./SlalomTracker.WebApi/Dockerfile .
 
 # build Azure Function container.
 #docker build -t jasondelacr.azurecr.io/skivideofunction:$1 --build-arg ski_blobs_connection="$SKIBLOBS" -f SlalomTracker.OnVideoQueued/Dockerfile .
 
 # Authenticate to the Azure Container Registry
-az acr login -n jasondelAcr
+#az acr login -n jasondelAcr
 
 # push to the Azure Container Registry
-docker push jasondelacr.azurecr.io/skiwebapi:$1
+#docker push jasondelacr.azurecr.io/skiwebapi:$1
 #docker push jasondelacr.azurecr.io/skivideofunction:$1
 
 ####
