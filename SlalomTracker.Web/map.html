@@ -23,9 +23,10 @@
     <script>
 
       // This example creates a simple polygon representing the Bermuda Triangle.
+      let map;
 
       function initMap() {
-        var map = new google.maps.Map(document.getElementById('map'), {
+        map = new google.maps.Map(document.getElementById('map'), {
           zoom: 17,
           center: {lat: 42.2862329922264, lng: -71.3595652772975},
           mapTypeId: 'terrain'
@@ -50,12 +51,25 @@
         });
         bermudaTriangle.setMap(map);
 
-        var entryCood = { lat: 42.286229, lng: -71.359497 };
+        
+        var entryCoord = { lat: 42.286229, lng: -71.359497 };
+        addMarker(entryCoord, 'green');
 
-        var marker = new google.maps.Marker({
-            position: entryCood,
+        //var exitCoord = { lat: 42.28622924, lng: -71.35950488 };
+        var exitCoord = { lat: 42.28958014, lng: -71.35911924 };
+        addMarker(exitCoord, 'yellow');
+      }
+
+      function addMarker(latLng, color) {
+          let url = "http://maps.google.com/mapfiles/ms/icons/";
+          url += color + "-dot.png";
+
+          let marker = new google.maps.Marker({
             map: map,
-            title: 'Entry'
+            position: latLng,
+            icon: {
+              url: url
+            }
           });
       }
     </script>
