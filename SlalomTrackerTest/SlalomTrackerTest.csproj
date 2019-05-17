@@ -17,4 +17,10 @@
     <ProjectReference Include="..\SlalomTracker\SlalomTracker.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Files used by test harness. -->
+    <Content Include="GOPR0194.json" CopyToOutputDirectory="Always" />
+    <Content Include="..\Video\MetadataExtractor\GOPR0565.json" CopyToOutputDirectory="Always"/>
+  </ItemGroup>  
+
 </Project>

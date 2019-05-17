@@ -32,7 +32,7 @@ namespace SlalomTracker
         /// <returns></returns>
         public static CoursePass CreateTestCoursePass()
         {
-            return CoursePassFactory.FromFile("..\\..\\..\\GOPR0194.json");
+            return CoursePassFactory.FromFile("GOPR0194.json");
         }
 
         public static Course CreateTestCourse()
@@ -90,7 +90,7 @@ namespace SlalomTracker
         [TestMethod]
         public void TestFindCourse()
         {
-            CoursePass pass = CoursePassFactory.FromFile("..\\..\\..\\..\\Video\\MetadataExtractor\\GOPR0565.json");
+            CoursePass pass = CoursePassFactory.FromFile("GOPR0565.json");
             List<Measurement> measurements = pass.Measurements;
             Course course = Course.FindCourse(measurements);
             Assert.IsNotNull(course);

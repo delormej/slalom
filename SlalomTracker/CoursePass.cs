@@ -10,12 +10,12 @@ namespace SlalomTracker
     public class CoursePass
     {
         // Flag if the boat pilon entered the course geofenced area.
-        bool m_enteredCourse; 
+        bool m_entered55s; 
+
+        private Measurement m_courseEntry;
+        private Measurement m_courseExit;
 
         public List<Measurement> Measurements;
-
-        public DateTime CourseEntryTimestamp { get; set; }
-        public DateTime CourseExitTimestamp { get; set; }
 
         public Course Course { get; private set; }
 
@@ -65,7 +65,7 @@ namespace SlalomTracker
         /// <returns></returns>
         public CoursePosition CoursePositionFromGeo(GeoCoordinate boatPosition)
         {
-            if (!m_enteredCourse)
+            if (!m_entered55s)
                 return CoursePosition.Empty;
 
             double distance = boatPosition.GetDistanceTo(Course.Course55EntryCL);
@@ -135,26 +135,26 @@ namespace SlalomTracker
             // Block on this to enure only the first event entering the course gets recorded.
             lock (this)
             {
-                if (!m_enteredCourse && this.Course.IsBoatInCourse(current.BoatGeoCoordinate))
+                if (!m_entered55s && this.Course.IsBoatInCourse(current.BoatGeoCoordinate))
                 {
-                    m_enteredCourse = true;
+                    m_entered55s = true;
                 }
 
-                if (CourseEntryTimestamp == DateTime.MinValue && 
+                if (m_courseEntry == null && 
                         this.Course.IsBoatInEntry(current.BoatGeoCoordinate))
                 {
-                    CourseEntryTimestamp = current.Timestamp;
+                    m_courseEntry = current;
                 }
-                else if (CourseExitTimestamp == DateTime.MinValue &&
+                else if (m_courseExit == null &&
                         this.Course.IsBoatInExit(current.BoatGeoCoordinate))
                 {
-                    CourseExitTimestamp = current.Timestamp;
+                    m_courseExit = current;
                     // Calculate speed.
                 }
 
                 // In course if we've entered and have not exited.
-                inCourse = (CourseEntryTimestamp != DateTime.MinValue &&
-                    CourseExitTimestamp == DateTime.MinValue);
+                inCourse = (m_courseEntry != null &&
+                    m_courseExit == null);
             }
 
             // Calculate measurements.

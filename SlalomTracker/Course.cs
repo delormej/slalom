@@ -200,7 +200,7 @@ namespace SlalomTracker
         }
 
         /// <summary>
-        /// Determines if the boat is within the course geofenced area, inclusive of pre-gates.
+        /// Determines if the boat is within the course geofenced area, inclusive of pre-gates (55s).
         /// </summary>
         /// <param name="boatPosition"></param>
         /// <returns></returns>

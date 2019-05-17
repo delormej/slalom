@@ -14,7 +14,7 @@ namespace SlalomTracker
         {
             Rope rope = new Rope(ropeM);
             CoursePass pass = new CoursePass(CourseTest.CreateTestCoursePass().Course, rope);
-            pass.CourseEntryTimestamp = DateTime.Now.Subtract(TimeSpan.FromSeconds(15));
+            DateTime courseEntryTimestamp = DateTime.Now.Subtract(TimeSpan.FromSeconds(15));
 
             // Travel down the course is 259m @ 14m/sec
             // 2 events per second
@@ -51,7 +51,7 @@ namespace SlalomTracker
                 // increment 1 second & 14 meters.
                 double longitude = CourseTest.AddDistance(CourseTest.latitude, CourseTest.longitude,
                     ((metersPerSecond / eventsPerSecond) * i) + ropeM);
-                DateTime time = pass.CourseEntryTimestamp.AddSeconds((double)(1.0 / eventsPerSecond) * i);
+                DateTime time = courseEntryTimestamp.AddSeconds((double)(1.0 / eventsPerSecond) * i);
 
                 pass.Track(time, 
                     (ropeSpeed * ropeDirection), 
@@ -92,7 +92,7 @@ namespace SlalomTracker
 
             //42.2867806,"Longitude":-71.3594418 == Chet @ 15 seconds into the GOPR0565.mp4
             // .\slalom\SlalomTracker\Video\MetadataExtractor\GOPR0565.json
-            CoursePass pass = CoursePassFactory.FromFile(@"..\..\..\..\Video\MetadataExtractor\GOPR0565.json");
+            CoursePass pass = CoursePassFactory.FromFile(@"GOPR0565.json");
             CoursePosition position = pass.CoursePositionFromGeo(42.2867806, -71.3594418);
 
             Assert.IsTrue(position.X == 11.5, "Incorrect course position.");
@@ -112,7 +112,7 @@ namespace SlalomTracker
         [TestMethod]
         public void GetBestFitTest()
         {
-            CoursePass pass = CoursePassFactory.FromFile(@"..\..\..\..\Video\MetadataExtractor\GOPR0565.json");
+            CoursePass pass = CoursePassFactory.FromFile(@"GOPR0565.json");
             CoursePass best = CoursePassFactory.FitPass(pass.Measurements, pass.Course, pass.Rope);
             double precision = best.GetGatePrecision();
 
