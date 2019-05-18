@@ -78,7 +78,7 @@ namespace SlalomTracker.Cloud
             }
 
             string uri = blob.SnapshotQualifiedUri.AbsoluteUri;
-            //QueueNewVideo(blobName, uri);
+            QueueNewVideo(blobName, uri);
             return uri; // URL to the uploaded video.
         }
 
@@ -153,10 +153,10 @@ namespace SlalomTracker.Cloud
 
         private void WalkDirectories(string path) 
         {
+            WalkFiles(path);
             string[] dirs = Directory.GetDirectories(path);
             for (int i = 0; i < dirs.Length; i++) 
             {
-                WalkFiles(dirs[i]);
                 WalkDirectories(dirs[i]);
             }         
         }
