@@ -6,3 +6,4 @@ SlalomTracker.Android
 **/obj/
 TestResults
 */*.MP4
+.vs
