@@ -62,6 +62,16 @@ namespace SlalomTracker.WebApi.Controllers
 
         private Bitmap GetImage(string jsonUrl, double clOffset, double rope)
         {
+            Storage storage = new Storage();
+            string http = storage.BlobStorageUri.Replace("https:", "http:");
+            string https = storage.BlobStorageUri;
+            if (!(jsonUrl.StartsWith(http) || jsonUrl.StartsWith(https)))
+            {
+                if (jsonUrl.StartsWith("/"))
+                    jsonUrl = jsonUrl.TrimStart('/');
+                jsonUrl = storage.BlobStorageUri + "ski/" + jsonUrl;
+            }
+
             CoursePass pass = CoursePassFactory.FromUrl(jsonUrl, clOffset, rope);
             CoursePassImage image = new CoursePassImage(pass);
             Bitmap bitmap = image.Draw();

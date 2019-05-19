@@ -18,6 +18,14 @@ namespace SlalomTracker.Cloud
         const string ENV_SKIBLOBS = "SKIBLOBS";
         const string BLOB_QUEUE = "skiqueue";
 
+        public string BlobStorageUri 
+        {
+            get 
+            {
+                return _account.BlobStorageUri.PrimaryUri.AbsoluteUri;
+            }
+        }
+
         CloudStorageAccount _account;
         Queue _queue;
 
@@ -75,6 +83,7 @@ namespace SlalomTracker.Cloud
             else
             {
                 Console.WriteLine("File already existed: " + blobName);
+                return "";
             }
 
             string uri = blob.SnapshotQualifiedUri.AbsoluteUri;
