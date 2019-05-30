@@ -12,17 +12,9 @@ namespace SlalomTracker.WebApi.Controllers
     [ApiController]
     public class VideoController : Controller
     {
-
-        [HttpPost]
-        [Route("api/body")]
-        public string JsonStringBody([FromBody] string content)
-        {
-            return content;
-        }
-
         [HttpPost]
         [Route("api/video")]
-        public IActionResult ProcessVideo()
+        public IActionResult QueueVideo()
         {
             string json = null;
             using (StreamReader reader = new StreamReader(Request.Body, Encoding.UTF8))

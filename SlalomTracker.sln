@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.28803.452
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlalomTracker", "SlalomTracker\SlalomTracker.csproj", "{4C11A895-1730-4698-B186-250991A34A62}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlalomTracker.WindowsUI", "SlalomTracker.WindowsUI\SlalomTracker.WindowsUI.csproj", "{1ADA15B7-1C2A-4F28-B707-41E449AA8164}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{234B0062-94AD-4383-875C-030F1402F1A8}"
 	ProjectSection(SolutionItems) = preProject
 		GOPR0403.csv = GOPR0403.csv
