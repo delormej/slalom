@@ -27,7 +27,7 @@ namespace SlalomTracker.OnVideoQueued
         public ProcessVideo(TelemetryConfiguration config)
         {
             this.insights = new TelemetryClient(config);
-            TrackEvent(EVENT_FUNCTION_STARTED, "");
+            TrackEvent(EVENT_FUNCTION_STARTED, "with_config");
         }
 
         [FunctionName("ProcessVideoTrigger")]
@@ -38,15 +38,23 @@ namespace SlalomTracker.OnVideoQueued
             try 
             {
                 SkiVideoEntity video = JsonConvert.DeserializeObject<SkiVideoEntity>(videoItem);
-                log.LogInformation($"C# Queue trigger function processed: {videoItem}");
-                Console.WriteLine($"C# Queue trigger function processed: {video.Url}");
-                ProcessVideoMetadata(video.Url);
-                TrackEvent(EVENT_VIDEO_PROCESSED, video.Url);
-                Console.WriteLine("Succesfully processed: " + video.Url);
+                if (video != null)
+                {
+                    // 2 logging lines are here to see which one works.
+                    log.LogInformation($"Triggered on: {videoItem}");
+                    Console.WriteLine($"Queue trigger function processed: {video.Url}");
+                    ProcessVideoMetadata(video.Url);
+                    TrackEvent(EVENT_VIDEO_PROCESSED, video.Url);
+                    Console.WriteLine($"Succesfully processed: {video.Url}");
+                }
+                else
+                {
+                    log.LogError($"Queue message was not in the correct format:\n{videoItem}");
+                }
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine(e);
+                Console.Error.WriteLine($"Error processing message: {videoItem}\nException: {e}");
                 throw;
             }            
         }
@@ -70,7 +78,8 @@ namespace SlalomTracker.OnVideoQueued
             }
             else
             {
-                Console.Error.WriteLine("Insights object not initialized, error trying to record: " + eventName);
+                Console.Error.WriteLine("Insights object not initialized, error trying to record: " + 
+                    eventName + ", " + value);
             }
         }
     }
