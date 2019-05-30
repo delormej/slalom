@@ -37,29 +37,6 @@ namespace SlalomTracker.WebApi.Controllers
             }
         }
 
-        [HttpPost]
-        public IActionResult QueueVideo(string videoUrl)
-        {
-            // To test, the only way videoUrl will get mapped here is if it's in the query string:
-            //
-            // curl -X POST -d "" "http://localhost:5000/api/image?videoUrl=http://skivideostorage.blob.core.windows.net/ski/2018-05-21/GOPR0084.MP4" 
-            //
-            try
-            {
-                Storage storage = new Storage();
-                string blobName = GetBlobName(videoUrl);
-                storage.Queue.Add(blobName, videoUrl);
-                
-                Console.WriteLine("Queued video: " + videoUrl);
-                return StatusCode(200);
-            }
-            catch (Exception e)
-            {
-                Console.Error.WriteLine("Unable queue video for procesasing: " + e.Message);
-                return StatusCode(500);
-            }
-        }
-
         private Bitmap GetImage(string jsonUrl, double clOffset, double rope)
         {
             Storage storage = new Storage();
@@ -77,11 +54,6 @@ namespace SlalomTracker.WebApi.Controllers
             Bitmap bitmap = image.Draw();
             return bitmap;
             //bitmap.Save(imagePath, ImageFormat.Png);
-        }
-
-        private string GetBlobName(string videoUrl)
-        {
-            return Storage.GetBlobName(Storage.GetLocalPath(videoUrl));
         }
     }
 }

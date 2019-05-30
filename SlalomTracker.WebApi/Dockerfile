@@ -1,7 +1,6 @@
-
 FROM microsoft/dotnet:2.1-sdk as build
 ARG ski_blobs_connection
-RUN echo conn: ${ski_blobs_connection}
+
 # Workaround, dependencies for graphics libraries, per this issue: https://github.com/dotnet/corefx/issues/25102
 RUN apt-get update \
     &&  apt-get install -y libgdiplus \
@@ -10,7 +9,6 @@ RUN apt-get update \
 COPY ./ /ski
 WORKDIR /ski/SlalomTracker.WebApi
 ENV SKIBLOBS=${ski_blobs_connection}
-RUN dotnet test ../SlalomTrackerTest
 RUN dotnet publish ./SlalomTracker.WebApi.csproj -o /ski/build/
 
 # create the runtime image (smaller, doesn't need the full sdk for building)
@@ -19,7 +17,6 @@ ARG ski_blobs_connection
 # Environment Variables
 ENV SKIBLOBS=${ski_blobs_connection}
 ENV ASPNETCORE_URLS=http://0.0.0.0:80
-RUN echo conn: $SKIBLOBS, ${ski_blobs_connection}
 
 # Workaround, dependencies for graphics libraries, per this issue: https://github.com/dotnet/corefx/issues/25102
 RUN apt-get update \

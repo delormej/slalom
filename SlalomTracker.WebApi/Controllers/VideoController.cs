@@ -5,10 +5,10 @@ using System.Net;
 using System.Net.Http;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Mvc;
+using SlalomTracker.Cloud;
 
 namespace SlalomTracker.WebApi.Controllers
 {
-    //[Route("api/[controller]")]
     [ApiController]
     public class VideoController : Controller
     {
@@ -16,40 +16,78 @@ namespace SlalomTracker.WebApi.Controllers
         [Route("api/video")]
         public IActionResult QueueVideo()
         {
+            string json = GetJsonFromBody();
+            string videoUrl = GetUrlFromEvent(json);
+            if (videoUrl == null)        
+            {
+                Console.Error.WriteLine("Unable to find videoUrl in payload.");
+                return StatusCode(500);
+            }
+
+            try
+            {
+                Storage storage = new Storage();
+                string blobName = GetBlobName(videoUrl);
+                storage.Queue.Add(blobName, videoUrl);
+                
+                Console.WriteLine("Queued video: " + videoUrl);
+                return StatusCode(200);
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine("Unable queue video for procesasing: " + e.Message);
+                return StatusCode(500);
+            }
+        }
+
+        private string GetJsonFromBody()
+        {
             string json = null;
             using (StreamReader reader = new StreamReader(Request.Body, Encoding.UTF8))
             {  
                 json = reader.ReadToEnd();
             }
-
-            if (json != null)        
-            {
-                string url = GetUrlFromEvent(json);
-                Console.WriteLine("Url is: " + url);
-                return StatusCode(204);
-            }
-            else
-            {
-                Console.Error.WriteLine("json was empty.");
-            }
-
-            Console.Error.WriteLine("Unable to parse json body.");
-            return StatusCode(500);                
+            return json;
         }
 
         private string GetUrlFromEvent(string message)
         {
+            if (message == null) {
+                Console.Error.WriteLine("Cannot get Url from Event, message empty.");
+                return null;
+            }
+
             dynamic objectEvent = JsonConvert.DeserializeObject(message);
+            string eventType = objectEvent.message.attributes.eventType;
+
+            if (eventType != "OBJECT_FINALIZE")
+            {
+                Console.Error.WriteLine("Invalid event type: " + eventType);
+                return null;
+            }
+
             string bucketId = objectEvent.message.attributes.bucketId;
             string objectId = objectEvent.message.attributes.objectId;
-            string data = objectEvent.message.data;           
+            string data = objectEvent.message.data;
+
+            if (!objectId.ToUpper().EndsWith("MP4"))
+            {
+                Console.Error.WriteLine("Object was not an MP4 file: " + objectId);
+                return null;
+            }
+
             string url = string.Format("https://storage.googleapis.com/{0}/{1}", bucketId, objectId);
             return url;
         }
+
+        private string GetBlobName(string videoUrl)
+        {
+            return Storage.GetBlobName(Storage.GetLocalPath(videoUrl));
+        }        
     }
 }
 
-/*
+/*  EXAMPLE payload from gcloud pubsub.
 { 
     "message": 
     {
