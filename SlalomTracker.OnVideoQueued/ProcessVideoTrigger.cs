@@ -40,7 +40,12 @@ namespace SlalomTracker.OnVideoQueued
                 SkiVideoEntity video = JsonConvert.DeserializeObject<SkiVideoEntity>(videoItem);
                 if (video != null)
                 {
-                    // 2 logging lines are here to see which one works.
+                    if (!video.Url.ToUpper().EndsWith("MP4"))
+                    {
+                        log.LogWarning($"File was not a video: {video.Url}");
+                        return;
+                    }
+                    // log.* records in app insights, Console.WriteLine records in container logs.
                     log.LogInformation($"Triggered on: {videoItem}");
                     Console.WriteLine($"Queue trigger function processed: {video.Url}");
                     ProcessVideoMetadata(video.Url);
