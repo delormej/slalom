@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: skiwebapi-service
+  labels:
+    app: skiwebapi
+spec:
+  ports:
+  - port: 80
+  selector:
+    app: skiwebapi
+  type: LoadBalancer    
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: skiwebapi-deploy
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: skiwebapi
+    spec:
+      containers:
+      - name: skiwebapi-cntr
+        image: jjdelorme/skiwebapi:v5
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+

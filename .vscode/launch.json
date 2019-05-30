@@ -8,7 +8,7 @@
            "name": ".NET Core Launch (web)",
            "type": "coreclr",
            "request": "launch",
-           "preLaunchTask": "build",
+           //"preLaunchTask": "build",
            "requireExactSource": false,
            "program": "${workspaceFolder}/SlalomTracker.WebApi/bin/Debug/netcoreapp2.1/SlalomTracker.WebApi.dll",
            "args": [],
