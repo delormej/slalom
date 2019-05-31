@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="xFFmpeg.NET" Version="3.3.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,8 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-      <Content Include="gpmfdemo" 
-        CopyToOutputDirectory="Always"
-        CopyToPublishDirectory="Never" />
+      <Content Include="gpmfdemo" CopyToOutputDirectory="Always" CopyToPublishDirectory="Never" />
     </ItemGroup>
 </Project>

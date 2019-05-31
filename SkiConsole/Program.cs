@@ -43,6 +43,7 @@ namespace SkiConsole
             {
                 // eg. ski -e 2018-06-20/GOPR0194.MP4 GOPR0194.json
                 ExtractMetadataAsJson(args[1], args[2]);
+                ProcessVideo(args[1]);
             }
             else if (args[0] == "-i" && args.Length >= 2)
             {
@@ -141,6 +142,20 @@ namespace SkiConsole
         {
             string json = Extract.ExtractMetadata(videoLocalPath);
             System.IO.File.WriteAllText(jsonPath, json);
+        }
+
+        private static string ProcessVideo(string videoLocalPath)
+        {
+            Video video = new Video();
+            Console.WriteLine($"Trimming video: {videoLocalPath}");
+            var trimTask = video.TrimAsync(videoLocalPath, 14, 20);
+            trimTask.Wait();
+            string trimmedFile = trimTask.Result;
+            Console.WriteLine($"Removing audio from video: {videoLocalPath}");
+            var audioTask = video.RemoveAudioAsync(trimmedFile);
+            audioTask.Wait();
+            string silentFile = audioTask.Result;
+            return silentFile;
         }
 
         private static string CreateImage(string jsonPath, double clOffset, double rope)
