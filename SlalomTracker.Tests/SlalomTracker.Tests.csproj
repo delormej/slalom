@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
@@ -10,10 +10,17 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.2.1" />
     <PackageReference Include="MSTest.TestFramework" Version="1.2.1" />
+    <PackageReference Include="System.Drawing.Common" Version="4.5.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SlalomTracker\SlalomTracker.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <!-- Files used by test harness. -->
+    <Content Include="GOPR0194.json" CopyToOutputDirectory="Always" />
+    <Content Include="..\Video\MetadataExtractor\GOPR0565.json" CopyToOutputDirectory="Always"/>
+  </ItemGroup>  
 
 </Project>

@@ -16,7 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Video", "Video", "{63297DE1
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetadataExtractor.Tests", "Video\MetadataExtractor.Tests\MetadataExtractor.Tests.csproj", "{47BD6450-EAEC-40CC-8D7B-33046CA4C7F9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlalomTrackerTest", "SlalomTrackerTest\SlalomTrackerTest.csproj", "{336AEC22-4BB4-4B68-90C2-F7771EAA487C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlalomTracker.Tests", "SlalomTracker.Tests\SlalomTracker.Tests.csproj", "{336AEC22-4BB4-4B68-90C2-F7771EAA487C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SkiConsole", "SkiConsole\SkiConsole.csproj", "{02AE139F-95FD-4787-9186-D4057923AF68}"
 EndProject
