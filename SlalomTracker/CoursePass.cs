@@ -15,6 +15,9 @@ namespace SlalomTracker
         private Measurement m_courseEntry;
         private Measurement m_courseExit;
 
+        public Measurement Entry { get { return m_courseEntry; } }
+        public Measurement Exit { get { return m_courseExit; } }
+
         public List<Measurement> Measurements;
 
         public Course Course { get; private set; }

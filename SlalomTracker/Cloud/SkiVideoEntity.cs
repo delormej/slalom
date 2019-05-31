@@ -16,6 +16,7 @@ namespace SlalomTracker.Cloud
             SetKeys(path);
             BoatSpeedMph = pass.AverageBoatSpeed;
             CourseName = pass.Course.Name;
+            EntryTime = pass.Entry.Timestamp.Subtract(pass.Measurements[0].Timestamp);
         }
 
         public string Url { get; set; }
@@ -31,6 +32,8 @@ namespace SlalomTracker.Cloud
         public bool All6Balls { get; set; }
 
         public string CourseName { get; set; }
+
+        public TimeSpan EntryTime { get; set; }
 
         private void SetKeys(string path)
         {
