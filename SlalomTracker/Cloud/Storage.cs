@@ -40,9 +40,9 @@ namespace SlalomTracker.Cloud
 
         public void AddMetadata(string videoUrl, string json)
         {
-            string blobName = GetBlobName(videoUrl);
             CoursePass pass = CoursePassFactory.FromJson(json);
-            AddTableEntity(blobName, pass);
+            AddTableEntity(videoUrl, pass);
+            string blobName = GetBlobName(videoUrl);
             UploadMeasurements(blobName, json);
             Console.WriteLine("Uploaded metadata for video:" + videoUrl);
         }
@@ -275,9 +275,9 @@ namespace SlalomTracker.Cloud
             _queue.Add(blobName, url);
         }
 
-        private void AddTableEntity(string blobName, CoursePass pass)
+        private void AddTableEntity(string videoUrl, CoursePass pass)
         {
-            SkiVideoEntity entity = new SkiVideoEntity(blobName, pass);
+            SkiVideoEntity entity = new SkiVideoEntity(videoUrl, pass);
             CloudTableClient client = _account.CreateCloudTableClient();
             CloudTable table = client.GetTableReference(SKITABLE);
             TableOperation insert = TableOperation.InsertOrReplace(entity);

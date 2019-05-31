@@ -69,8 +69,7 @@ namespace SlalomTracker.OnVideoQueued
             string localPath = Storage.DownloadVideo(url);
             string json = Extract.ExtractMetadata(localPath);
             Storage storage = new Storage();
-            string blobName = Storage.GetBlobName(localPath);
-            storage.AddMetadata(blobName, json);
+            storage.AddMetadata(url, json);
         }
 
         private void TrackEvent(string eventName, string value)

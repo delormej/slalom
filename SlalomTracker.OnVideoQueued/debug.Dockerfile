@@ -25,4 +25,4 @@ COPY --from=installer-env /ski/SlalomTracker.OnVideoQueued/build/gpmfdemo /azure
 # docker build -t skivideofunction:debug -f ./SlalomTracker.OnVideoQueued/debug.Dockerfile . 
 # Execute debug with:
 # It will error out without the appinsights key and skiblobs env variables
-#docker run -it -e SKIBLOBS=$SKIBLOBS -e APPINSIGHTS_INSTRUMENTATIONKEY=627db034-95e1-4e6c-b277-46cb1bbb58d8 --name ski-dbg skivideofunction:debug
+# docker run -it -e SKIBLOBS=$SKIBLOBS -e APPINSIGHTS_INSTRUMENTATIONKEY=627db034-95e1-4e6c-b277-46cb1bbb58d8 --name ski-dbg skivideofunction:debug

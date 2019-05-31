@@ -10,10 +10,10 @@ namespace SlalomTracker.Cloud
         {
             
         }
-        public SkiVideoEntity(string path, CoursePass pass)
+        public SkiVideoEntity(string videoUrl, CoursePass pass)
         {
-            this.Url = path;
-            SetKeys(path);
+            this.Url = videoUrl;
+            SetKeys(videoUrl);
             BoatSpeedMph = pass.AverageBoatSpeed;
             CourseName = pass.Course.Name;
             EntryTime = GetSecondsAtEntry(pass);
@@ -35,8 +35,10 @@ namespace SlalomTracker.Cloud
 
         public double EntryTime { get; set; }
 
-        private void SetKeys(string path)
+        private void SetKeys(string videoUrl)
         {
+            string path = Storage.GetBlobName(videoUrl);
+
             if (path.Contains(@"\"))
                 path = path.Replace('\\', '/');
 
