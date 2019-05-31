@@ -20,6 +20,13 @@ namespace SkiConsole
                 return;
             }
             
+            if (args[0].StartsWith("debug"))
+            {
+                args[0] = args[0].Replace("debug", "");
+                Console.WriteLine("Press any key to start debugging...");
+                Console.ReadKey();
+            }
+
             if (args[0] == "-u" && args.Length >= 2)
             {
                 // eg. ski -u //files/Go Pro/2018-08-20"
