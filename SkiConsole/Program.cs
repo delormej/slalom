@@ -43,7 +43,9 @@ namespace SkiConsole
             {
                 // eg. ski -e 2018-06-20/GOPR0194.MP4 GOPR0194.json
                 ExtractMetadataAsJson(args[1], args[2]);
-                ProcessVideo(args[1]);
+                string videoPath = ProcessVideo(args[1]);
+                UploadYouTube(videoPath);
+
             }
             else if (args[0] == "-i" && args.Length >= 2)
             {
@@ -72,6 +74,10 @@ namespace SkiConsole
             {
                 PrintAllMetadata();
             }
+            else if (args[0] == "-y")
+            {
+                UploadYouTube(args[1]);
+            }
             else
                 ShowUsage();
         }
@@ -92,7 +98,9 @@ namespace SkiConsole
                                 "ski -i https://delormej.blob.core.windows.net/ski/2018-08-24/GOPR0565.json 0 22\n\t\t" +
                                 "ski -i https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4\n\t" +
                                 "Download video, process and upload metadata.\n\t\t" +
-                                "ski -p https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4\n"
+                                "ski -p https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4\n" +
+                                "Update video to YouTube.\n\t\t" +
+                                "ski -y 2018-06-20/GOPR0194.MP4"
                             );
         }
 
@@ -115,6 +123,12 @@ namespace SkiConsole
             Storage storage = new Storage();
             string blobName = Storage.GetBlobName(localPath);
             storage.AddMetadata(blobName, json);
+        }
+
+        private static void UploadYouTube(string localPath)
+        {
+            YouTube youTube = new YouTube();
+            youTube.Upload(localPath);
         }
 
         private static void UploadVideos(string localPath)

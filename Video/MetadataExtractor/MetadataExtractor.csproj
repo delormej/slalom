@@ -11,6 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.40.0.1593" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="xFFmpeg.NET" Version="3.3.3" />
   </ItemGroup>
@@ -21,5 +22,6 @@
 
   <ItemGroup>
       <Content Include="gpmfdemo" CopyToOutputDirectory="Always" CopyToPublishDirectory="Never" />
-    </ItemGroup>
+      <Content Include="youtube_client_secret.json" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+  </ItemGroup>
 </Project>
