@@ -28,10 +28,10 @@
             "name": ".NET Core Launch (console)",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build",
+            //"preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/SkiConsole/bin/Debug/netcoreapp2.1/ski.dll",
-            "args": [],
+            "args": ["-e", "${workspaceFolder}/SkiConsole/2018-06-20/GOPR0253.MP4", "253.json"],
             "cwd": "${workspaceFolder}/SkiConsole",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
             "console": "internalConsole",
@@ -43,6 +43,22 @@
             "type": "coreclr",
             "request": "attach",
             "processId": "${command:pickProcess}"
-        }
+        },
+        {
+            "name": ".NET Core Docker Attach",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:pickRemoteProcess}",
+            "pipeTransport": {
+                "pipeProgram": "docker",
+                "pipeArgs": [ "exec", "-i", "ski-dbg" ],
+                "debuggerPath": "/vsdbg/vsdbg",
+                "pipeCwd": "${workspaceRoot}",
+                "quoteArgs": false
+            },
+            "sourceFileMap": {
+                "/ski": "${workspaceRoot}"
+            }
+        }        
     ,]
 }
