@@ -11,7 +11,7 @@ using Microsoft.Azure.Management.ContainerInstance.Fluent.ContainerGroup.Definit
 
 namespace SlalomTracker.Cloud
 {
-    public class VideoProcessingJob
+    public class ContainerInstance
     {
         static void Main(string[] args)
         {
@@ -22,7 +22,7 @@ namespace SlalomTracker.Cloud
                 string containerImage = "busybox";
                 string commandLineExe = "/bin/ash";
                 string[] commandLineArgs = new string[] {"-c", "sleep 3600"};
-                CreateContainerInstance(containerGroupName, 
+                Create(containerGroupName, 
                     resourceGroupName, 
                     containerImage,
                     commandLineExe,
@@ -35,7 +35,7 @@ namespace SlalomTracker.Cloud
             }
         }
 
-        public static void CreateContainerInstance(string containerGroupName, 
+        public static void Create(string containerGroupName, 
             string resourceGroupName, 
             string containerImage,
             string commandLineExe,
