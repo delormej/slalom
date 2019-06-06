@@ -8,11 +8,10 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>    
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\SlalomTracker\SlalomTracker.csproj" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="3.0.0" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.24" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.6.1" />    
-    <ProjectReference Include="..\SlalomTracker\SlalomTracker.csproj" />
-    <ProjectReference Include="..\Video\MetadataExtractor\MetadataExtractor.csproj" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
   <ItemGroup>
