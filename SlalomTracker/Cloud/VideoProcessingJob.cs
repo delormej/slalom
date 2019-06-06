@@ -11,7 +11,7 @@ using Microsoft.Azure.Management.ContainerInstance.Fluent.ContainerGroup.Definit
 
 namespace SlalomTracker.Cloud
 {
-    public class Aci
+    public class VideoProcessingJob
     {
         static void Main(string[] args)
         {
