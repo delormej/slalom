@@ -22,6 +22,5 @@
 
   <ItemGroup>
       <Content Include="gpmfdemo" CopyToOutputDirectory="Always" CopyToPublishDirectory="Never" />
-      <Content Include="youtube_client_secret.json" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
   </ItemGroup>
 </Project>
