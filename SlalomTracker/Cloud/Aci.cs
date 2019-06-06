@@ -9,9 +9,9 @@ using Microsoft.Azure.Management.ContainerInstance.Fluent;
 using Microsoft.Azure.Management.ContainerInstance.Fluent.Models;
 using Microsoft.Azure.Management.ContainerInstance.Fluent.ContainerGroup.Definition;
 
-namespace aci
+namespace SlalomTracker.Cloud
 {
-    public class Program
+    public class Aci
     {
         static void Main(string[] args)
         {
@@ -35,7 +35,7 @@ namespace aci
             }
         }
 
-        static void CreateContainerInstance(string containerGroupName, 
+        public static void CreateContainerInstance(string containerGroupName, 
             string resourceGroupName, 
             string containerImage,
             string commandLineExe,
