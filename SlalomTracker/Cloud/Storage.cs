@@ -38,13 +38,19 @@ namespace SlalomTracker.Cloud
         public CloudStorageAccount Account { get { return _account; } }
         public Queue Queue { get { return _queue; } }
 
-        public void AddMetadata(string videoUrl, string json)
+        public SkiVideoEntity AddMetadata(string videoUrl, string json)
         {
             CoursePass pass = CoursePassFactory.FromJson(json);
-            AddTableEntity(videoUrl, pass);
+            return AddMetadata(videoUrl, json, pass);
+        }
+
+        public SkiVideoEntity AddMetadata(string videoUrl, string json, CoursePass pass)
+        {
+            SkiVideoEntity entity = AddTableEntity(videoUrl, pass);
             string blobName = GetBlobName(videoUrl);
             UploadMeasurements(blobName, json);
             Console.WriteLine("Uploaded metadata for video:" + videoUrl);
+            return entity;
         }
 
         public async Task<List<SkiVideoEntity>> GetAllMetdata()
@@ -87,7 +93,6 @@ namespace SlalomTracker.Cloud
             }
 
             string uri = blob.SnapshotQualifiedUri.AbsoluteUri;
-            QueueNewVideo(blobName, uri);
             return uri; // URL to the uploaded video.
         }
 
@@ -275,7 +280,7 @@ namespace SlalomTracker.Cloud
             _queue.Add(blobName, url);
         }
 
-        private void AddTableEntity(string videoUrl, CoursePass pass)
+        private SkiVideoEntity AddTableEntity(string videoUrl, CoursePass pass)
         {
             SkiVideoEntity entity = new SkiVideoEntity(videoUrl, pass);
             CloudTableClient client = _account.CreateCloudTableClient();
@@ -285,6 +290,7 @@ namespace SlalomTracker.Cloud
             createTask.Wait();
             Task insertTask = table.ExecuteAsync(insert);
             insertTask.Wait();
+            return entity;
         }
 
         private void UploadMeasurements(string blobName, string json)

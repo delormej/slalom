@@ -233,6 +233,28 @@ namespace SlalomTracker
 
             return Math.Sqrt(dEntry + dExit);
         }
+
+        public double GetSecondsAtEntry()
+        {
+            double seconds = 0.0d;
+            TimeSpan fromStart = this.Entry.Timestamp.Subtract(
+                this.Measurements[0].Timestamp);
+            if (fromStart != null)
+                seconds = fromStart.TotalSeconds;
+            return seconds;
+        }
+
+        public double GetDurationSeconds()
+        {
+            if (this.Exit == null)
+                return 0.0d;
+            
+            double start = GetSecondsAtEntry();
+            double duration = this.Exit.Timestamp.Subtract(
+                this.Entry.Timestamp).TotalSeconds;
+
+            return duration;
+        }
     
         private Measurement FindHandleAtY(double y)
         {

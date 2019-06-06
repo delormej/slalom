@@ -160,7 +160,7 @@ namespace SkiConsole
 
         private static string ProcessVideo(string videoLocalPath)
         {
-            Video video = new Video();
+            VideoTasks video = new VideoTasks();
             Console.WriteLine($"Trimming video: {videoLocalPath}");
             var trimTask = video.TrimAsync(videoLocalPath, 14, 20);
             trimTask.Wait();

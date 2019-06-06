@@ -4,13 +4,13 @@ using FFmpeg.NET.Events;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MetadataExtractor
+namespace SlalomTracker
 {
-    public class Video
+    public class VideoTasks
     {
         FFmpeg.NET.Engine _ffmpeg;
 
-        public Video()
+        public VideoTasks()
         {
             _ffmpeg = new Engine("ffmpeg");
             _ffmpeg.Error += OnError;

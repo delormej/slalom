@@ -16,7 +16,7 @@ namespace SlalomTracker.Cloud
             SetKeys(videoUrl);
             BoatSpeedMph = pass.AverageBoatSpeed;
             CourseName = pass.Course.Name;
-            EntryTime = GetSecondsAtEntry(pass);
+            EntryTime = pass.GetSecondsAtEntry();
         }
 
         public string Url { get; set; }
@@ -48,19 +48,6 @@ namespace SlalomTracker.Cloud
             int index = path.LastIndexOf(Path.AltDirectorySeparatorChar);
             this.PartitionKey = path.Substring(0, index);
             this.RowKey = path.Substring(index + 1, path.Length - index - 1);
-        }
-
-        private double GetSecondsAtEntry(CoursePass pass)
-        {
-            double seconds = 0.0d;
-            if (pass.Entry != null)
-            {
-                TimeSpan fromStart = pass.Entry.Timestamp.Subtract(
-                    pass.Measurements[0].Timestamp);
-                if (fromStart != null)
-                    seconds = fromStart.TotalSeconds;
-            }
-            return seconds;
         }
     }
 }
