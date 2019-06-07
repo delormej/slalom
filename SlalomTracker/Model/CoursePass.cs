@@ -255,6 +255,14 @@ namespace SlalomTracker
 
             return duration;
         }
+
+        public double GetTotalSeconds()
+        {
+            int count = Measurements.Count-1;
+            double duration = this.Measurements[count].Timestamp.Subtract(
+                this.Measurements[0].Timestamp).TotalSeconds;
+            return duration;
+        }
     
         private Measurement FindHandleAtY(double y)
         {
