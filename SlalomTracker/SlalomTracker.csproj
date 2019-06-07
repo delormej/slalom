@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Video/bin/gpmfdemo" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+    <Content Include="dep/gpmfdemo" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
   </ItemGroup>
 
 </Project>
