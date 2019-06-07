@@ -4,7 +4,7 @@ RUN apt update && \
     apt install ffmpeg -y
 
 COPY ./ /ski
-WORKDIR /ski/SkiConsole
+WORKDIR /ski/bin
 RUN dotnet publish /ski/SkiConsole/SkiConsole.csproj --self-contained true -r linux-x64 -o /ski/bin
 
 #FROM alpine
