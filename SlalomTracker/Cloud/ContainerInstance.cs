@@ -13,6 +13,10 @@ namespace SlalomTracker.Cloud
 {
     public class ContainerInstance
     {
+        const string ExePath = "/ski/bin/ski";
+        const string ResourceGroup = "ski-jobs";
+        const string ContainerImage = "jjdelorme/skiconsole:v1.0";
+
         static void Main(string[] args)
         {
             try
@@ -33,6 +37,11 @@ namespace SlalomTracker.Cloud
                 string errorText = String.Format("{0} \n\n{1}", e.Message, e.InnerException != null ? e.InnerException.Message : "Unable to create container instance.");
                 Console.WriteLine("ERROR: " + e);
             }
+        }
+
+        public static void Create(string videoUrl)
+        {
+            //Create()
         }
 
         public static void Create(string containerGroupName, 
@@ -62,6 +71,15 @@ namespace SlalomTracker.Cloud
                     .WithStartingCommandLine(commandLineExe, commandLineArgs)
                     .Attach()
                 .Create();
+        }
+
+        private string GetJobName(string videoUrl)
+        {
+            string name = "";
+
+            
+
+            return name;
         }
     }
 }
