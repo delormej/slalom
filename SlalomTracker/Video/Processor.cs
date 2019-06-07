@@ -4,11 +4,11 @@ using SlalomTracker.Cloud;
 
 namespace SlalomTracker.Video 
 {
-    public class Processor
+    public class SkiVideoProcessor
     {
         Storage _storage;
 
-        public Processor()
+        public SkiVideoProcessor()
         {
             _storage = new Storage();
         }
@@ -18,7 +18,7 @@ namespace SlalomTracker.Video
         /// removes audio and uploads finalized video.
         /// </summary>
         /// <returns>Url of processed video.</returns>
-        public string Execute(string videoUrl)
+        public string Process(string videoUrl)
         {
             string localPath = Cloud.Storage.DownloadVideo(videoUrl);
             string json = MetadataExtractor.Extract.ExtractMetadata(localPath);

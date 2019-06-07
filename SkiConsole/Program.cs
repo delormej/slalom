@@ -44,9 +44,6 @@ namespace SkiConsole
             {
                 // eg. ski -e 2018-06-20/GOPR0194.MP4 GOPR0194.json
                 ExtractMetadataAsJson(args[1], args[2]);
-                string videoPath = ProcessVideo(args[1]);
-                UploadYouTube(videoPath);
-
             }
             else if (args[0] == "-i" && args.Length >= 2)
             {
@@ -69,7 +66,7 @@ namespace SkiConsole
             else if (args[0] == "-p" && args.Length >= 2)
             {
                 // eg. ski -p https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4
-                ProcessVideoMetadata(args[1]);
+                string url = ProcessVideo(args[1]);
             }
             else if (args[0] == "-m")
             {
@@ -159,10 +156,10 @@ namespace SkiConsole
             System.IO.File.WriteAllText(jsonPath, json);
         }
 
-        private static string ProcessVideo(string videoLocalPath)
+        private static string ProcessVideo(string videoUrl)
         {
-            Processor processor = new Processor();
-            string url = processor.Execute(videoLocalPath);
+            SkiVideoProcessor processor = new SkiVideoProcessor();
+            string url = processor.Process(videoUrl);
             return url;
         }
 
