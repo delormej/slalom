@@ -48,6 +48,26 @@ namespace SlalomTracker
             return outputFile;
         }
 
+        /// <summary>
+        /// Generates a thumbnail image at the seconds specified.  Returns the path.
+        /// </summary>
+        public async Task<string> GetThumbnail(string videoLocalPath, double atSeconds)
+        {
+            if (!videoLocalPath.ToUpper().EndsWith(".MP4"))
+                throw new ApplicationException($"Cannot generate thumbnail, invalid video path: {videoLocalPath}");
+            string thumbnailPath = videoLocalPath.ToUpper().Replace(".MP4", ".PNG");
+
+            var inputFile = new MediaFile (videoLocalPath);
+            var outputFile = new MediaFile(thumbnailPath);
+            var options = new ConversionOptions { Seek = TimeSpan.FromSeconds(atSeconds) };
+
+            Console.WriteLine($"Generating thumbnail: {thumbnailPath} for video: {videoLocalPath} at {atSeconds} seconds.");
+            await _ffmpeg.GetThumbnailAsync(inputFile, outputFile, options);
+            Console.WriteLine($"Generated thumbnail: {thumbnailPath}");
+
+            return thumbnailPath;
+        }
+
         private void OnError(object sender, ConversionErrorEventArgs e)
         {
             Console.WriteLine("Trim video error: [{0} => {1}]: Error: {2}\n{3}", e.Input.FileInfo.Name, e.Output.FileInfo.Name, e.Exception.ExitCode, e.Exception.InnerException);

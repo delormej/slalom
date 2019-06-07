@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using SlalomTracker;
 using SlalomTracker.Cloud;
 
@@ -7,15 +8,17 @@ namespace SlalomTracker.Video
     public class SkiVideoProcessor
     {
         Storage _storage;
+        VideoTasks _videoTasks;
 
         public SkiVideoProcessor()
         {
             _storage = new Storage();
+            _videoTasks = new VideoTasks();      
         }
 
         /// <summary>
-        /// Downloads video, extracts and uploads metadata, trims video to just the course pass,
-        /// removes audio and uploads finalized video.
+        /// Downloads video, extracts metadata, trims video to just the course pass, removes audio, 
+        /// generates thumbnail, and uploads metadata, thumbnail, final video, deletes ingest video.
         /// </summary>
         /// <returns>Url of processed video.</returns>
         public string Process(string videoUrl)
@@ -24,8 +27,15 @@ namespace SlalomTracker.Video
             string json = MetadataExtractor.Extract.ExtractMetadata(localPath);
             CoursePass pass = CoursePassFactory.FromJson(json);
             string processedLocalPath = TrimAndSilenceVideo(localPath, pass);
+            var thumbnailTask = CreateThumbnailAsync(localPath);
             string finalVideoUrl = _storage.UploadVideo(processedLocalPath);
-            _storage.AddMetadata(finalVideoUrl, json, pass);
+            
+            // Wait to get the thumbnail path.
+            thumbnailTask.Wait();
+            string thumbnailUrl = thumbnailTask.Result;
+
+            _storage.AddMetadata(finalVideoUrl, thumbnailUrl, json, pass);
+
             _storage.DeleteIngestedBlob(videoUrl);
 
             return finalVideoUrl;
@@ -50,16 +60,14 @@ namespace SlalomTracker.Video
             {
                 duration += 5.0; /* pad 5 seconds more */
                 Console.WriteLine(
-                    $"Trimming {localPath} from {start} seconds for {duration} seconds.");
-
-                VideoTasks tasks = new VideoTasks();           
+                    $"Trimming {localPath} from {start} seconds for {duration} seconds.");     
                 
-                var trimTask = tasks.TrimAsync(localPath, start, duration);
+                var trimTask = _videoTasks.TrimAsync(localPath, start, duration);
                 trimTask.Wait();
                 string trimmedPath = trimTask.Result;
 
                 Console.WriteLine($"Removing audio from {localPath}.");
-                var silenceTask = tasks.RemoveAudioAsync(trimmedPath);
+                var silenceTask = _videoTasks.RemoveAudioAsync(trimmedPath);
                 silenceTask.Wait();
                 string silencedPath = silenceTask.Result;
 
@@ -70,6 +78,23 @@ namespace SlalomTracker.Video
                 throw new ApplicationException(
                     $"Start ({start}) and duration ({duration}) invalid for video: {localPath}.  Total duration {total} seconds.");
             }
+        }
+
+        /// <summary>
+        /// Creates and uploads a thumbnail async, when complete returns the full uri of 
+        /// the uploaded thumbnail.
+        /// </summary>
+        private Task<string> CreateThumbnailAsync(string localVideoPath, double atSeconds = 0.5)
+        {
+            // Kick thumbnail generation off async.
+            var thumbnailTask = _videoTasks.GetThumbnail(localVideoPath, atSeconds);
+            thumbnailTask.ContinueWith(t => 
+            {
+                _storage.UploadThumbnail(t.Result);
+                return t.Result;
+            });
+            thumbnailTask.Start();
+            return thumbnailTask;
         }
     }
 }

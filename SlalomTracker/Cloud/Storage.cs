@@ -42,12 +42,13 @@ namespace SlalomTracker.Cloud
         public SkiVideoEntity AddMetadata(string videoUrl, string json)
         {
             CoursePass pass = CoursePassFactory.FromJson(json);
-            return AddMetadata(videoUrl, json, pass);
+            return AddMetadata(videoUrl, "", json, pass);
         }
 
-        public SkiVideoEntity AddMetadata(string videoUrl, string json, CoursePass pass)
+        public SkiVideoEntity AddMetadata(string videoUrl, string thumbnailUrl, string json, CoursePass pass)
         {
             SkiVideoEntity entity = AddTableEntity(videoUrl, pass);
+            entity.ThumbnailUrl = thumbnailUrl;
             string blobName = GetBlobName(videoUrl);
             UploadMeasurements(blobName, json);
             Console.WriteLine("Uploaded metadata for video:" + videoUrl);
@@ -87,13 +88,19 @@ namespace SlalomTracker.Cloud
                 Console.WriteLine($"Cloud Blob {blobName} already exists. Overwriting by default.");
             }
 
-            Console.WriteLine($"Uploading video: {localFile}");
+            Console.WriteLine($"Uploading file: {localFile}");
             var task = blob.UploadFromFileAsync(localFile);
             task.Wait();
 
             string uri = blob.SnapshotQualifiedUri.AbsoluteUri;
-            Console.WriteLine($"Upoaded video to {uri}");
-            return uri; // URL to the uploaded video.
+            Console.WriteLine($"Upoaded file to {uri}");
+            return uri; // URL to the uploaded file.
+        }
+
+        public string UploadThumbnail(string localFile)
+        {
+            // For now there is no difference between a video and any other file upload.
+            return UploadVideo(localFile);
         }
 
         public bool BlobNameExists(string blobName)

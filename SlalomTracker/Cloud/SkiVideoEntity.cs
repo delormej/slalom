@@ -20,6 +20,7 @@ namespace SlalomTracker.Cloud
         }
 
         public string Url { get; set; }
+        public string ThumbnailUrl { get; set; }
 
         public string Skier { get; set; }
 
