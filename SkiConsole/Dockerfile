@@ -5,7 +5,8 @@ RUN apt update && \
 
 COPY ./ /ski
 WORKDIR /ski/bin
-RUN dotnet publish /ski/SkiConsole/SkiConsole.csproj --self-contained true -r linux-x64 -o /ski/bin
+RUN dotnet publish /ski/SkiConsole/SkiConsole.csproj --self-contained true -r linux-x64 -o /ski/bin && \
+    chmod +x gpmfdemo
 
 #FROM alpine
 
