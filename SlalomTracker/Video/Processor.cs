@@ -24,7 +24,7 @@ namespace SlalomTracker.Video
             string json = MetadataExtractor.Extract.ExtractMetadata(localPath);
             CoursePass pass = CoursePassFactory.FromJson(json);
             string processedLocalPath = TrimAndSilenceVideo(localPath, pass);
-            string finalVideoUrl = _storage.UploadVideo(localPath);
+            string finalVideoUrl = _storage.UploadVideo(processedLocalPath);
             _storage.AddMetadata(finalVideoUrl, json, pass);
 
             return finalVideoUrl;
@@ -34,18 +34,30 @@ namespace SlalomTracker.Video
         {
             double start = pass.GetSecondsAtEntry();
             double duration = pass.GetDurationSeconds();
-
-            VideoTasks tasks = new VideoTasks();
             
-            var trimTask = tasks.TrimAsync(localPath, start, duration);
-            trimTask.Wait();
-            string trimmedPath = trimTask.Result;
+            if (start > 0 && duration > 0)
+            {
+                duration += 5.0; /* pad 5 seconds more */
+                Console.WriteLine(
+                    $"Trimming {localPath} from {start} seconds for {duration} seconds.");
 
-            var silenceTask = tasks.RemoveAudioAsync(trimmedPath);
-            trimTask.Wait();
-            string silencedPath = trimTask.Result;
+                VideoTasks tasks = new VideoTasks();           
+                
+                var trimTask = tasks.TrimAsync(localPath, start, duration);
+                trimTask.Wait();
+                string trimmedPath = trimTask.Result;
 
-            return silencedPath;
+                Console.WriteLine($"Removing audio from {localPath}.");
+                var silenceTask = tasks.RemoveAudioAsync(trimmedPath);
+                silenceTask.Wait();
+                string silencedPath = silenceTask.Result;
+
+                return silencedPath;
+            }
+            else
+            {
+                throw new ApplicationException($"Start and duration invalid for video: {localPath}");
+            }
         }
     }
 }

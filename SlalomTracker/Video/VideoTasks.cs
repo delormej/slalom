@@ -19,19 +19,28 @@ namespace SlalomTracker
         public async Task<string> TrimAsync(string localVideoPath, double start, double length)
         {
             var inputFile = new MediaFile (localVideoPath);
-            var outputFile = new MediaFile (AppendToFileName(localVideoPath, "_trimmed"));
+            var outputFile = new MediaFile (AppendToFileName(localVideoPath, "_t"));
             var options = new ConversionOptions();            
             options.CutMedia(TimeSpan.FromSeconds(start), TimeSpan.FromSeconds(length));   
             
-            await _ffmpeg.ConvertAsync(inputFile, outputFile, options); 
-            Console.WriteLine($"Converted: {outputFile.FileInfo.FullName}");
-            
+            try 
+            {
+                await _ffmpeg.ConvertAsync(inputFile, outputFile, options); 
+                Console.WriteLine($"Converted: {outputFile.FileInfo.FullName}");
+            }
+            catch (Exception e)
+            {
+                throw new ApplicationException(
+                    "Unable to trim ski video, is FFMPEG installed?",
+                    e
+                );
+            }
             return outputFile.FileInfo.FullName;
         }
 
         public async Task<string> RemoveAudioAsync(string inputFile)
         {
-            string outputFile = AppendToFileName(inputFile, "_silent");
+            string outputFile = AppendToFileName(inputFile, "s");
             string parameters = $"-i {inputFile} -c copy -an {outputFile}";
             await _ffmpeg.ExecuteAsync(parameters);
             Console.WriteLine($"Removed Audio: {outputFile}");
