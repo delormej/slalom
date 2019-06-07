@@ -1,6 +1,7 @@
 ﻿using System;
 using SlalomTracker;
 using SlalomTracker.Cloud;
+using SlalomTracker.Video;
 using MetadataExtractor;
 using System.Drawing.Imaging;
 using System.Drawing;
@@ -160,16 +161,9 @@ namespace SkiConsole
 
         private static string ProcessVideo(string videoLocalPath)
         {
-            VideoTasks video = new VideoTasks();
-            Console.WriteLine($"Trimming video: {videoLocalPath}");
-            var trimTask = video.TrimAsync(videoLocalPath, 14, 20);
-            trimTask.Wait();
-            string trimmedFile = trimTask.Result;
-            Console.WriteLine($"Removing audio from video: {videoLocalPath}");
-            var audioTask = video.RemoveAudioAsync(trimmedFile);
-            audioTask.Wait();
-            string silentFile = audioTask.Result;
-            return silentFile;
+            Processor processor = new Processor();
+            string url = processor.Execute(videoLocalPath);
+            return url;
         }
 
         private static string CreateImage(string jsonPath, double clOffset, double rope)
