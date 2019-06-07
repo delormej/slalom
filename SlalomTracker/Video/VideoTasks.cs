@@ -51,7 +51,7 @@ namespace SlalomTracker
         /// <summary>
         /// Generates a thumbnail image at the seconds specified.  Returns the path.
         /// </summary>
-        public async Task<string> GetThumbnail(string videoLocalPath, double atSeconds)
+        public async Task<string> GetThumbnailAsync(string videoLocalPath, double atSeconds)
         {
             if (!videoLocalPath.ToUpper().EndsWith(".MP4"))
                 throw new ApplicationException($"Cannot generate thumbnail, invalid video path: {videoLocalPath}");

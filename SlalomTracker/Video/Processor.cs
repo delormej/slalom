@@ -26,8 +26,8 @@ namespace SlalomTracker.Video
             string localPath = Cloud.Storage.DownloadVideo(videoUrl);
             string json = MetadataExtractor.Extract.ExtractMetadata(localPath);
             CoursePass pass = CoursePassFactory.FromJson(json);
+            var thumbnailTask = CreateThumbnailAsync(localPath, pass.GetSecondsAtEntry());
             string processedLocalPath = TrimAndSilenceVideo(localPath, pass);
-            var thumbnailTask = CreateThumbnailAsync(localPath);
             string finalVideoUrl = _storage.UploadVideo(processedLocalPath);
             
             // Wait to get the thumbnail path.
@@ -87,13 +87,12 @@ namespace SlalomTracker.Video
         private Task<string> CreateThumbnailAsync(string localVideoPath, double atSeconds = 0.5)
         {
             // Kick thumbnail generation off async.
-            var thumbnailTask = _videoTasks.GetThumbnail(localVideoPath, atSeconds);
+            var thumbnailTask = _videoTasks.GetThumbnailAsync(localVideoPath, atSeconds);
             thumbnailTask.ContinueWith(t => 
             {
                 _storage.UploadThumbnail(t.Result);
                 return t.Result;
             });
-            thumbnailTask.Start();
             return thumbnailTask;
         }
     }
