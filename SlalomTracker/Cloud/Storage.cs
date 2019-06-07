@@ -81,18 +81,17 @@ namespace SlalomTracker.Cloud
             CloudBlockBlob blob = GetBlobReference(blobName);
             Task<bool> existsTask = blob.ExistsAsync();
             existsTask.Wait();
-            if (!existsTask.Result)
+            if (existsTask.Result)
             {
-                var task = blob.UploadFromFileAsync(localFile);
-                task.Wait();
-            }
-            else
-            {
-                Console.WriteLine("File already existed: " + blobName);
-                return "";
+                Console.WriteLine($"Cloud Blob {blobName} already exists. Overwriting by default.");
             }
 
+            Console.WriteLine($"Uploading video: {localFile}");
+            var task = blob.UploadFromFileAsync(localFile);
+            task.Wait();
+
             string uri = blob.SnapshotQualifiedUri.AbsoluteUri;
+            Console.WriteLine($"Upoaded video to {uri}");
             return uri; // URL to the uploaded video.
         }
 
