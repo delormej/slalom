@@ -26,6 +26,7 @@ namespace SlalomTracker.Video
             string processedLocalPath = TrimAndSilenceVideo(localPath, pass);
             string finalVideoUrl = _storage.UploadVideo(processedLocalPath);
             _storage.AddMetadata(finalVideoUrl, json, pass);
+            _storage.DeleteIngestedBlob(videoUrl);
 
             return finalVideoUrl;
         }
@@ -34,8 +35,18 @@ namespace SlalomTracker.Video
         {
             double start = pass.GetSecondsAtEntry();
             double duration = pass.GetDurationSeconds();
+            double total = pass.GetTotalSeconds();
             
-            if (start > 0 && duration > 0)
+            if (start > 0 && duration == 0.0d)
+            {
+                // Likely a crash or didn't exit course, grab 15 seconds or less of the video.
+                if (total > (start + 15.0d))
+                    duration = 15.0d;                    
+                else
+                    duration = (start - total);
+            }
+                
+            if (duration > 0.0d)
             {
                 duration += 5.0; /* pad 5 seconds more */
                 Console.WriteLine(
@@ -56,7 +67,8 @@ namespace SlalomTracker.Video
             }
             else
             {
-                throw new ApplicationException($"Start and duration invalid for video: {localPath}");
+                throw new ApplicationException(
+                    $"Start ({start}) and duration ({duration}) invalid for video: {localPath}.  Total duration {total} seconds.");
             }
         }
     }

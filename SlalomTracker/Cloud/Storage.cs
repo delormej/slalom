@@ -14,6 +14,7 @@ namespace SlalomTracker.Cloud
     public class Storage
     {
         const string SKICONTAINER = "ski";
+        const string INGEST_SKICONTAINER = "ski-ingest";
         const string SKITABLE = "skivideos";
         const string ENV_SKIBLOBS = "SKIBLOBS";
         const string BLOB_QUEUE = "skiqueue";
@@ -232,17 +233,36 @@ namespace SlalomTracker.Cloud
             return dir;
         }
 
-        private CloudBlockBlob GetBlobReference(string blobName)
+        public void DeleteIngestedBlob(string url)
         {
-            CloudBlobContainer blobContainer = GetBlobContainer();
+            string blobName = "";
+            try
+            {
+                blobName = GetBlobName(url);
+                CloudBlockBlob blob = GetBlobReference(blobName, INGEST_SKICONTAINER);
+                if (blob == null)
+                    throw new ApplicationException($"Error deleting. {blobName} did not exist.");
+                blob.DeleteAsync().Wait();
+                Console.WriteLine($"Deleted {blobName}");
+            }
+            catch (Exception e)
+            {
+                throw new ApplicationException(
+                    $"Unable to delete blob {blobName} at {url}", e);
+            }
+        }
+
+        private CloudBlockBlob GetBlobReference(string blobName, string container = SKICONTAINER)
+        {
+            CloudBlobContainer blobContainer = GetBlobContainer(container);
             CloudBlockBlob blob = blobContainer.GetBlockBlobReference(blobName);
             return blob;
         }
 
-        private CloudBlobContainer GetBlobContainer()
+        private CloudBlobContainer GetBlobContainer(string container)
         {
             CloudBlobClient blobClient = _account.CreateCloudBlobClient();
-            return blobClient.GetContainerReference(SKICONTAINER);
+            return blobClient.GetContainerReference(container);
         }
 
         private void Connect()
