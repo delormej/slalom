@@ -89,10 +89,9 @@ namespace SlalomTracker.Video
             // Kick thumbnail generation off async.
             var thumbnailTask = _videoTasks.GetThumbnailAsync(localVideoPath, atSeconds);
             thumbnailTask.ContinueWith(t => 
-            {
-                _storage.UploadThumbnail(t.Result);
-                return t.Result;
-            });
+                {
+                    return _storage.UploadThumbnail(t.Result);
+                });
             return thumbnailTask;
         }
     }
