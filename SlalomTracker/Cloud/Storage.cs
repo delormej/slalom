@@ -16,7 +16,7 @@ namespace SlalomTracker.Cloud
         const string SKICONTAINER = "ski";
         const string INGEST_SKICONTAINER = "ski-ingest";
         const string SKITABLE = "skivideos";
-        const string ENV_SKIBLOBS = "SKIBLOBS";
+        public const string ENV_SKIBLOBS = "SKIBLOBS";
         const string BLOB_QUEUE = "skiqueue";
 
         public string BlobStorageUri 

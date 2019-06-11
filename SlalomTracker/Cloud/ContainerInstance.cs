@@ -1,6 +1,9 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Text;
+using System.Collections.Generic;
+using System.Security.Cryptography;
 using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
@@ -13,42 +16,31 @@ namespace SlalomTracker.Cloud
 {
     public class ContainerInstance
     {
-        const string ExePath = "/ski/bin/ski";
+        const string ExePath = "/ski/ski";
         const string ResourceGroup = "ski-jobs";
-        const string ContainerImage = "jjdelorme/skiconsole:v1.0";
 
-        static void Main(string[] args)
-        {
-            try
-            {
-                string containerGroupName = "aci-msi-test";
-                string resourceGroupName = "ubuntu";
-                string containerImage = "busybox";
-                string commandLineExe = "/bin/ash";
-                string[] commandLineArgs = new string[] {"-c", "sleep 3600"};
-                Create(containerGroupName, 
-                    resourceGroupName, 
-                    containerImage,
-                    commandLineExe,
-                    commandLineArgs);
-            }
-            catch (Exception e)
-            {                               
-                string errorText = String.Format("{0} \n\n{1}", e.Message, e.InnerException != null ? e.InnerException.Message : "Unable to create container instance.");
-                Console.WriteLine("ERROR: " + e);
-            }
-        }
+        const string JobNamePrefix = "aciski-";
+
+        const string ContainerImageEnvVar = "SKICONSOLE_IMAGE";
+
+        const double CpuCoreCount = 1.0;
+        const double MemoryInGb = 1.0;
 
         public static void Create(string videoUrl)
         {
-            //Create()
+            string image = GetContainerImage();
+            string[] args = GetCommandLineArgs(videoUrl);
+            string containerGroup = GetContainerGroupName(videoUrl);
+            Dictionary<string, string> envVars = GetEnvironmentVariables();
+            Create(containerGroup, ResourceGroup, image, ExePath, args, envVars);
         }
 
-        public static void Create(string containerGroupName, 
+        private static void Create(string containerGroupName, 
             string resourceGroupName, 
             string containerImage,
             string commandLineExe,
-            string[] commandLineArgs)
+            string[] commandLineArgs,
+            Dictionary<string, string> environmentVariables)
         {
             var msi = new MSILoginInformation(MSIResourceType.VirtualMachine); 
             var credentials = new AzureCredentials(msi, AzureEnvironment.AzureGlobalCloud);
@@ -63,23 +55,56 @@ namespace SlalomTracker.Cloud
                 .WithLinux()
                 .WithPublicImageRegistryOnly()
                 .WithoutVolume()
-                .DefineContainerInstance(containerGroupName + "-1")
+                .DefineContainerInstance(containerGroupName)
                     .WithImage(containerImage)
                     .WithoutPorts()
-                    .WithCpuCoreCount(1.0)
-                    .WithMemorySizeInGB(1)
+                    .WithCpuCoreCount(CpuCoreCount)
+                    .WithMemorySizeInGB(MemoryInGb)
                     .WithStartingCommandLine(commandLineExe, commandLineArgs)
+                    .WithEnvironmentVariables(environmentVariables)
                     .Attach()
                 .Create();
         }
 
-        private string GetJobName(string videoUrl)
+        private static string[] GetCommandLineArgs(string videoUrl)
         {
-            string name = "";
+            string[] args = new string[] {"-p", videoUrl};
+            return args;
+        }
 
-            
+        private static string GetContainerGroupName(string videoUrl)
+        {
+            string unique = GetHash(videoUrl + System.DateTime.Now.Millisecond);
+            return JobNamePrefix + unique;
+        }
 
-            return name;
+        private static string GetContainerImage()
+        {
+            string env = Environment.GetEnvironmentVariable(ContainerImageEnvVar);
+            if (env == null || env == string.Empty)
+                throw new ApplicationException(
+                    $"No environment variable set for container image: {ContainerImageEnvVar}");
+
+            return env;
+        }        
+
+        private static Dictionary<string, string> GetEnvironmentVariables()
+        {
+            return new Dictionary<string, string>
+            {
+                { 
+                    Storage.ENV_SKIBLOBS, 
+                    Environment.GetEnvironmentVariable(Storage.ENV_SKIBLOBS) 
+                }
+            };
+        }
+
+        private static string GetHash(string videoUrl)
+        {
+            MD5 hash = MD5.Create();
+            byte[] data = hash.ComputeHash(Encoding.UTF8.GetBytes(videoUrl));
+            string computed = Encoding.UTF8.GetString(data);
+            return computed;
         }
     }
 }

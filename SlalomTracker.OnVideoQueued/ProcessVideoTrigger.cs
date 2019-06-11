@@ -16,7 +16,7 @@ namespace SlalomTracker.OnVideoQueued
     public class ProcessVideo
     {
         const string QueueName = "skiqueue";
-        const string StorageConnection = "SKIBLOBS";
+        const string StorageConnectionEnvVar = Storage.ENV_SKIBLOBS;
 
         const string EVENT_FUNCTION_STARTED = "ProcessVideoTrigger_Started";
         const string EVENT_VIDEO_DEQUEUED = "Video_Dequeued";
@@ -32,7 +32,8 @@ namespace SlalomTracker.OnVideoQueued
 
         [FunctionName("ProcessVideoTrigger")]
         public void Run(
-            [QueueTrigger(QueueName, Connection=StorageConnection)]string videoItem, ILogger log)
+            [QueueTrigger(QueueName, Connection=StorageConnectionEnvVar)]
+            string videoItem, ILogger log)
         {
             TrackEvent(EVENT_VIDEO_DEQUEUED, videoItem);
             try 
@@ -48,7 +49,8 @@ namespace SlalomTracker.OnVideoQueued
                     // log.* records in app insights, Console.WriteLine records in container logs.
                     log.LogInformation($"Triggered on: {videoItem}");
                     Console.WriteLine($"Queue trigger function processed: {videoUrl}");
-                    ProcessVideoMetadata(videoUrl);
+                    // ProcessVideoMetadata(videoUrl);
+                    ContainerInstance.Create(videoUrl);
                     TrackEvent(EVENT_VIDEO_PROCESSED, videoUrl);
                     Console.WriteLine($"Succesfully processed: {videoUrl}");
                 }
