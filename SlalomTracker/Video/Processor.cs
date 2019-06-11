@@ -53,7 +53,7 @@ namespace SlalomTracker.Video
                 if (total > (start + 15.0d))
                     duration = 15.0d;                    
                 else
-                    duration = (start - total);
+                    duration = (total - start);
             }
                 
             if (duration > 0.0d)
