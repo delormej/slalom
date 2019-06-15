@@ -1,16 +1,8 @@
 using System;
-using System.IO;
-using System.Net;
-using System.Text;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
-using Microsoft.Azure.Management.ContainerInstance.Fluent;
-using Microsoft.Azure.Management.ContainerInstance.Fluent.Models;
-using Microsoft.Azure.Management.ContainerInstance.Fluent.ContainerGroup.Definition;
 
 namespace SlalomTracker.Cloud
 {
@@ -109,14 +101,11 @@ namespace SlalomTracker.Cloud
             };
         }
 
-        private static string GetHash(string videoUrl)
+        private static string GetHash(string value)
         {
-            MD5 hash = MD5.Create();
-            byte[] data = hash.ComputeHash(Encoding.UTF8.GetBytes(videoUrl));
-            string computed = Encoding.UTF8.GetString(data);
-            //return computed;
-            Console.WriteLine($"Computed hash: {computed}\n");
-            return "aci";
+            int hash = value.GetHashCode();
+            string computed = string.Format("{1:X8}", hash);
+            return computed;
         }
     }
 }
