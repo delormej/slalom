@@ -42,14 +42,15 @@ namespace SlalomTracker.Cloud
             string[] commandLineArgs,
             Dictionary<string, string> environmentVariables)
         {
-            var msi = new MSILoginInformation(MSIResourceType.VirtualMachine); 
+            var msi = new MSILoginInformation(MSIResourceType.AppService); 
             var credentials = new AzureCredentials(msi, AzureEnvironment.AzureGlobalCloud);
             var authenticated = Azure.Authenticate(credentials);
-            IAzure azure = authenticated.WithDefaultSubscription();
+            string subscriptionId = GetDefaultSubscription(authenticated);
+            IAzure azure = authenticated.WithSubscription(subscriptionId);
 
             IResourceGroup group = azure.ResourceGroups.GetByName(resourceGroupName);
             var azureRegion = group.Region;
-            var containerGroup = azure.ContainerGroups.Define(containerGroupName)
+            azure.ContainerGroups.Define(containerGroupName)
                 .WithRegion(azureRegion)
                 .WithExistingResourceGroup(resourceGroupName)
                 .WithLinux()
@@ -63,7 +64,16 @@ namespace SlalomTracker.Cloud
                     .WithStartingCommandLine(commandLineExe, commandLineArgs)
                     .WithEnvironmentVariables(environmentVariables)
                     .Attach()
-                .Create();
+                .CreateAsync();
+        }
+
+        private static string GetDefaultSubscription(Azure.IAuthenticated azure)
+        {
+            string subscriptionId = System.Environment.GetEnvironmentVariable("SUBSCRIPTIONID");
+            if (subscriptionId == null)
+                throw new ApplicationException("Unable to find a default subscription from SUBSCRIPTIONID env variable");
+            
+            return subscriptionId;
         }
 
         private static string[] GetCommandLineArgs(string videoUrl)
@@ -104,7 +114,9 @@ namespace SlalomTracker.Cloud
             MD5 hash = MD5.Create();
             byte[] data = hash.ComputeHash(Encoding.UTF8.GetBytes(videoUrl));
             string computed = Encoding.UTF8.GetString(data);
-            return computed;
+            //return computed;
+            Console.WriteLine($"Computed hash: {computed}\n");
+            return "aci";
         }
     }
 }
