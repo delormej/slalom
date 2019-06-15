@@ -104,7 +104,7 @@ namespace SlalomTracker.Cloud
         private static string GetHash(string value)
         {
             int hash = value.GetHashCode();
-            string computed = string.Format("{1:X8}", hash);
+            string computed = string.Format("{0:X8}", hash);
             return computed;
         }
     }
