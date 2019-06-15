@@ -19,8 +19,7 @@ namespace SlalomTracker.WebApi.Controllers
         {
             string version = 
                 Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
-            string msi = System.Environment.GetEnvironmentVariable("MSI_ENDPOINT") + ", " + 
-                System.Environment.GetEnvironmentVariable("MSI_SECRET");
+            string msi = System.Environment.GetEnvironmentVariable("MSI_ENDPOINT");
             return Json("Version = " + version + "\nMSI: " + msi);
         }
     }
