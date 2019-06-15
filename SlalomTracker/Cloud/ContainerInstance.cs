@@ -16,7 +16,7 @@ namespace SlalomTracker.Cloud
 {
     public class ContainerInstance
     {
-        const string ExePath = "/ski/ski";
+        const string ExePath = "./ski";
         const string ResourceGroup = "ski-jobs";
 
         const string JobNamePrefix = "aciski-";
