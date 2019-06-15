@@ -16,8 +16,7 @@ namespace SlalomTracker.WebApi.Controllers
         [Route("api/video")]
         public IActionResult QueueVideo()
         {
-            string json = GetJsonFromBody();
-            string videoUrl = QueueMessageParser.GetUrl(json);
+            string videoUrl = GetVideoUrlFromRequest();
             if (videoUrl == null)        
             {
                 Console.Error.WriteLine("Unable to find videoUrl in payload.");
@@ -38,6 +37,22 @@ namespace SlalomTracker.WebApi.Controllers
                 Console.Error.WriteLine("Unable queue video for procesasing: " + e.Message);
                 return StatusCode(500);
             }
+        }
+       
+        [HttpPost]
+        [Route("api/processvideo")]
+        public IActionResult StartProcessVideo()
+        {
+            string videoUrl = GetVideoUrlFromRequest();
+            ContainerInstance.Create(videoUrl);
+            return StatusCode(200);
+        }
+
+        private string GetVideoUrlFromRequest()
+        {
+            string json = GetJsonFromBody();
+            string videoUrl = QueueMessageParser.GetUrl(json);          
+            return videoUrl;
         }
 
        private string GetJsonFromBody()
