@@ -92,7 +92,7 @@ namespace SlalomTracker.Cloud
             task.Wait();
 
             string uri = blob.SnapshotQualifiedUri.AbsoluteUri;
-            Console.WriteLine($"Upoaded file to {uri}");
+            Console.WriteLine($"Uploaded file to {uri}");
             return uri; // URL to the uploaded file.
         }
 
