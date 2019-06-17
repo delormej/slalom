@@ -11,7 +11,7 @@ namespace SlalomTracker.Cloud
         const string ExePath = "./ski";
         const string ResourceGroup = "ski-jobs";
 
-        const string JobNamePrefix = "aciski-";
+        const string JobNamePrefix = "aci-";
 
         const string ContainerImageEnvVar = "SKICONSOLE_IMAGE";
 
@@ -20,11 +20,13 @@ namespace SlalomTracker.Cloud
 
         public static void Create(string videoUrl)
         {
+            Console.WriteLine($"Creating container instance for video: {videoUrl}");
             string image = GetContainerImage();
             string[] args = GetCommandLineArgs(videoUrl);
             string containerGroup = GetContainerGroupName(videoUrl);
             Dictionary<string, string> envVars = GetEnvironmentVariables();
             Create(containerGroup, ResourceGroup, image, ExePath, args, envVars);
+            Console.WriteLine($"Created container instance {containerGroup} in {ResourceGroup} for video: {videoUrl}");
         }
 
         private static void Create(string containerGroupName, 
@@ -48,7 +50,7 @@ namespace SlalomTracker.Cloud
                 .WithLinux()
                 .WithPublicImageRegistryOnly()
                 .WithoutVolume()
-                .DefineContainerInstance(containerGroupName)
+                .DefineContainerInstance(containerGroupName + "-0")
                     .WithImage(containerImage)
                     .WithoutPorts()
                     .WithCpuCoreCount(CpuCoreCount)
@@ -56,7 +58,7 @@ namespace SlalomTracker.Cloud
                     .WithStartingCommandLine(commandLineExe, commandLineArgs)
                     .WithEnvironmentVariables(environmentVariables)
                     .Attach()
-                .CreateAsync();
+                .Create();
         }
 
         private static string GetDefaultSubscription(Azure.IAuthenticated azure)
@@ -77,7 +79,8 @@ namespace SlalomTracker.Cloud
         private static string GetContainerGroupName(string videoUrl)
         {
             string unique = GetHash(videoUrl + System.DateTime.Now.Millisecond);
-            return JobNamePrefix + unique;
+            Console.WriteLine($"Using container group suffix: {unique} for {videoUrl}");
+            return (JobNamePrefix + unique).ToLower(); // upper case chars not allowed in ACI naming.
         }
 
         private static string GetContainerImage()

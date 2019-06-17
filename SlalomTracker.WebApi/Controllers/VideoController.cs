@@ -43,9 +43,18 @@ namespace SlalomTracker.WebApi.Controllers
         [Route("api/processvideo")]
         public IActionResult StartProcessVideo()
         {
-            string videoUrl = GetVideoUrlFromRequest();
-            ContainerInstance.Create(videoUrl);
-            return StatusCode(200);
+            string videoUrl = ""; 
+            try
+            {
+                videoUrl = GetVideoUrlFromRequest();
+                ContainerInstance.Create(videoUrl);
+                return StatusCode(200);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error creating container instance for {videoUrl}\nError:{e}");
+                return StatusCode(500, e.Message);
+            }
         }
 
         private string GetVideoUrlFromRequest()
