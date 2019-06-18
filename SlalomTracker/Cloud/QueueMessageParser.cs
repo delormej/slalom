@@ -94,7 +94,7 @@ namespace SlalomTracker.Cloud
         "contentType": "video/mp4",
         "contentLength": 380135973,
         "blobType": "BlockBlob",
-        "url": "https://skivideostorage.blob.core.windows.net/ski-ingest/GOPR0194.MP4",
+        "url": "https://skivideostorage.blob.core.windows.net/ski-ingest/2019-05-17/007.MP4",
         "sequencer": "00000000000000000000000000000FAB000000000016ec22",
         "storageDiagnostics": {
             "batchId": "0157b3b6-c6d3-498d-b8b7-e9a0c2cad7b8"

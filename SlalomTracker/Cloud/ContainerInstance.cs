@@ -58,7 +58,7 @@ namespace SlalomTracker.Cloud
                     .WithStartingCommandLine(commandLineExe, commandLineArgs)
                     .WithEnvironmentVariables(environmentVariables)
                     .Attach()
-                .Create();
+                .CreateAsync();
         }
 
         private static string GetDefaultSubscription(Azure.IAuthenticated azure)

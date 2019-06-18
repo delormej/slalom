@@ -8,6 +8,7 @@ RUN dotnet publish /ski/SkiConsole/SkiConsole.csproj --self-contained true -r li
 
 FROM mcr.microsoft.com/azure-functions/dotnet:2.0
 ENV AzureWebJobsScriptRoot=/home/site/wwwroot
+ENV APPINSIGHTS_INSTRUMENTATIONKEY=627db034-95e1-4e6c-b277-46cb1bbb58d8
 
 ARG ski_blobs_connection
 # Environment Variables
