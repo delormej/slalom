@@ -1,12 +1,8 @@
 using System;
-using System.Configuration;
+using System.Net;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
-using SlalomTracker;
 using SlalomTracker.Cloud;
-using MetadataExtractor;
-using Newtonsoft.Json;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.ApplicationInsights.DataContracts;
@@ -21,6 +17,8 @@ namespace SlalomTracker.OnVideoQueued
         const string EVENT_FUNCTION_STARTED = "ProcessVideoTrigger_Started";
         const string EVENT_VIDEO_DEQUEUED = "Video_Dequeued";
         const string EVENT_VIDEO_PROCESSED = "Video_Processed";
+
+        const string WEBAPI_CREATE_CONTAINER = "http://ski-app.azurewebsites.net/api/processvideo";
 
         private TelemetryClient insights;
 
@@ -43,10 +41,30 @@ namespace SlalomTracker.OnVideoQueued
             }
             else
             {
-                ContainerInstance.Create(videoUrl);
+                CreateContainerInstance(videoUrl);
                 TrackEvent(EVENT_VIDEO_PROCESSED, videoUrl);
                 Console.WriteLine($"Succesfully processed: {videoUrl}");
             }          
+        }
+
+        private void CreateContainerInstance(string videoUrl)
+        {
+            try 
+            {
+                // MSI does not seem to be working in Azure Functions in a Container,
+                // so delegating this to just posting URL to the web api which kicks
+                // off the container job.
+                string payload = $"{{'Url': '{videoUrl}'}}";
+                WebClient web = new WebClient();
+                string response = web.UploadString(WEBAPI_CREATE_CONTAINER, payload);
+                Console.WriteLine("CreateContainerInstance Response: " + response);
+            }
+            catch (Exception e)
+            {
+                string error = $"CreateContainerInstance: Unable to invoke web api to start container instance for {videoUrl}";
+                Console.WriteLine(error +  e);
+                throw new ApplicationException(error, e);
+            }
         }
         
         private void TrackEvent(string eventName, string value)
