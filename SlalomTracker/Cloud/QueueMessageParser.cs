@@ -7,7 +7,7 @@ namespace SlalomTracker.Cloud
     {
         public static string GetUrl(string message)
         {
-            string videoUrl = String.Empty;
+            string videoUrl = null;
             dynamic msg = JsonConvert.DeserializeObject(message);
             if (msg.Url != null)
                 videoUrl = msg.Url;
@@ -16,16 +16,11 @@ namespace SlalomTracker.Cloud
             else if (msg.message != null)
                 videoUrl = GetUrlFromGoogleStorageEvent(msg);
 
-            if (videoUrl != null && videoUrl.ToUpper().EndsWith("MP4"))
-            {
-                return videoUrl;
-            }
-            else
+            if (videoUrl == null || !(videoUrl.ToUpper().EndsWith("MP4")))
             {
                 Console.WriteLine($"Valid video url not found: {videoUrl}");
-                throw new ApplicationException(
-                    $"Queue message was not in the correct format, or not an MP4:\n{message}");
             }
+            return videoUrl;
         }
 
         private static string GetUrlFromAzureStorageEvent(dynamic msg)

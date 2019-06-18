@@ -36,30 +36,19 @@ namespace SlalomTracker.OnVideoQueued
             string videoItem, ILogger log)
         {
             TrackEvent(EVENT_VIDEO_DEQUEUED, videoItem);
-            try 
+            string videoUrl = QueueMessageParser.GetUrl(videoItem);
+            if (videoUrl == null)
             {
-                string videoUrl = QueueMessageParser.GetUrl(videoItem);
-
-                // ProcessVideoMetadata(videoUrl);
+                Console.WriteLine("No videoUrl found in message.");
+            }
+            else
+            {
                 ContainerInstance.Create(videoUrl);
                 TrackEvent(EVENT_VIDEO_PROCESSED, videoUrl);
                 Console.WriteLine($"Succesfully processed: {videoUrl}");
-            }
-            catch (Exception e)
-            {
-                Console.Error.WriteLine($"Error processing message: {videoItem}\nException: {e}");
-                throw;
-            }            
+            }          
         }
         
-        private static void ProcessVideoMetadata(string url)
-        {
-            string localPath = Storage.DownloadVideo(url);
-            string json = Extract.ExtractMetadata(localPath);
-            Storage storage = new Storage();
-            storage.AddMetadata(url, json);
-        }
-
         private void TrackEvent(string eventName, string value)
         {
             if (this.insights != null)
