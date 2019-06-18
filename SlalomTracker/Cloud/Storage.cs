@@ -47,9 +47,12 @@ namespace SlalomTracker.Cloud
 
         public SkiVideoEntity AddMetadata(string videoUrl, string thumbnailUrl, string json, CoursePass pass)
         {
-            SkiVideoEntity entity = AddTableEntity(videoUrl, thumbnailUrl, pass);
             string blobName = GetBlobName(videoUrl);
-            UploadMeasurements(blobName, json);
+            string jsonUrl = UploadMeasurements(blobName, json);
+            SkiVideoEntity entity = new SkiVideoEntity(videoUrl, pass);
+            entity.ThumbnailUrl = thumbnailUrl;
+            entity.JsonUrl = jsonUrl;
+            AddTableEntity(entity);
             Console.WriteLine("Uploaded metadata for video:" + videoUrl);
             return entity;
         }
@@ -305,10 +308,8 @@ namespace SlalomTracker.Cloud
             _queue.Add(blobName, url);
         }
 
-        private SkiVideoEntity AddTableEntity(string videoUrl, string thumbnailUrl, CoursePass pass)
+        private void AddTableEntity(SkiVideoEntity entity)
         {
-            SkiVideoEntity entity = new SkiVideoEntity(videoUrl, pass);
-            entity.ThumbnailUrl = thumbnailUrl;
             CloudTableClient client = _account.CreateCloudTableClient();
             CloudTable table = client.GetTableReference(SKITABLE);
             TableOperation insert = TableOperation.InsertOrReplace(entity);
@@ -316,10 +317,9 @@ namespace SlalomTracker.Cloud
             createTask.Wait();
             Task insertTask = table.ExecuteAsync(insert);
             insertTask.Wait();
-            return entity;
         }
 
-        private void UploadMeasurements(string blobName, string json)
+        private string UploadMeasurements(string blobName, string json)
         {
             if (!blobName.EndsWith(".MP4"))
                 throw new ApplicationException("Path to video must end with .MP4");
@@ -328,6 +328,8 @@ namespace SlalomTracker.Cloud
             CloudBlockBlob blob = GetBlobReference(fileName);
             Task t = blob.UploadTextAsync(json);
             t.Wait();
+            string uri = blob.SnapshotQualifiedUri.AbsoluteUri;
+            return uri;
         }
     }    
 }
