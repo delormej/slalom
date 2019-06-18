@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
+using Microsoft.Azure.Management.ContainerInstance.Fluent.Models;
 
 namespace SlalomTracker.Cloud
 {
@@ -48,7 +49,7 @@ namespace SlalomTracker.Cloud
                 .WithRegion(azureRegion)
                 .WithExistingResourceGroup(resourceGroupName)
                 .WithLinux()
-                .WithPublicImageRegistryOnly()
+                .WithPublicImageRegistryOnly()  //.WithPrivateImageRegistry("myreg.azurecr.io", "registry", "XXXXXXXXXXXXX")
                 .WithoutVolume()
                 .DefineContainerInstance(containerGroupName + "-0")
                     .WithImage(containerImage)
@@ -58,6 +59,7 @@ namespace SlalomTracker.Cloud
                     .WithStartingCommandLine(commandLineExe, commandLineArgs)
                     .WithEnvironmentVariables(environmentVariables)
                     .Attach()
+                .WithRestartPolicy(ContainerGroupRestartPolicy.Never)
                 .CreateAsync();
         }
 
