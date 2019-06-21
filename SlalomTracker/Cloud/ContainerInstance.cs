@@ -4,17 +4,20 @@ using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
 using Microsoft.Azure.Management.ContainerInstance.Fluent.Models;
+using Microsoft.Azure.Management.ContainerRegistry.Fluent;
 
 namespace SlalomTracker.Cloud
 {
     public class ContainerInstance
     {
         const string ExePath = "./ski";
-        const string ResourceGroup = "ski-jobs";
+        const string JobResourceGroup = "ski-jobs";
 
         const string JobNamePrefix = "aci-";
 
         const string ContainerImageEnvVar = "SKICONSOLE_IMAGE";
+        const string RegistryResourceGroup = "ski";
+        const string RegistryName = "jasondelAcr";
 
         const double CpuCoreCount = 1.0;
         const double MemoryInGb = 1.0;
@@ -26,8 +29,8 @@ namespace SlalomTracker.Cloud
             string[] args = GetCommandLineArgs(videoUrl);
             string containerGroup = GetContainerGroupName(videoUrl);
             Dictionary<string, string> envVars = GetEnvironmentVariables();
-            Create(containerGroup, ResourceGroup, image, ExePath, args, envVars);
-            Console.WriteLine($"Created container instance {containerGroup} in {ResourceGroup} for video: {videoUrl}");
+            Create(containerGroup, JobResourceGroup, image, ExePath, args, envVars);
+            Console.WriteLine($"Created container instance {containerGroup} in {JobResourceGroup} for video: {videoUrl}");
         }
 
         private static void Create(string containerGroupName, 
@@ -43,13 +46,19 @@ namespace SlalomTracker.Cloud
             string subscriptionId = GetDefaultSubscription(authenticated);
             IAzure azure = authenticated.WithSubscription(subscriptionId);
 
+            // Get private registry credentials.
+            var acr = azure.ContainerRegistries.GetByResourceGroup(RegistryResourceGroup, RegistryName);
+            var acrCredentials = acr.GetCredentials();
+            
             IResourceGroup group = azure.ResourceGroups.GetByName(resourceGroupName);
             var azureRegion = group.Region;
             azure.ContainerGroups.Define(containerGroupName)
                 .WithRegion(azureRegion)
                 .WithExistingResourceGroup(resourceGroupName)
                 .WithLinux()
-                .WithPublicImageRegistryOnly()  //.WithPrivateImageRegistry("myreg.azurecr.io", "registry", "XXXXXXXXXXXXX")
+                .WithPrivateImageRegistry(acr.LoginServerUrl, 
+                    acrCredentials.Username, 
+                    acrCredentials.AccessKeys[AccessKeyType.Primary])
                 .WithoutVolume()
                 .DefineContainerInstance(containerGroupName + "-0")
                     .WithImage(containerImage)
