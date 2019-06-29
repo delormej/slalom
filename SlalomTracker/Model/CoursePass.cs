@@ -70,13 +70,12 @@ namespace SlalomTracker
         /// <returns></returns>
         public CoursePosition CoursePositionFromGeo(GeoCoordinate boatPosition)
         {
+            // TODO: with the exception of this entered check, everything else seems like logic that should live in
+            // the Course class? Evaluate this.
             if (!m_entered55s)
                 return CoursePosition.Empty;
-
-            double distance = boatPosition.GetDistanceTo(Course.Course55EntryCL);
-
-            // TODO: Right now we're hardcoded to center of the course.
-            return new CoursePosition(11.5, distance);
+            else
+                return Util.CoursePositionFromGeo(boatPosition, Course);
         }
 
         /// <summary>
@@ -136,11 +135,12 @@ namespace SlalomTracker
 
         public void Track(Measurement current)
         { 
-            bool inCourse;
+            current.InCourse = this.Course.IsBoatInCourse(current.BoatGeoCoordinate);
+
             // Block on this to enure only the first event entering the course gets recorded.
             lock (this)
             {
-                if (!m_entered55s && this.Course.IsBoatInCourse(current.BoatGeoCoordinate))
+                if (!m_entered55s && current.InCourse)
                 {
                     m_entered55s = true;
                 }
@@ -156,15 +156,10 @@ namespace SlalomTracker
                     m_courseExit = current;
                     CalculateCoursePassSpeed();
                 }
-
-                // In course if we've entered and have not exited.
-                inCourse = (m_courseEntry != null &&
-                    m_courseExit == null);
             }
 
             // Calculate measurements.
             Measurement previous = Measurements.Count > 0 ? Measurements[Measurements.Count - 1] : null;
-            current.InCourse = inCourse;
             current.BoatPosition = CoursePositionFromGeo(current.BoatGeoCoordinate);
             if (current.BoatPosition == CoursePosition.Empty)
                 return;
@@ -179,7 +174,7 @@ namespace SlalomTracker
 
                 // Convert radians per second to degrees per second.  
                 current.RopeAngleDegrees = previous.RopeAngleDegrees +
-                    Util.RadToDeg(current.RopeSwingSpeedRadS * seconds);
+                    Util.RadiansToDegrees(current.RopeSwingSpeedRadS * seconds);
                 ropeArcLength = GetRopeArcLength(current, previous);
             }
             else
@@ -192,9 +187,8 @@ namespace SlalomTracker
 
             // Actual handle position is calculated relative to the pilon/boat position, behind the boat.
             double y = current.BoatPosition.Y - virtualHandlePos.Y;
-            current.HandlePosition = new CoursePosition(current.BoatPosition.X - virtualHandlePos.X, y);
-            //virtualHandlePos.X += 11.5;
-            //current.HandlePosition = virtualHandlePos;
+            double x = current.BoatPosition.X - virtualHandlePos.X;
+            current.HandlePosition = new CoursePosition(x, y);
             Measurements.Add(current);
         }
 

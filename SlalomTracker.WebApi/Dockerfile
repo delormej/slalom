@@ -12,7 +12,8 @@ ENV SKIBLOBS=${ski_blobs_connection}
 RUN dotnet publish ./SlalomTracker.WebApi.csproj -o /ski/build/
 
 # create the runtime image (smaller, doesn't need the full sdk for building)
-FROM microsoft/dotnet:2.1-aspnetcore-runtime as runtime
+#FROM microsoft/dotnet:2.1-aspnetcore-runtime as runtime
+FROM dotnet-debug as runtime
 ARG ski_blobs_connection
 # Environment Variables
 ENV SKIBLOBS=${ski_blobs_connection}

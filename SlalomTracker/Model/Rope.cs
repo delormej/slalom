@@ -88,7 +88,7 @@ namespace SlalomTracker
             // Longer side needs to be the divisor.
             double soa = HandleApexRadiusM > m_lengthM ? m_lengthM / HandleApexRadiusM :
                 HandleApexRadiusM / m_lengthM;
-            double degrees = Util.RadToDeg(Math.Asin(soa));
+            double degrees = Util.RadiansToDegrees(Math.Asin(soa));
             //double degrees = radians * 180 / Math.PI;
 
             return degrees;
@@ -118,8 +118,8 @@ namespace SlalomTracker
             double A = B - C;  // A+B+C=180 degrees
             double b = m_lengthM;
 
-            double a = Math.Sin(Util.DegToRad(A)) * b;
-            double c = Math.Sin(Util.DegToRad(C)) * b;
+            double a = Math.Sin(Util.DegreesToRadians(A)) * b;
+            double c = Math.Sin(Util.DegreesToRadians(C)) * b;
 
             // Determine which buoy line (0 degrees == @buoy246line, 180 degreees == @buoy135line)
             //

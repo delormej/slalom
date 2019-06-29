@@ -4,9 +4,9 @@ namespace SlalomTracker
 {
     /// <summary>
     /// X,Y coorinates in relative meters to the rectangle that represents the ski course.
+    /// Upper left of course is -23,0 meters.  Lower right is 23,369.
+    /// 0,0 represents the center line of the pregate (55's).
     /// https://www.thinkwaterski.com/dox/slalom_tolerances.pdf
-    /// Lower left of course is 0,0 meters.  Upper right is 23,369.
-    /// Matrix is inclusive of the pregates (55's).
     /// </summary>
     public class CoursePosition
     {
@@ -14,6 +14,12 @@ namespace SlalomTracker
 
         public CoursePosition(double x, double y)
         {
+            // if (x < -23 || x > 23 || y < 0 || y > 369)
+            // {
+            //     Console.WriteLine($"CoursePosition x:{x}, y:{y} are invalid.  Range must be (-23,0) to (23,369).  " +
+            //         "Upper left of course is -23,0 meters.  Lower right is 23,369.  " +
+            //         "Where 0,0 represents the center line of the pregate (55's).");
+            // }
             this.X = x;
             this.Y = y;
         }
@@ -40,9 +46,4 @@ namespace SlalomTracker
             return string.Format("X:{0},Y:{1}", this.X, this.Y);
         }
     }
-
-    //public struct GeoCoordinate
-    //{
-    //    public double Latitude, Longitude;
-    //}
 }

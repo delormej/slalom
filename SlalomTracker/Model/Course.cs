@@ -35,19 +35,42 @@ namespace SlalomTracker
         {
             _knownCourses = new List<Course>();
             Course cove = new Course(
-                    new GeoCoordinate(42.28958014, -71.35911924),
-                    new GeoCoordinate(42.28622924, -71.35950488)
+                    new GeoCoordinate(Math.Round(42.28958014, 6), Math.Round(-71.35911924, 6)),
+                    new GeoCoordinate(Math.Round(42.28622924, 6), Math.Round(-71.35950488, 6))
                 );
             cove.Name = "cove";
             _knownCourses.Add(cove);
+            _knownCourses.Add(ReverseCourse(cove));
 
-            Course outside = // oustide
-                new Course(
-                    new GeoCoordinate(42.28530973, -71.36180685),
-                    new GeoCoordinate(42.28721409, -71.36553574)
-                );
-            outside.Name = "outside";
+            var outsideEntry = new GeoCoordinate(42.285673, -71.362328);
+            var outside55Entry = Util.MoveTo(outsideEntry, 55.0, 
+                Util.GetHeading(new GeoCoordinate(Math.Round(42.28721409, 6), Math.Round(-71.36553574, 6)),
+                    outsideEntry));
+
+            Course outside = GetOutisdeCourse();
             _knownCourses.Add(outside);
+            _knownCourses.Add(ReverseCourse(outside));
+        }
+
+        private static Course GetOutisdeCourse()
+        {
+            var entry = new GeoCoordinate(42.286974, -71.36495);
+            var exit = new GeoCoordinate(42.285677, -71.362336);
+            double heading = Util.GetHeading(entry, exit);
+            double reverse = (heading + 180) % 360;
+            var entry55 = Util.MoveTo(entry, 55.0, reverse);
+            var exit55 = Util.MoveTo(exit, 55.0, heading);
+
+            Course outside = new Course(entry55, exit55);
+            outside.Name = "outside";
+            return outside;
+        }
+
+        private static Course ReverseCourse(Course course)
+        {
+            Course reverse = new Course(course.Course55ExitCL, course.Course55EntryCL);
+            reverse.Name = course.Name + "_reverse";
+            return reverse;
         }
 
         public static Course ByName(string name)
@@ -87,32 +110,33 @@ namespace SlalomTracker
             Gates = new CoursePosition[4];
 
             // Pre Gates (55m)
-            PreGates[0] = new CoursePosition((WidthM / 2.0) - 1.25, 0);
-            PreGates[1] = new CoursePosition((WidthM / 2.0) + 1.25, 0);
-            PreGates[2] = new CoursePosition((WidthM / 2.0) - 1.25, LengthM);
-            PreGates[3] = new CoursePosition((WidthM / 2.0) + 1.25, LengthM);
+            PreGates[0] = new CoursePosition(-1.25, 0);
+            PreGates[1] = new CoursePosition(1.25, 0);
+            PreGates[2] = new CoursePosition(-1.25, LengthM);
+            PreGates[3] = new CoursePosition(1.25, LengthM);
 
             // Entry Gates
-            Gates[0] = new CoursePosition((WidthM / 2.0) - 1.25, 55);
-            Gates[1] = new CoursePosition((WidthM / 2.0) + 1.25, 55);
+            Gates[0] = new CoursePosition(-1.25, 55);
+            Gates[1] = new CoursePosition(1.25, 55);
 
             // Exit Gates
-            Gates[2] = new CoursePosition((WidthM / 2.0) - 1.25, LengthM - 55);
-            Gates[3] = new CoursePosition((WidthM / 2.0) + 1.25, LengthM - 55);
+            Gates[2] = new CoursePosition(-1.25, LengthM - 55);
+            Gates[3] = new CoursePosition(1.25, LengthM - 55);
 
             BoatMarkers = new CoursePosition[12];
             Balls = new CoursePosition[6];
-            Balls[0] = new CoursePosition(0, 27 + 55); // Ball 1
+            Balls[0] = new CoursePosition(-11.5, 27 + 55); // Ball 1
             for (int i = 1; i<6; i++)
             {
-                Balls[i] = new CoursePosition(Balls[i-1].X == 0 ? 23 : 0,
+                // Alternate X position (-11.5, 11.5)
+                Balls[i] = new CoursePosition(Balls[i-1].X *-1d,
                     Balls[i - 1].Y + 41);
             }
 
             for (int i = 0; i < Balls.Length; i++)
             {
-                BoatMarkers[i * 2] = new CoursePosition(11.5 - 1.15, Balls[i].Y);
-                BoatMarkers[i * 2 + 1] = new CoursePosition(11.5 + 1.15, Balls[i].Y);
+                BoatMarkers[i * 2] = new CoursePosition(-1.15, Balls[i].Y);
+                BoatMarkers[i * 2 + 1] = new CoursePosition(1.15, Balls[i].Y);
             }
         }
 
@@ -127,10 +151,10 @@ namespace SlalomTracker
 
         private void GeneratePolygons()
         {
-            double reverseHeading = (GetCourseHeadingDeg() + 180) % 360;
+            //double reverseHeading = (GetCourseHeadingDeg() + 180) % 360;
             _polygon = GetCoursePolygon();
-            _entryPolygon = Get55mPolygon(Course55EntryCL, GetCourseHeadingDeg());
-            _exitPolygon = Get55mPolygon(Course55ExitCL, reverseHeading);
+            _entryPolygon = GetEntryGatePolygon(); //Get55mPolygon(Course55EntryCL, GetCourseHeadingDeg());
+            _exitPolygon = GetExitGatePolygon();//Get55mPolygon(Course55ExitCL, reverseHeading);
         }
 
         /// <summary>
@@ -139,17 +163,71 @@ namespace SlalomTracker
         /// <returns></returns>
         private List<GeoCoordinate> GetCoursePolygon()
         {
+            double halfWidth = WidthM / 2.0d; // 5.0;
             double left, right, heading = this.GetCourseHeadingDeg();
             right = (heading + 90 + 360) % 360;
             left = (right + 180) % 360;
 
             // From the 55's.
             List<GeoCoordinate> poly = new List<GeoCoordinate>(4);
-            poly.Add(Util.CalculateDerivedPosition(this.Course55EntryCL, 5.0, left));
-            poly.Add(Util.CalculateDerivedPosition(this.Course55EntryCL, 5.0, right));
-            poly.Add(Util.CalculateDerivedPosition(this.Course55ExitCL, 5.0, right));
-            poly.Add(Util.CalculateDerivedPosition(this.Course55ExitCL, 5.0, left));
+            poly.Add(Util.MoveTo(this.Course55EntryCL, halfWidth, left));
+            poly.Add(Util.MoveTo(this.Course55EntryCL, halfWidth, right));
+            poly.Add(Util.MoveTo(this.Course55ExitCL, halfWidth, right));
+            poly.Add(Util.MoveTo(this.Course55ExitCL, halfWidth, left));
+            Console.WriteLine($"CourseGeo, TopLeft:{poly[0]}, TopRight:{poly[1]}, BottomRight:{poly[2]}, BottomLeft:{poly[3]}");
+            return poly;
+        }
+
+        private List<GeoCoordinate> GetEntryGatePolygon()
+        {
+            double halfWidth = WidthM / 2.0d; 
+            double left, right, heading = this.GetCourseHeadingDeg();
+            right = (heading + 90 + 360) % 360;
+            left = (right + 180) % 360;
             
+            GeoCoordinate GateCL = Util.MoveTo(this.Course55EntryCL, 55.0, heading);
+            GeoCoordinate LeftTop = Util.MoveTo(GateCL, halfWidth, left);
+            GeoCoordinate RightTop = Util.MoveTo(GateCL, halfWidth, right);
+            GeoCoordinate RightBottom = Util.MoveTo(
+                Util.MoveTo(GateCL, 1.0, heading),
+                halfWidth, right);
+            GeoCoordinate LeftBottom = Util.MoveTo(
+                Util.MoveTo(GateCL, 1.0, heading),
+                halfWidth, left);
+
+            List<GeoCoordinate> poly = new List<GeoCoordinate>(4);
+            poly.Add(LeftTop);
+            poly.Add(RightTop);
+            poly.Add(RightBottom);
+            poly.Add(LeftBottom);
+
+            return poly;
+        }
+
+        private List<GeoCoordinate> GetExitGatePolygon()
+        {
+            double halfWidth = WidthM / 2.0d; 
+            double left, right;
+            double reverseHeading = (GetCourseHeadingDeg() + 180) % 360;
+            right = (reverseHeading + 90 + 360) % 360;
+            left = (right + 180) % 360;
+            
+            GeoCoordinate GateCL = Util.MoveTo(this.Course55ExitCL, 55.0, reverseHeading);
+            GeoCoordinate LeftTop = Util.MoveTo(GateCL, halfWidth, left);
+            GeoCoordinate RightTop = Util.MoveTo(GateCL, halfWidth, right);
+            GeoCoordinate RightBottom = Util.MoveTo(
+                Util.MoveTo(GateCL, 1.0, reverseHeading),
+                halfWidth, right);
+            GeoCoordinate LeftBottom = Util.MoveTo(
+                Util.MoveTo(GateCL, 1.0, reverseHeading),
+                halfWidth, left);
+
+            List<GeoCoordinate> poly = new List<GeoCoordinate>(4);
+            poly.Add(LeftTop);
+            poly.Add(RightTop);
+            poly.Add(RightBottom);
+            poly.Add(LeftBottom);
+
             return poly;
         }
 
@@ -167,14 +245,14 @@ namespace SlalomTracker
             // Create a poly that is 1 meter long, 5 meters wide.
             
             // Course entry is 55m from the reference passed in.
-            GeoCoordinate entryCL = Util.CalculateDerivedPosition(reference, 54.5, heading);
+            GeoCoordinate entryCL = Util.MoveTo(reference, 54.5, heading);
             
-            poly.Add(Util.CalculateDerivedPosition(entryCL, 5.0, left));
-            poly.Add(Util.CalculateDerivedPosition(entryCL, 5.0, right));
-            poly.Add(Util.CalculateDerivedPosition(
-                Util.CalculateDerivedPosition(entryCL, 1.0, heading), 5.0, right));
-            poly.Add(Util.CalculateDerivedPosition(
-                Util.CalculateDerivedPosition(entryCL,  1.0, heading), 5.0, left));
+            poly.Add(Util.MoveTo(entryCL, 5.0, left));
+            poly.Add(Util.MoveTo(entryCL, 5.0, right));
+            poly.Add(Util.MoveTo(
+                Util.MoveTo(entryCL, 1.0, heading), 5.0, right));
+            poly.Add(Util.MoveTo(
+                Util.MoveTo(entryCL,  1.0, heading), 5.0, left));
 
             return poly;
         }
@@ -187,12 +265,6 @@ namespace SlalomTracker
                 {
                     if (course.IsBoatInEntry(m.BoatGeoCoordinate))
                         return course;
-                    else if (course.IsBoatInExit(m.BoatGeoCoordinate))
-                    {
-                        Course reversed = new Course(course.Course55ExitCL, course.Course55EntryCL);
-                        reversed.Name = course.Name + "_reverse";
-                        return reversed;
-                    }
                 }
             }
 
