@@ -39,6 +39,10 @@ namespace SlalomTracker.Cloud
 
         public double EntryTime { get; set; }
 
+        public string SlalomTrackerVersion { 
+            get { return GetVersion(); }
+        }
+
         private void SetKeys(string videoUrl)
         {
             string path = Storage.GetBlobName(videoUrl);
@@ -52,6 +56,16 @@ namespace SlalomTracker.Cloud
             int index = path.LastIndexOf(Path.AltDirectorySeparatorChar);
             this.PartitionKey = path.Substring(0, index);
             this.RowKey = path.Substring(index + 1, path.Length - index - 1);
+        }
+
+        private string GetVersion()
+        {
+            var extractor = typeof(MetadataExtractor.Extract).Assembly.GetName();
+            var assembly = System.Reflection.Assembly.GetEntryAssembly().GetName();
+            string version = $"{extractor.Name}:v{extractor.Version.ToString()}\n" +
+                $"{assembly.Name}:v{assembly.Version.ToString()}";
+
+            return version;
         }
     }
 }
