@@ -18,7 +18,7 @@ namespace SlalomTracker.Cloud
 
             if (videoUrl == null || !(videoUrl.ToUpper().EndsWith("MP4")))
             {
-                Console.WriteLine($"Valid video url not found: {videoUrl}");
+                Console.WriteLine($"WARNING: Valid video url not found: {message}");
             }
             return videoUrl;
         }

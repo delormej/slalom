@@ -16,15 +16,9 @@ namespace SlalomTracker.WebApi.Controllers
         [Route("api/video")]
         public IActionResult QueueVideo()
         {
-            string videoUrl = GetVideoUrlFromRequest();
-            if (videoUrl == null)        
-            {
-                Console.Error.WriteLine("Unable to find videoUrl in payload.");
-                return StatusCode(500);
-            }
-
             try
             {
+                string videoUrl = GetVideoUrlFromRequest();
                 Storage storage = new Storage();
                 string blobName = GetBlobName(videoUrl);
                 storage.Queue.Add(blobName, videoUrl);
@@ -60,7 +54,13 @@ namespace SlalomTracker.WebApi.Controllers
         private string GetVideoUrlFromRequest()
         {
             string json = GetJsonFromBody();
-            string videoUrl = QueueMessageParser.GetUrl(json);          
+            string videoUrl = QueueMessageParser.GetUrl(json);     
+            
+            if (videoUrl == null)        
+            {
+                throw new ApplicationException("Unable to find videoUrl in payload: \n" + json);
+            }            
+
             return videoUrl;
         }
 
