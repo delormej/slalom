@@ -42,3 +42,11 @@ docker build -t jasondelacr.azurecr.io/skivideofunction:$1 --build-arg ski_blobs
 # To create the azure function app
 #az functionapp create --name skivideofunction --storage-account  skivideostorage  --resource-group ski --plan ski-linux-appservice --deployment-container-image-name jasondelacr.azurecr.io/skivideofunction:$1
 
+####
+# Service Principal (App Service's system managed identity) must be a contributor on acr (acrpull and reader roles do not work)
+#
+# ACR_NAME=jasondelacr    
+# SERVICE_PRINCIPAL_ID=$(az webapp show -n ski-app -g ski --query "identity.principalId" -o tsv)
+# ACR_REGISTRY_ID=$(az acr show --name $ACR_NAME --query id --output tsv)
+
+# az role assignment create --assignee $SERVICE_PRINCIPAL_ID --scope $ACR_REGISTRY_ID --role contributor
