@@ -58,7 +58,7 @@ namespace SlalomTracker.WebApi.Controllers
             
             if (videoUrl == null)        
             {
-                throw new ApplicationException("Unable to find videoUrl in payload: \n" + json);
+                throw new ApplicationException("Unable to find video url in payload: \n" + json);
             }            
 
             return videoUrl;
