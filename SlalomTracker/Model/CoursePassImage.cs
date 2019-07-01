@@ -30,7 +30,7 @@ namespace SlalomTracker
         {
             DrawVersion();
 
-            DrawCourseBounds(_pass.Course.Polygon, Color.CadetBlue);
+            //DrawCourseBounds(_pass.Course.Polygon, Color.CadetBlue);
             DrawCourseBounds(_pass.Course.EntryPolygon, Color.Green);
             DrawCourseBounds(_pass.Course.ExitPolygon, Color.Red);
 
@@ -98,35 +98,6 @@ namespace SlalomTracker
             Font font = new Font(FontFamily.GenericMonospace, 16);
             PointF point = new PointF(5,5);
             _graphics.DrawString(version, font, Brushes.OrangeRed, point);
-
-            // purple dot... (center line of entry gate)
-            var entryGateCL = Util.MoveTo(_pass.Course.Course55EntryCL, 55.0, _pass.Course.GetCourseHeadingDeg());
-            CoursePosition position = _pass.CoursePositionFromGeo(entryGateCL);
-            PointF entryPoint = PointFromCoursePosition(position);
-            Pen pen = new Pen(Color.Purple, 0.6F);
-            _graphics.DrawEllipse(pen, entryPoint.X, entryPoint.Y, 1, 1);
-
-            // orange dot... (upper right of entry gate)
-            //_pass.Course.EntryPolygon
-            //var entryGateCL2 = Util.MoveTo(_pass.Course.Course55EntryCL, 54.0, _pass.Course.GetCourseHeadingDeg());
-            CoursePosition position2 = _pass.CoursePositionFromGeo(_pass.Course.EntryPolygon[0]);
-            PointF entryPoint2 = PointFromCoursePosition(position2);
-            Pen pen2 = new Pen(Color.Orange, 3F);
-            _graphics.DrawEllipse(pen2, entryPoint2.X, entryPoint2.Y, 3, 3);
-
-
-            // Blue dot (bottom left of exit gate)
-            CoursePosition position3 = _pass.CoursePositionFromGeo(_pass.Course.ExitPolygon[0]);
-            PointF entryPoint3 = PointFromCoursePosition(position3);
-            Pen pen3 = new Pen(Color.Blue, 3F);
-            _graphics.DrawEllipse(pen3, entryPoint3.X, entryPoint3.Y, 3, 3);
-
-            // Pink dot (center exit55 CL)
-            CoursePosition exit55CLPosition = _pass.CoursePositionFromGeo(_pass.Course.Course55ExitCL);
-            PointF exit55CLPointF = PointFromCoursePosition(exit55CLPosition);
-            Pen penExit55CL = new Pen(Color.Pink, 3F);
-            _graphics.DrawEllipse(penExit55CL, exit55CLPointF.X, exit55CLPointF.Y, 3, 3);
-
         }
 
         private void DrawCourseBounds(List<GeoCoordinate> list, Color color)
@@ -140,6 +111,7 @@ namespace SlalomTracker
             }
 
             Pen pen = new Pen(color, 0.6F);
+            pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dot;
             _graphics.DrawLine(pen, points[0], points[1]);
             _graphics.DrawLine(pen, points[1], points[2]);
             _graphics.DrawLine(pen, points[2], points[3]);
