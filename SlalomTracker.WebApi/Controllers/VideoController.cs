@@ -56,7 +56,7 @@ namespace SlalomTracker.WebApi.Controllers
             string json = GetJsonFromBody();
             string videoUrl = QueueMessageParser.GetUrl(json);     
             
-            if (videoUrl == null)        
+            if (videoUrl == null || videoUrl.Trim() == string.Empty)        
             {
                 throw new ApplicationException("Unable to find video url in payload: \n" + json);
             }            
