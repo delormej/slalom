@@ -41,8 +41,9 @@ namespace SlalomTracker.WebApi.Controllers
             try
             {
                 videoUrl = GetVideoUrlFromRequest();
-                ContainerInstance.Create(videoUrl);
-                return StatusCode(200);
+                string containerGroup = ContainerInstance.Create(videoUrl);
+                
+                return StatusCode(200, containerGroup);
             }
             catch (Exception e)
             {

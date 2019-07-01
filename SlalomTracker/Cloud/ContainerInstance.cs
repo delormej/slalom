@@ -22,7 +22,7 @@ namespace SlalomTracker.Cloud
         const double CpuCoreCount = 1.0;
         const double MemoryInGb = 1.0;
 
-        public static void Create(string videoUrl)
+        public static string Create(string videoUrl)
         {
             Console.WriteLine($"Creating container instance for video: {videoUrl}");
             string image = GetContainerImage();
@@ -31,6 +31,8 @@ namespace SlalomTracker.Cloud
             Dictionary<string, string> envVars = GetEnvironmentVariables();
             Create(containerGroup, JobResourceGroup, image, ExePath, args, envVars);
             Console.WriteLine($"Created container instance {containerGroup} in {JobResourceGroup} for video: {videoUrl}");
+            
+            return containerGroup;
         }
 
         private static void Create(string containerGroupName, 
