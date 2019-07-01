@@ -21,6 +21,6 @@ done < list2.txt
  cat list.txt | jq  '.[]."videoUrl"' -r | while read line ; do curl -X POST -d "" "http://ski-app.azurewebsites.net/api/image?videoUrl=$line" ; done
 
 
- curl -X POST -d "{'url': 'http://skivideostorage.blob.core.windows.net/ski-ingest/2019-05-17/011.MP4'}" http://ski-app.azurewebsites.net/api/processvideo
+ curl -X POST -d "{'Url': 'http://skivideostorage.blob.core.windows.net/ski-ingest/2019-05-17/011.MP4'}" http://ski-app.azurewebsites.net/api/processvideo
 
  
