@@ -41,6 +41,7 @@ namespace SlalomTracker.Cloud
 
         public string SlalomTrackerVersion { 
             get { return GetVersion(); }
+            set { }
         }
 
         private void SetKeys(string videoUrl)
