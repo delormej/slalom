@@ -1,12 +1,12 @@
-<head>
+<html>
+  <head>
     <link href="https://vjs.zencdn.net/7.5.4/video-js.css" rel="stylesheet">
   </head>
 
   <body>
-    <video id='my-video' class='video-js' controls preload='auto' width='1600' height='1200'
+    <video id='my-video' class='video-js' controls autoplay='muted' preload='auto' width='1024' height='768'
       data-setup='{ "playbackRates": [0.25, 0.33, 0.5, 1] }'
       poster='https://www.wakehouse.com/product_images/uploaded_images/waterskis-banner.jpg'>
-      <source type='video/mp4'/>
       <p class='vjs-no-js'>
         To view this video please enable JavaScript, and consider upgrading to a web browser that
         <a href='https://videojs.com/html5-video-support/' target='_blank'>supports HTML5 video</a>
@@ -17,8 +17,12 @@
     <script>
       var urlParams = new URLSearchParams(window.location.search);
       var url = urlParams.get('video'); 
-      console.log("video:" + video);
+      console.log("video:" + url);
       var video = videojs("my-video");
-      video.src(url);
+      video.src({
+        type: 'video/mp4',
+        src: url
+      });  
     </script>
   </body>
+</html>
