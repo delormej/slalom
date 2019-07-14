@@ -20,7 +20,8 @@ namespace SlalomTracker.WebApi.Controllers
                 Task<List<SkiVideoEntity>> task = storage.GetAllMetdata();
                 task.Wait();
                 List<SkiVideoEntity> list = task.Result;
-                var newestFirst = list.OrderByDescending(s => s.Timestamp);     
+                var newestFirst = list.OrderByDescending(s => s.Timestamp);   
+                this.HttpContext.Response.Headers.Add("Access-Control-Allow-Origin", "*");  
                 return Json(newestFirst);
             }
             catch (Exception e)
