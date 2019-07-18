@@ -57,6 +57,16 @@ namespace SlalomTracker.Cloud
             return entity;
         }
 
+        public void UpdateMetadata(SkiVideoEntity entity)
+        {
+            CloudTableClient client = _account.CreateCloudTableClient();
+            CloudTable table = client.GetTableReference(SKITABLE);
+            TableOperation update = TableOperation.Merge(entity);
+            update.Entity.ETag = "*"; // Allow last-writer wins approach.
+            Task updateTask = table.ExecuteAsync(update);
+            updateTask.Wait();               
+        }
+
         public async Task<List<SkiVideoEntity>> GetAllMetdata()
         {
             CloudTableClient client = _account.CreateCloudTableClient();
