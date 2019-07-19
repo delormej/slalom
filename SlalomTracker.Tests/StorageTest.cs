@@ -10,22 +10,22 @@ namespace SlalomTracker.Cloud.Tests
     [TestClass]
     public class StorageTest
     {
-        readonly string TESTPATH = "2018-08-24/GOPR0565.MP4";
-        const string URL = "https://delormej.blob.core.windows.net/ski/2018-08-24/GOPR0565.MP4";
-        const string BLOBNAME = "2018-08-24/GOPR0565.MP4";
+        const string TESTPATH = "2018-08-24/GOPR0565.MP4";
+        const string URL = "https://skivideostorage.blob.core.windows.net/ski/2018-08-24/GOPR0565.MP4";
+        public const string BLOBNAME = TESTPATH;
 
-        /*[TestMethod]
+        [TestMethod]
         public void TestDownloadVideo()
         {
             string localPath = Storage.DownloadVideo(URL);
             Assert.AreEqual(localPath, TESTPATH);
-        }*/
+        }
 
         [TestMethod]
         public void AddMetadataTest()
         {
             Storage storage = new Storage();
-            string json = File.ReadAllText(@"GOPR0565.json");
+            string json = File.ReadAllText("./Video/GOPR0565.json");
             storage.AddMetadata(URL, json);
         }
 

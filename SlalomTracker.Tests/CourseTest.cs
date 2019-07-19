@@ -32,7 +32,7 @@ namespace SlalomTracker
         /// <returns></returns>
         public static CoursePass CreateTestCoursePass()
         {
-            return CoursePassFactory.FromFile("GOPR0194.json");
+            return CoursePassFactory.FromFile("./Video/GOPR0194.json");
         }
 
         public static Course CreateTestCourse()
@@ -70,27 +70,27 @@ namespace SlalomTracker
             // Quick spot check.
             //Ball[5] = { X: 23,Y: 287}
             //PreGate[3] = { X: 12.75,Y: 369}
-            Assert.IsTrue(_course.Balls[5].X == 23 && _course.Balls[5].Y == 287, "Balls are in wrong CoursePosition.");
-            Assert.IsTrue(_course.PreGates[3].X == 12.75 && _course.PreGates[3].Y == 369, "PreGates are in wrong CoursePosition.");
+            Assert.IsTrue(_course.Balls[5].X == 11.5 && _course.Balls[5].Y == 287, "Balls are in wrong CoursePosition.");
+            Assert.IsTrue(_course.PreGates[3].X == 1.25 && _course.PreGates[3].Y == 369, "PreGates are in wrong CoursePosition.");
         }
 
         [TestMethod]
         public void TestByName()
         {
             Course cove = Course.ByName("cove");
-            Assert.IsTrue(cove.Course55EntryCL.Latitude == 42.28958014);
+            Assert.IsTrue(cove.Course55EntryCL.Latitude == 42.28958);
             double coveHeading = cove.GetCourseHeadingDeg();
             var poly = cove.Polygon;
 
             Course outside = Course.ByName("outside");
-            Assert.IsTrue(outside.Course55ExitCL.Longitude == -71.36553574);
+            Assert.IsTrue(outside.Course55ExitCL.Longitude == -71.361781);
             double outsideHeading = outside.GetCourseHeadingDeg();
         }
 
         [TestMethod]
         public void TestFindCourse()
         {
-            CoursePass pass = CoursePassFactory.FromFile("GOPR0565.json");
+            CoursePass pass = CoursePassFactory.FromFile("./Video/GOPR0565.json");
             List<Measurement> measurements = pass.Measurements;
             Course course = Course.FindCourse(measurements);
             Assert.IsNotNull(course);

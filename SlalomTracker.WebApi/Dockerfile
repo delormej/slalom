@@ -9,6 +9,11 @@ RUN apt-get update \
 COPY ./ /ski
 WORKDIR /ski/SlalomTracker.WebApi
 ENV SKIBLOBS=${ski_blobs_connection}
+
+# Execute unit test
+RUN dotnet test ./SlalomTracker.WebApi.csproj
+
+# Publish application
 RUN dotnet publish ./SlalomTracker.WebApi.csproj -o /ski/build/
 
 # create the runtime image (smaller, doesn't need the full sdk for building)

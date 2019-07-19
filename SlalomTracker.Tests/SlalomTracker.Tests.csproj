@@ -19,8 +19,10 @@
 
   <ItemGroup>
     <!-- Files used by test harness. -->
-    <Content Include="GOPR0194.json" CopyToOutputDirectory="Always" />
+    <Content Include=".\Video\GOPR0194.json" CopyToOutputDirectory="Always" />
+    <Content Include=".\Video\GOPR0194.csv" CopyToOutputDirectory="Always" />
     <Content Include=".\Video\GOPR0565.json" CopyToOutputDirectory="Always"/>
+    <Content Include=".\Video\GOPR0565.csv" CopyToOutputDirectory="Always"/>
   </ItemGroup>  
 
 </Project>
