@@ -11,7 +11,7 @@ WORKDIR /ski/SlalomTracker.WebApi
 ENV SKIBLOBS=${ski_blobs_connection}
 
 # Execute unit test
-RUN dotnet test ./SlalomTracker.WebApi.csproj
+RUN dotnet test ./SlalomTracker.WebApi.csproj --logger "trx;LogFileName=/results/results.trx"
 
 # Publish application
 RUN dotnet publish ./SlalomTracker.WebApi.csproj -o /ski/build/
