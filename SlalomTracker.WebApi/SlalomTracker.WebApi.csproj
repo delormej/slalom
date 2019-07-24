@@ -24,7 +24,7 @@
       3. Build with this source in order to pick up private SlalomTracker artifact (remove the '*'):        
           dotnet build -*-source https://pkgs.dev.azure.com/jasondel/_packaging/SlalomTracker/nuget/v3/index.json      
     -->
-    <PackageReference Include="SlalomTracker" Version="1.2.4" />
+    <PackageReference Include="SlalomTracker" Version="1.2.5" />
   </ItemGroup>
 
 </Project>

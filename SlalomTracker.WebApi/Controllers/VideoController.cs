@@ -52,6 +52,24 @@ namespace SlalomTracker.WebApi.Controllers
         }
 
         [HttpPost]
+        [Route("api/acicleanup")]
+        public IActionResult DeleteAllContainerGroups()
+        {
+            try 
+            {
+                int count = ContainerInstance.DeleteAllContainerGroups();
+                var result = new {deletedCount=count};
+                return Json(result);
+            }
+            catch (Exception e)
+            {
+                string message = $"Error deleting ACI container groups: \n{e.Message}";
+                Console.WriteLine(message);
+                return StatusCode(500, message);
+            }
+        }
+
+        [HttpPost]
         [Route("api/updatevideo")]
         public IActionResult UpdateVideo()
         {
