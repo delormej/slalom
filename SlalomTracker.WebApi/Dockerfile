@@ -14,7 +14,7 @@ ENV SKIBLOBS=${ski_blobs_connection}
 RUN dotnet test ./SlalomTracker.WebApi.csproj --logger "trx;LogFileName=results.trx"
 
 # Publish application
-RUN dotnet publish ./SlalomTracker.WebApi.csproj -o /ski/build/
+RUN dotnet publish ./SlalomTracker.WebApi.csproj -o /ski/build/ --source .
 
 # create the runtime image (smaller, doesn't need the full sdk for building)
 FROM microsoft/dotnet:2.1-aspnetcore-runtime as runtime
