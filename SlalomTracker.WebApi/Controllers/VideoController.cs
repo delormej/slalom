@@ -51,6 +51,30 @@ namespace SlalomTracker.WebApi.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("api/updatevideo")]
+        public IActionResult UpdateVideo()
+        {
+            try 
+            {
+                string json = GetJsonFromBody();
+                SkiVideoEntity video = JsonConvert.DeserializeObject<SkiVideoEntity>(json);
+                if (video == null)
+                {
+                    string message = $"Error reading video instance from payload:\n{json}";
+                    throw new ApplicationException(message);
+                }
+                Storage storage = new Storage();
+                storage.UpdateMetadata(video);
+                return StatusCode(200);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return StatusCode(500, e.Message);                
+            }
+        }
+
         private string GetVideoUrlFromRequest()
         {
             string json = GetJsonFromBody();

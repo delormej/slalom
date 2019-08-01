@@ -1,0 +1,2 @@
+Readme
+[![Build Status](https://dev.azure.com/jasondel/slalom-api/_apis/build/status/skiwebapi-CI?branchName=master)](https://dev.azure.com/jasondel/slalom-api/_build/latest?definitionId=6&branchName=master)

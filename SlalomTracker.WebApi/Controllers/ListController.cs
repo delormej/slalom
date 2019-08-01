@@ -1,15 +1,9 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Net;
-using System.Net.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Drawing.Imaging;
-using System.Drawing;
 using SlalomTracker.Cloud;
-
 
 namespace SlalomTracker.WebApi.Controllers
 {
@@ -23,8 +17,12 @@ namespace SlalomTracker.WebApi.Controllers
             try 
             {
                 Storage storage = new Storage();
-                List<Video> list = Video.GetVideoList(storage.GetAllBlobUris());
-                return Json(list);
+                Task<List<SkiVideoEntity>> task = storage.GetAllMetdata();
+                task.Wait();
+                List<SkiVideoEntity> list = task.Result;
+                var newestFirst = list.OrderByDescending(s => s.Timestamp);   
+                this.HttpContext.Response.Headers.Add("Access-Control-Allow-Origin", "*");  
+                return Json(newestFirst);
             }
             catch (Exception e)
             {

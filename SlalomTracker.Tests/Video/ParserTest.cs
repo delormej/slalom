@@ -1,11 +1,11 @@
 using System.IO;
 using System.Collections.Generic;
-using SlalomTracker;
+using SlalomTracker.Cloud.Tests;
 using MetadataExtractor;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 
-namespace MetadataExtractor.Tests
+namespace SlalomTracker.Tests
 {
     [TestClass]
     public class ParserTest
@@ -13,7 +13,7 @@ namespace MetadataExtractor.Tests
         [TestMethod]
         public void TestLoadFromFile()
         {
-            const string csvPath = "../../../GOPR0194.csv";
+            const string csvPath = "./Video/GOPR0194.csv";
             string csv = "";
             using (var sr = File.OpenText(csvPath))
                 csv = sr.ReadToEnd();
@@ -25,7 +25,7 @@ namespace MetadataExtractor.Tests
         [TestMethod]
         public void TestLoadFromMp4()
         {
-            const string mp4Path = "GOPR0194.MP4";
+            const string mp4Path = StorageTest.BLOBNAME;
             GpmfParser parser = new GpmfParser();
             List<Measurement> measurements = parser.LoadFromMp4(mp4Path);
             AssertMeasurements(measurements);
@@ -34,7 +34,7 @@ namespace MetadataExtractor.Tests
         [TestMethod]
         public void TestMeasurementsToJson()
         {
-            string csv, csvPath = @"..\..\..\..\MetadataExtractor\GOPR0565.csv";
+            string csv, csvPath = "./Video/GOPR0565.csv";
             using (var sr = File.OpenText(csvPath))
                 csv = sr.ReadToEnd();
 
