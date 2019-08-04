@@ -84,6 +84,7 @@ namespace SlalomTracker.WebApi.Controllers
                 }
                 Storage storage = new Storage();
                 storage.UpdateMetadata(video);
+                this.HttpContext.Response.Headers.Add("Access-Control-Allow-Origin", "*");                  
                 return StatusCode(200);
             }
             catch (Exception e)
