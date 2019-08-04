@@ -30,40 +30,5 @@ namespace SlalomTracker.WebApi.Controllers
                 return StatusCode(500);
             }
         }
-
-        private class Video
-        {
-            public string VideoUrl;
-            public bool HasJson;
-
-            public Video(string url)
-            {
-                this.VideoUrl = url;
-                this.HasJson = false;
-            }
-
-            private static string JsonToMp4(string uri)
-            {
-                return uri.ToLower().Replace(".json", ".mp4");
-            }
-
-            public static List<Video> GetVideoList(IEnumerable<string> blobUris)
-            {
-                List<Video> list = new List<Video>();
-                foreach (string uri in blobUris.Where(s => s.ToLower().EndsWith(".mp4")))
-                    list.Add(new Video(uri));
-
-                foreach (string uri in blobUris.Where(s => s.ToLower().EndsWith(".json")))
-                {
-                    Video video = list.Find(v => v.VideoUrl.ToLower() == JsonToMp4(uri));
-                    if (video != null)
-                        video.HasJson = true;
-                    else 
-                        Console.WriteLine("[WARN] GetVideoList - Missing mp4 for json: " + uri);
-                }
-
-                return list;
-            }
-        }
     }
 }

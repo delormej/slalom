@@ -1,5 +1,5 @@
 FROM microsoft/dotnet:2.1-sdk as build
-ARG ski_blobs_connection
+ARG nuget
 
 # Workaround, dependencies for graphics libraries, per this issue: https://github.com/dotnet/corefx/issues/25102
 RUN apt-get update \
@@ -7,21 +7,20 @@ RUN apt-get update \
     &&  apt-get install -y --no-install-recommends libc6-dev
 
 COPY ./ /ski
-WORKDIR /ski/SlalomTracker.WebApi
-ENV SKIBLOBS=${ski_blobs_connection}
+WORKDIR /ski
 
-# Execute unit test
-RUN dotnet test ./SlalomTracker.WebApi.csproj --logger "trx;LogFileName=results.trx"
+# Install nuget credential provider, to pull dependencies from Azure Artifacts feed.
+RUN curl -s https://raw.githubusercontent.com/microsoft/artifacts-credprovider/master/helpers/installcredprovider.sh | bash
+ENV VSS_NUGET_EXTERNAL_FEED_ENDPOINTS=$nuget
 
 # Publish application
-RUN dotnet publish ./SlalomTracker.WebApi.csproj -o /ski/build/
+RUN dotnet publish ./SlalomTracker.WebApi.csproj -c Release -o /ski/build/ --source https://pkgs.dev.azure.com/jasondel/_packaging/SlalomTracker/nuget/v3/index.json
 
 # create the runtime image (smaller, doesn't need the full sdk for building)
 FROM microsoft/dotnet:2.1-aspnetcore-runtime as runtime
 #FROM dotnet-debug as runtime
-ARG ski_blobs_connection
+
 # Environment Variables
-ENV SKIBLOBS=${ski_blobs_connection}
 ENV ASPNETCORE_URLS=http://0.0.0.0:80
 
 # Workaround, dependencies for graphics libraries, per this issue: https://github.com/dotnet/corefx/issues/25102
