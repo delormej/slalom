@@ -31,3 +31,9 @@ done < list2.txt
 
  # Get container logs
  az container logs -g ski-jobs -n aci-7c93df05
+
+ # Trim a video
+ # 1) Launch container (on Windows), mounting the directory with the video.
+ docker run -it --entrypoint bash -v "d:/Users/delormej/dev/Video:/video" jrottenberg/ffmpeg
+ # 2) Launch ffmpeg (these could be combined)
+ ffmpeg -i /video/GOPR1362.MP4 -ss 00:00:58 -t 00:00:50 -map 0:v -map 0:a -map 0:3 -copy_unknown -tag:2 gpmd -c copy /video/GOPR1362-b.MP4
