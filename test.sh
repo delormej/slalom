@@ -20,7 +20,6 @@ done < list2.txt
 
  cat list.txt | jq  '.[]."videoUrl"' -r | while read line ; do curl -X POST -d "" "http://ski-app.azurewebsites.net/api/image?videoUrl=$line" ; done
 
-
  curl -X POST -d "{'Url': 'http://skivideostorage.blob.core.windows.net/ski-ingest/2019-05-17/011.MP4'}" http://ski-app.azurewebsites.net/api/processvideo
 
 # Test the update service:
@@ -37,3 +36,5 @@ done < list2.txt
  docker run -it --entrypoint bash -v "d:/Users/delormej/dev/Video:/video" jrottenberg/ffmpeg
  # 2) Launch ffmpeg (these could be combined)
  ffmpeg -i /video/GOPR1362.MP4 -ss 00:00:58 -t 00:00:50 -map 0:v -map 0:a -map 0:3 -copy_unknown -tag:2 gpmd -c copy /video/GOPR1362-b.MP4
+
+ 
