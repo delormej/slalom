@@ -19,9 +19,11 @@ namespace SlalomTracker.WebApi.Controllers
         {
             string version = 
                 Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+            var slalomTrackerVersion = typeof(SlalomTracker.Cloud.SkiVideoEntity).Assembly.GetName();
             string msi = System.Environment.GetEnvironmentVariable("MSI_ENDPOINT");
             string containerImage = System.Environment.GetEnvironmentVariable("SKICONSOLE_IMAGE");
-            return Json("Version = " + version + "\nMSI: " + msi + "\nIMAGE: " + containerImage);
+            return Json("Version = " + version + "\nMSI: " + msi + "\nIMAGE: " + containerImage + 
+                "\nSlalomTracker v" + slalomTrackerVersion);
         }
     }
 }
