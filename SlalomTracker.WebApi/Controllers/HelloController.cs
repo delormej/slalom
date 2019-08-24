@@ -1,12 +1,9 @@
 using System;
-using System.Reflection;
 using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Drawing.Imaging;
-using System.Drawing;
 using SlalomTracker;
-
+using SlalomTracker.Cloud;
 
 namespace SlalomTracker.WebApi.Controllers
 {
