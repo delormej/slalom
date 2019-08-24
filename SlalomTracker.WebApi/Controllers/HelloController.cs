@@ -17,8 +17,8 @@ namespace SlalomTracker.WebApi.Controllers
         [HttpGet]
         public JsonResult Get()
         {
-            string version = 
-                Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+            SkiVideoEntity video = new SkiVideoEntity();
+            string version = video.SlalomTrackerVersion;
             string msi = System.Environment.GetEnvironmentVariable("MSI_ENDPOINT");
             string containerImage = System.Environment.GetEnvironmentVariable("SKICONSOLE_IMAGE");
             return Json("Version = " + version + "\nMSI: " + msi + "\nIMAGE: " + containerImage);
