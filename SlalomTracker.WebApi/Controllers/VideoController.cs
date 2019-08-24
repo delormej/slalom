@@ -116,9 +116,11 @@ namespace SlalomTracker.WebApi.Controllers
             }
             return json;
         }
+        
         private string GetBlobName(string videoUrl)
         {
-            return Storage.GetBlobName(Storage.GetLocalPath(videoUrl));
+            Uri uri = new Uri(videoUrl);
+            return uri.LocalPath;
         }        
     }
 }
