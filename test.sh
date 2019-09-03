@@ -25,6 +25,9 @@ done < list2.txt
 # Test the update service:
  curl -v -i -d '{"url":"https://skivideostorage.blob.core.windows.net/ski/2019-07-11/GOPR1300_ts.MP4","thumbnailUrl":"https://skivideostorage.blob.core.windows.net/ski/2019-07-11/GOPR1300.PNG","jsonUrl":"https://skivideostorage.blob.core.windows.net/ski/2019-07-11/GOPR1300_ts.json","skier":"Jason","ropeLengthM":0,"boatSpeedMph":32.3,"hasCrash":false,"all6Balls":false,"courseName":"outside","entryTime":5.227,"slalomTrackerVersion":"SlalomTracker:v1.1.0.0\nSlalomTracker.WebApi:v6.3.0.0","partitionKey":"2019-07-11","rowKey":"GOPR1300_ts.MP4","timestamp":"2019-07-17T12:18:10.8103607+00:00","eTag":"W/\"datetime'2019-07-11T12%3A18%3A10.8103607Z'\""}' -H "Content-Type: application/json"  -X POST http://localhost/api/updatevideo
 
+# Clean up aci jobs:
+curl -X POST -d "" http://ski-app.azurewebsites.net/api/acicleanup
+
  # List containers
  az container list --query '[].[name,provisioningState,containers[0].command[2]]' -o table
 
