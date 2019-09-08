@@ -31,21 +31,18 @@ namespace SlalomTracker.WebApi
             {
                 options.RespectBrowserAcceptHeader = true;
             }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-
-            // Configure support to allow cross site scripting.
-            services.AddCors(o => o.AddPolicy("AllowCorsPolicy", builder =>
-                {
-                    builder.AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader();
-                }));            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.UseMvc();
-            app.UseCors("AllowCorsPolicy");
+            app.UseCors(builder =>
+            {
+                builder.WithOrigins("*")
+                    .WithMethods("*")
+                    .WithHeaders("*");
+            });
         }
     }
 }
