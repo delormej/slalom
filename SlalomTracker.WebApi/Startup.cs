@@ -39,9 +39,7 @@ namespace SlalomTracker.WebApi
             app.UseMvc();
             app.UseCors(builder =>
             {
-                builder.WithOrigins("*")
-                    .WithMethods("*")
-                    .WithHeaders("*");
+                builder.WithOrigins("http://localhost:3000");
             });
         }
     }
