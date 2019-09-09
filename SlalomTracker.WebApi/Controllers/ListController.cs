@@ -22,7 +22,6 @@ namespace SlalomTracker.WebApi.Controllers
                 List<SkiVideoEntity> list = task.Result;
                 var filtered = list.Where(s => s.MarkedForDelete == false);
                 var newestFirst = filtered.OrderByDescending(s => s.RecordedTime).ThenBy(s => s.Timestamp);   
-                this.HttpContext.Response.Headers.Add("Access-Control-Allow-Origin", "*");  
                 return Json(newestFirst);
             }
             catch (Exception e)
