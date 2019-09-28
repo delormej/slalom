@@ -9,12 +9,8 @@ RUN apt-get update \
 COPY ./ /ski
 WORKDIR /ski
 
-# Install nuget credential provider, to pull dependencies from Azure Artifacts feed.
-RUN curl -s https://raw.githubusercontent.com/microsoft/artifacts-credprovider/master/helpers/installcredprovider.sh | bash
-ENV VSS_NUGET_EXTERNAL_FEED_ENDPOINTS=$nuget
-
 # Publish application
-RUN dotnet publish ./SlalomTracker.WebApi.csproj -c Release -o /ski/build/ --source https://pkgs.dev.azure.com/jasondel/_packaging/SlalomTracker/nuget/v3/index.json
+RUN dotnet publish ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj -c Release -o /ski/build/
 
 # create the runtime image (smaller, doesn't need the full sdk for building)
 FROM microsoft/dotnet:2.1-aspnetcore-runtime as runtime

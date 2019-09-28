@@ -14,18 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- 
-      PLEASE NOTE: To buid this follow these steps.
-
-      1. Get a PAT from Azure DevOps: https://dev.azure.com/jasondel/SlalomTracker/_packaging?_a=feed&feed=SlalomTracker
-      
-      2. Set this env variable:       
-          VSS_NUGET_EXTERNAL_FEED_ENDPOINTS={"endpointCredentials": [{"endpoint":"https://pkgs.dev.azure.com/jasondel/_packaging/SlalomTracker/nuget/v3/index.json", "password":"REDACTED"}]}
-      
-      3. Build with this source in order to pick up private SlalomTracker artifact (remove the '*'):        
-          dotnet build -*-source https://pkgs.dev.azure.com/jasondel/_packaging/SlalomTracker/nuget/v3/index.json      
-    -->
-    <PackageReference Include="SlalomTracker" Version="1.3.9" />
+    <ProjectReference Include="..\SlalomTracker\SlalomTracker.csproj" />
   </ItemGroup>
 
 </Project>
