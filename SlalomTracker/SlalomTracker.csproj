@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ApplicationIcon />
+    <OutputType>Library</OutputType>
+    <StartupObject />
+    <Version>1.3.9</Version>
+
+    <!-- Required to publish nuget package. -->
+    <PackageId>SlalomTracker</PackageId>
+    <Authors>Jason De Lorme</Authors>
+    <Company>IRT, llc</Company>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GeoCoordinate.NetStandard1" Version="1.0.1" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="System.Drawing.Common" Version="4.5.0" />
+    <PackageReference Include="WindowsAzure.Storage" Version="9.3.1" />
+    <PackageReference Include="Microsoft.Azure.Management.Fluent" Version="1.22.2" />    
+    <PackageReference Include="xFFmpeg.NET" Version="3.3.3" />
+    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.40.0.1593" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(OS)'!='Windows_NT'">
+    <Content Include="gpmf/build/gpmfdemo" Link="%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always">
+      <Pack>true</Pack>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+      <PackageFlatten>true</PackageFlatten>
+    </Content>
+  </ItemGroup>
+
+  <Target Name="PrintMe" BeforeTargets="Restore">
+      <Message Importance="High" Text="OS is: $(OS)"/>
+  </Target>
+
+  <!-- Build dependent submodule. -->
+  <Target Name="BuildGPMF" BeforeTargets="Restore" Condition="'$(OS)'!='Windows_NT'">
+    <Exec Command="echo 'Building gpmfdemo for $(Platform) $(OS) in $(ProjectDir)gpmf'" />
+    <Exec Command="./build.sh" WorkingDirectory="$(ProjectDir)gpmf" />
+  </Target>
+
+</Project>
