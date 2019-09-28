@@ -1,0 +1,3 @@
+[submodule "SlalomTracker/gpmf"]
+	path = SlalomTracker/gpmf
+	url = https://github.com/delormej/gpmf.git
