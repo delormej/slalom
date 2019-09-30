@@ -27,29 +27,30 @@ namespace SlalomTracker
         /// </summary>
         public GeoCoordinate Course55EntryCL { get; set; }
         public GeoCoordinate Course55ExitCL { get; set; }
+        public string FriendlyName { get; set; }
         public List<GeoCoordinate> Polygon { get { return _polygon; } }
         public List<GeoCoordinate> EntryPolygon { get { return _entryPolygon; } }
         public List<GeoCoordinate> ExitPolygon { get { return _exitPolygon; } }
 
         static Course()
         {
-            _knownCourses = new List<Course>();
-            Course cove = new Course(
-                    new GeoCoordinate(Math.Round(42.28958014, 6), Math.Round(-71.35911924, 6)),
-                    new GeoCoordinate(Math.Round(42.28622924, 6), Math.Round(-71.35950488, 6))
-                );
-            cove.Name = "cove";
-            _knownCourses.Add(cove);
-            _knownCourses.Add(ReverseCourse(cove));
+            // _knownCourses = new List<Course>();
+            // Course cove = new Course(
+            //         new GeoCoordinate(Math.Round(42.28958014, 6), Math.Round(-71.35911924, 6)),
+            //         new GeoCoordinate(Math.Round(42.28622924, 6), Math.Round(-71.35950488, 6))
+            //     );
+            // cove.Name = "cove";
+            // _knownCourses.Add(cove);
+            // _knownCourses.Add(ReverseCourse(cove));
 
-            var outsideEntry = new GeoCoordinate(42.285673, -71.362328);
-            var outside55Entry = Util.MoveTo(outsideEntry, 55.0, 
-                Util.GetHeading(new GeoCoordinate(Math.Round(42.28721409, 6), Math.Round(-71.36553574, 6)),
-                    outsideEntry));
+            // var outsideEntry = new GeoCoordinate(42.285673, -71.362328);
+            // var outside55Entry = Util.MoveTo(outsideEntry, 55.0, 
+            //     Util.GetHeading(new GeoCoordinate(Math.Round(42.28721409, 6), Math.Round(-71.36553574, 6)),
+            //         outsideEntry));
 
-            Course outside = GetOutisdeCourse();
-            _knownCourses.Add(outside);
-            _knownCourses.Add(ReverseCourse(outside));
+            // Course outside = GetOutisdeCourse();
+            // _knownCourses.Add(outside);
+            // _knownCourses.Add(ReverseCourse(outside));
         }
 
         private static Course GetOutisdeCourse()

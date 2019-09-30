@@ -274,6 +274,26 @@ namespace SlalomTracker.Cloud
             insertTask.Wait();
         }
 
+        public async Task<List<CourseEntity>> GetCourses()
+        {
+            CloudTableClient client = _account.CreateCloudTableClient();
+            CloudTable table = client.GetTableReference("courses");
+            TableQuery<CourseEntity> query = new TableQuery<CourseEntity>().Where("");
+            TableQuerySegment<CourseEntity> result = await table.ExecuteQuerySegmentedAsync(query, null);
+            return result.Results;
+        }    
+
+        public void UpdateCourseEntity(CourseEntity entity)
+        {
+            CloudTableClient client = _account.CreateCloudTableClient();
+            CloudTable table = client.GetTableReference("courses");
+            TableOperation insert = TableOperation.InsertOrReplace(entity);
+            Task createTask = table.CreateIfNotExistsAsync();
+            createTask.Wait();
+            Task insertTask = table.ExecuteAsync(insert);
+            insertTask.Wait();
+        }    
+
         private string UploadMeasurements(string blobName, string json)
         {
             if (!blobName.EndsWith(".MP4"))

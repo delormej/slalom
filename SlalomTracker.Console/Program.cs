@@ -73,6 +73,9 @@ namespace SkiConsole
             {
                 PrintCreationTime(args[1]);
             }
+            else if (args[0] == "-x") {
+                PrintCourses();
+            }
             else
                 ShowUsage();
         }
@@ -96,14 +99,16 @@ namespace SkiConsole
                                 "Update video to YouTube.\n\t\t" +
                                 "ski -y 2018-06-20/GOPR0194.MP4\n\t" +
                                 "Print video creation time.\n\t\t" +
-                                "ski -c 2018-06-20/GOPR0194.MP4"                                 
+                                "ski -c 2018-06-20/GOPR0194.MP4\n\t\t" +
+                                "Download courses.\n\t\t" +
+                                "ski -x"                                 
                             );
         }
 
         private static void PrintVersion()
         {
             SkiVideoEntity video = new SkiVideoEntity();
-            Console.WriteLine(video.SlalomTrackerVersion);
+            Console.WriteLine("Version: " + video.SlalomTrackerVersion);
         }
 
         private static string DownloadAndCreateImage(string url)
@@ -202,6 +207,25 @@ namespace SkiConsole
             Console.WriteLine(
                 $"File: {inputFile}, video creationtime " +
                 creation.ToString("MM/dd/yyyy h:mm tt"));
+        }
+
+        private static void PrintCourses()
+        {
+            Storage storage = new Storage();
+            CourseEntity entity = new CourseEntity();
+            entity.PartitionKey = "cochituate";
+            entity.RowKey = "outside";
+            entity.Course55EntryCL = new GeoCoordinatePortable.GeoCoordinate(-71.35911924, 42.28958014);
+            entity.Course55ExitCL = new GeoCoordinatePortable.GeoCoordinate(-71.35950488, 42.28622924);
+            storage.UpdateCourseEntity(entity);
+
+            Task<List<CourseEntity>> result = storage.GetCourses();
+            result.Wait();
+            Console.WriteLine("Courses available:");
+            foreach (CourseEntity e in result.Result)
+            {
+                Console.WriteLine("\t{0}\\{1}\\{2}", e.PartitionKey, e.RowKey, e.Course55EntryCL);
+            }
         }
     }
 }
