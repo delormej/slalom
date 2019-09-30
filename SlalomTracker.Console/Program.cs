@@ -181,6 +181,7 @@ namespace SkiConsole
             bitmap.Save(imagePath, ImageFormat.Png);
 
             Console.WriteLine("Gate precision == {0} for {1}", pass.GetGatePrecision(), jsonPath);
+            Console.WriteLine("Wrote image to: " + imagePath);
 
             return imagePath;
         }

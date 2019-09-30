@@ -30,7 +30,7 @@ namespace SlalomTracker
             }
             set 
             {
-                m_rope = new Rope(value);
+                m_rope = Rope.Off(value);
             }
         }
         public CourseCoordinates Course55Coordinates { get; set; }
