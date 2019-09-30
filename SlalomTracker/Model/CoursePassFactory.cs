@@ -2,22 +2,44 @@
 using System.IO;
 using System.Net;
 using System.Collections.Generic;
+using GeoCoordinatePortable;
 using Newtonsoft.Json;
 
 namespace SlalomTracker
 {
+    public struct CourseCoordinates 
+    {
+        public double EntryLat;
+        public double EntryLon;
+        public double ExitLat;
+        public double ExitLon;
+
+        public static CourseCoordinates Default = new CourseCoordinates();
+    }
+
     public class CoursePassFactory
     {
-        enum Column { Seconds = 0, Lat, Lon, Speed, Z };
+        public double CenterLineDegreeOffset { get; set; } = 0;
+        public double RopeLengthOff { 
+            get 
+            {
+                if (m_rope != null) 
+                    return m_rope.FtOff;
+                else 
+                    return 0;
+            }
+            set 
+            {
+                m_rope = new Rope(value);
+            }
+        }
+        public CourseCoordinates Course55Coordinates { get; set; }
+        
+        private Course m_course;
+        private Rope m_rope;
 
-        /// <summary>
-        /// Loads an object of List<Measurment> from a JSON file.
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        public static CoursePass FromFile(string path)
+        public CoursePassFactory() 
         {
-            return FromFile(path, 0, Rope.Off(22));
         }
 
         /// <summary>
@@ -27,7 +49,7 @@ namespace SlalomTracker
         /// <param name="centerLineDegreeOffset"></param>
         /// <param name="rope"></param>
         /// <returns></returns>
-        public static CoursePass FromFile(string path, double centerLineDegreeOffset, Rope rope)
+        public CoursePass FromFile(string path)
         {
             string json = "";
             using (var sr = File.OpenText(path))
@@ -35,7 +57,7 @@ namespace SlalomTracker
             if (json == "")
                 throw new ApplicationException("Json file was empty: " + path);
 
-            return FromJson(json, centerLineDegreeOffset, rope);
+            return FromJson(json);
         }
 
         /// <summary>
@@ -45,32 +67,36 @@ namespace SlalomTracker
         /// <param name="centerLineDegreeOffset"></param>
         /// <param name="rope"></param>
         /// <returns></returns>
-        public static CoursePass FromJson(string json, double centerLineDegreeOffset, Rope rope)
+        public CoursePass FromJson(string json)
         { 
             var measurements = (List<Measurement>)JsonConvert.DeserializeObject(json, typeof(List<Measurement>));
-            Course course = Course.FindCourse(measurements);
-            if (course == null)
+            
+            if (Course55Coordinates.EntryLat != default(double)) 
             {
-                throw new ApplicationException("Unable to find a course for this ski run.");
+                this.m_course = new Course(
+                    new GeoCoordinate(Course55Coordinates.EntryLat, Course55Coordinates.EntryLon),
+                    new GeoCoordinate(Course55Coordinates.ExitLat, Course55Coordinates.ExitLon)
+                );
             }
-            return CreatePass(measurements, course, centerLineDegreeOffset, rope);
+            else 
+            {
+                this.m_course = Course.FindCourse(measurements);
+            }
+
+            if (this.m_course == null)
+                throw new ApplicationException("Unable to find a course for this ski run.");
+
+            return CreatePass(measurements);
         }
 
-        public static CoursePass FromJson(string json, double ropeOffLength = 15)
-        {
-            CoursePass pass = FromJson(json, 0, Rope.Off(ropeOffLength));
-            CoursePass betterPass = FitPass(pass.Measurements, pass.Course, pass.Rope);
-            return betterPass;
-        }
-
-        public static CoursePass FromUrl(string url, double centerLineDegreeOffset = 0, double ropeOffLength = 15)
+        public CoursePass FromUrl(string url)
         {
             WebClient client = new WebClient();
             string json = client.DownloadString(url);
             if (string.IsNullOrEmpty(json))
                 throw new ApplicationException("No JSON file at url: " + url);
             
-            return FromJson(json, centerLineDegreeOffset, Rope.Off(ropeOffLength));
+            return FromJson(json);
         }
 
         /// <summary>
@@ -79,7 +105,7 @@ namespace SlalomTracker
         /// <param name="measurements"></param>
         /// <param name="course"></param>
         /// <returns></returns>
-        public static CoursePass FitPass(List<Measurement> measurements, Course course, Rope rope)
+        public CoursePass FitPass(List<Measurement> measurements)
         {
             const int MAX = 45;
             const int MIN = -45;
@@ -88,7 +114,8 @@ namespace SlalomTracker
 
             for (int i = MIN; i <= MAX; i++)
             {
-                CoursePass pass = CreatePass(measurements, course, i, rope);
+                CenterLineDegreeOffset = i;
+                CoursePass pass = CreatePass(measurements);
                 if (bestPass == null)
                 {
                     bestPass = pass;
@@ -107,21 +134,13 @@ namespace SlalomTracker
             return bestPass;
         }
 
-        private static CoursePass CreatePass(List<Measurement> measurements, Course course, double centerLineDegreeOffset, Rope rope)
+        private CoursePass CreatePass(List<Measurement> measurements)
         {
-            CoursePass pass = new CoursePass(course, rope, centerLineDegreeOffset);
+            CoursePass pass = new CoursePass(m_course, m_rope, CenterLineDegreeOffset);
             foreach (var r in measurements)
-            {
                 pass.Track(r);
-            }
 
             return pass;
-        }
-
-        private static void GetColumn(string[] row, Column column, out double result)
-        {
-            result = 0;
-            double.TryParse(row[(int)column], out result);
         }
     }
 }

@@ -29,7 +29,8 @@ namespace SlalomTracker.Video
                 string localPath = Cloud.Storage.DownloadVideo(videoUrl);
                 var creationTimeTask = _videoTasks.GetCreationTimeAsync(localPath);
                 string json = MetadataExtractor.Extract.ExtractMetadata(localPath);
-                CoursePass pass = CoursePassFactory.FromJson(json);
+                CoursePassFactory factory = new CoursePassFactory();
+                CoursePass pass = factory.FromJson(json);
 
                 creationTimeTask.Wait();
                 DateTime creationTime = creationTimeTask.Result;

@@ -49,7 +49,12 @@ namespace SlalomTracker.WebApi.Controllers
                 jsonUrl = storage.BlobStorageUri + "ski/" + jsonUrl;
             }
 
-            CoursePass pass = CoursePassFactory.FromUrl(jsonUrl, clOffset, rope);
+            CoursePassFactory factory = new CoursePassFactory() 
+            {
+                CenterLineDegreeOffset = clOffset,
+                RopeLengthOff = rope
+            };
+            CoursePass pass = factory.FromUrl(jsonUrl);
             CoursePassImage image = new CoursePassImage(pass);
             Bitmap bitmap = image.Draw();
             return bitmap;

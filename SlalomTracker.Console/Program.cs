@@ -47,7 +47,19 @@ namespace SkiConsole
                     double clOffset = args.Length > 2 ? double.Parse(args[2]) : 0;
                     double rope = args.Length > 3 ? double.Parse(args[3]) : 22;
 
-                    string imagePath = CreateImage(jsonPath, clOffset, rope);
+                    // Grab geo coordinates if passed.
+                    CourseCoordinates coords = CourseCoordinates.Default;
+                    if (args.Length >= 8)
+                    {
+                        coords = new CourseCoordinates() {
+                            EntryLat = double.Parse(args[4]),
+                            EntryLon = double.Parse(args[5]),
+                            ExitLat = double.Parse(args[6]),
+                            ExitLon = double.Parse(args[7])
+                        };
+                    }
+
+                    string imagePath = CreateImage(jsonPath, clOffset, rope, coords);
                 }
                 else if (args.Length == 2)
                 {
@@ -94,6 +106,7 @@ namespace SkiConsole
                                 "ski -i GOPR0194.json 0 22\n\t\t" +
                                 "ski -i https://delormej.blob.core.windows.net/ski/2018-08-24/GOPR0565.json 0 22\n\t\t" +
                                 "ski -i https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4\n\t" +
+                                "ski -i https://skivideostorage.blob.core.windows.net/ski/2019-09-27/GOPR2170_ts.json 0 32 42.286974 -71.36495 42.285677 -71.362336\n\t\t" +
                                 "Download video, process and upload metadata.\n\t\t" +
                                 "ski -p https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4\n\t" +
                                 "Update video to YouTube.\n\t\t" +
@@ -115,7 +128,7 @@ namespace SkiConsole
         {
             string localPath = Storage.DownloadVideo(url);
             string json = Extract.ExtractMetadata(localPath);
-            CoursePass pass = CoursePassFactory.FromJson(json);
+            CoursePass pass = new CoursePassFactory().FromJson(json);
             CoursePassImage image = new CoursePassImage(pass);
             Bitmap bitmap = image.Draw();
             string imagePath = localPath.Replace(".MP4", ".png");
@@ -148,14 +161,19 @@ namespace SkiConsole
             return url;
         }
 
-        private static string CreateImage(string jsonPath, double clOffset, double rope)
+        private static string CreateImage(string jsonPath, double clOffset, double rope, 
+            CourseCoordinates coords)
         {
             CoursePass pass;
+            CoursePassFactory factory = new CoursePassFactory();
+            factory.CenterLineDegreeOffset = clOffset;
+            factory.RopeLengthOff = rope;
+            factory.Course55Coordinates = coords;
 
-            if (jsonPath.StartsWith("http"))
-                pass = CoursePassFactory.FromUrl(jsonPath, clOffset, rope);
+            if (jsonPath.StartsWith("http")) 
+                pass = factory.FromUrl(jsonPath);
             else
-                pass = CoursePassFactory.FromFile(jsonPath, clOffset, Rope.Off(rope));
+                pass = factory.FromFile(jsonPath);
 
             string imagePath = GetImagePath(jsonPath);
             CoursePassImage image = new CoursePassImage(pass);
@@ -179,13 +197,6 @@ namespace SkiConsole
         {
             string file = System.IO.Path.GetFileName(jsonPath);
             return file.Replace(".json", ".png");
-        }
-
-        private static CoursePass GetBestCoursePass(CoursePass pass)
-        {
-            CoursePass bestPass = CoursePassFactory.FitPass(pass.Measurements, pass.Course, pass.Rope);
-            Console.WriteLine("Best pass is {0} CL offset.", bestPass.CenterLineDegreeOffset);
-            return bestPass;
         }
 
         private static void PrintAllMetadata()
