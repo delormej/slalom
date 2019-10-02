@@ -16,6 +16,7 @@ namespace SlalomTracker.Cloud
         const string SKICONTAINER = "ski";
         const string INGEST_SKICONTAINER = "ski-ingest";
         const string SKITABLE = "skivideos";
+        const string COURSETABLE = "courses";
         public const string ENV_SKIBLOBS = "SKIBLOBS";
         const string BLOB_QUEUE = "skiqueue";
 
@@ -277,7 +278,7 @@ namespace SlalomTracker.Cloud
         public async Task<List<CourseEntity>> GetCourses()
         {
             CloudTableClient client = _account.CreateCloudTableClient();
-            CloudTable table = client.GetTableReference("courses");
+            CloudTable table = client.GetTableReference(COURSETABLE);
             TableQuery<CourseEntity> query = new TableQuery<CourseEntity>().Where("");
             TableQuerySegment<CourseEntity> result = await table.ExecuteQuerySegmentedAsync(query, null);
             return result.Results;
@@ -286,7 +287,7 @@ namespace SlalomTracker.Cloud
         public void UpdateCourseEntity(CourseEntity entity)
         {
             CloudTableClient client = _account.CreateCloudTableClient();
-            CloudTable table = client.GetTableReference("courses");
+            CloudTable table = client.GetTableReference(COURSETABLE);
             TableOperation insert = TableOperation.InsertOrReplace(entity);
             Task createTask = table.CreateIfNotExistsAsync();
             createTask.Wait();
