@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
@@ -275,24 +276,59 @@ namespace SlalomTracker.Cloud
             insertTask.Wait();
         }
 
-        public async Task<List<CourseEntity>> GetCourses()
+        public List<Course> GetCourses()
         {
             CloudTableClient client = _account.CreateCloudTableClient();
             CloudTable table = client.GetTableReference(COURSETABLE);
             TableQuery<CourseEntity> query = new TableQuery<CourseEntity>().Where("");
-            TableQuerySegment<CourseEntity> result = await table.ExecuteQuerySegmentedAsync(query, null);
-            return result.Results;
+            var result = table.ExecuteQuerySegmentedAsync(query, null);
+            result.Wait();
+            
+            List<Course> courses = new List<Course>();
+            foreach (CourseEntity entity in result.Result)
+                courses.Add(entity.ToCourse());
+
+            return courses;
         }    
 
-        public void UpdateCourseEntity(CourseEntity entity)
+        public void UpdateCourse(Course course)
         {
+            const string coursePartitionKey = "cochituate";
+            if (course == null)
+                throw new ApplicationException("You must pass a course object to update.");
+
             CloudTableClient client = _account.CreateCloudTableClient();
             CloudTable table = client.GetTableReference(COURSETABLE);
+
+            // Get existing entity, if one exists.
+            TableQuery<CourseEntity> query = new TableQuery<CourseEntity>()
+                .Where($"PartitionKey eq '{coursePartitionKey}' and RowKey eq '{course.Name}'");
+            var result = table.ExecuteQuerySegmentedAsync(query, null);
+            result.Wait();
+            CourseEntity entity = result.Result.FirstOrDefault();
+
+            if (entity != null) 
+            {
+                entity.FriendlyName = course.FriendlyName;
+                entity.Course55EntryCL = course.Course55EntryCL;
+                entity.Course55ExitCL = course.Course55ExitCL;
+            } 
+            else 
+            {
+                entity = new CourseEntity();
+                entity.FriendlyName = course.FriendlyName;
+                entity.PartitionKey = coursePartitionKey;
+                entity.RowKey = course.Name;
+                entity.Course55EntryCL = course.Course55EntryCL;
+                entity.Course55ExitCL = course.Course55ExitCL;                
+            }
+
             TableOperation insert = TableOperation.InsertOrReplace(entity);
             Task createTask = table.CreateIfNotExistsAsync();
             createTask.Wait();
             Task insertTask = table.ExecuteAsync(insert);
             insertTask.Wait();
+            System.Console.WriteLine($"Inserted course: {entity.RowKey}");
         }    
 
         private string UploadMeasurements(string blobName, string json)

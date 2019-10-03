@@ -16,8 +16,6 @@ namespace SlalomTracker
         public static readonly double WidthM = 23;
         public static readonly double LengthM = 259 + (55 * 2); // Course + pregates
 
-        private static List<Course> _knownCourses;
-
         private List<GeoCoordinate> _polygon;
         private List<GeoCoordinate> _entryPolygon;
         private List<GeoCoordinate> _exitPolygon;
@@ -31,57 +29,6 @@ namespace SlalomTracker
         public List<GeoCoordinate> Polygon { get { return _polygon; } }
         public List<GeoCoordinate> EntryPolygon { get { return _entryPolygon; } }
         public List<GeoCoordinate> ExitPolygon { get { return _exitPolygon; } }
-
-        static Course()
-        {
-            // _knownCourses = new List<Course>();
-            // Course cove = new Course(
-            //         new GeoCoordinate(Math.Round(42.28958014, 6), Math.Round(-71.35911924, 6)),
-            //         new GeoCoordinate(Math.Round(42.28622924, 6), Math.Round(-71.35950488, 6))
-            //     );
-            // cove.Name = "cove";
-            // _knownCourses.Add(cove);
-            // _knownCourses.Add(ReverseCourse(cove));
-
-            // var outsideEntry = new GeoCoordinate(42.285673, -71.362328);
-            // var outside55Entry = Util.MoveTo(outsideEntry, 55.0, 
-            //     Util.GetHeading(new GeoCoordinate(Math.Round(42.28721409, 6), Math.Round(-71.36553574, 6)),
-            //         outsideEntry));
-
-            // Course outside = GetOutisdeCourse();
-            // _knownCourses.Add(outside);
-            // _knownCourses.Add(ReverseCourse(outside));
-        }
-
-        private static Course GetOutisdeCourse()
-        {
-            var entry = new GeoCoordinate(42.286974, -71.36495);
-            var exit = new GeoCoordinate(42.285677, -71.362336);
-            double heading = Util.GetHeading(entry, exit);
-            double reverse = (heading + 180) % 360;
-            var entry55 = Util.MoveTo(entry, 55.0, reverse);
-            var exit55 = Util.MoveTo(exit, 55.0, heading);
-
-            Course outside = new Course(entry55, exit55);
-            outside.Name = "outside";
-            return outside;
-        }
-
-        private static Course ReverseCourse(Course course)
-        {
-            Course reverse = new Course(course.Course55ExitCL, course.Course55EntryCL);
-            reverse.Name = course.Name + "_reverse";
-            return reverse;
-        }
-
-        public static Course ByName(string name)
-        {
-            foreach (Course c in _knownCourses)
-                if (c.Name == name)
-                    return c;
-
-            throw new ApplicationException("Course name not found.");
-        }
 
         public Course() : this(new GeoCoordinate(), new GeoCoordinate())
         {
@@ -256,20 +203,6 @@ namespace SlalomTracker
                 Util.MoveTo(entryCL,  1.0, heading), 5.0, left));
 
             return poly;
-        }
-
-        public static Course FindCourse(List<Measurement> measurements)
-        {
-            foreach (var m in measurements)
-            {
-                foreach (Course course in _knownCourses)
-                {
-                    if (course.IsBoatInEntry(m.BoatGeoCoordinate))
-                        return course;
-                }
-            }
-
-            return null;
         }
 
         /// <summary>

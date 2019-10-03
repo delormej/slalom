@@ -223,20 +223,13 @@ namespace SkiConsole
 
         private static void PrintCourses()
         {
-            Storage storage = new Storage();
-            CourseEntity entity = new CourseEntity();
-            entity.PartitionKey = "cochituate";
-            entity.RowKey = "outside";
-            entity.Course55EntryCL = new GeoCoordinatePortable.GeoCoordinate(-71.35911924, 42.28958014);
-            entity.Course55ExitCL = new GeoCoordinatePortable.GeoCoordinate(-71.35950488, 42.28622924);
-            storage.UpdateCourseEntity(entity);
+            KnownCourses knownCourses = new KnownCourses();
+            knownCourses.AddKnownCourses();
 
-            Task<List<CourseEntity>> result = storage.GetCourses();
-            result.Wait();
             Console.WriteLine("Courses available:");
-            foreach (CourseEntity e in result.Result)
+            foreach (Course c in knownCourses.List)
             {
-                Console.WriteLine("\t{0}\\{1}\\{2}", e.PartitionKey, e.RowKey, e.Course55EntryCL);
+                Console.WriteLine("\t{0}\\{1}\\{2}", c.Name, c.Course55EntryCL.Latitude, c.Course55ExitCL.Latitude);
             }
         }
     }

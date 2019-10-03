@@ -15,7 +15,7 @@ namespace SlalomTracker
         public double ExitLon;
 
         public static CourseCoordinates Default = new CourseCoordinates();
-    }
+    }    
 
     public class CoursePassFactory
     {
@@ -80,7 +80,8 @@ namespace SlalomTracker
             }
             else 
             {
-                this.m_course = Course.FindCourse(measurements);
+                KnownCourses knownCourses = new KnownCourses();
+                this.m_course = knownCourses.FindCourse(measurements);
             }
 
             if (this.m_course == null)
