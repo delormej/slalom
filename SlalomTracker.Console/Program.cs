@@ -224,8 +224,8 @@ namespace SkiConsole
         private static void PrintCourses()
         {
             KnownCourses knownCourses = new KnownCourses();
-            knownCourses.AddKnownCourses();
-
+            // One time run only:
+            // knownCourses.AddKnownCourses();
             Console.WriteLine("Courses available:");
             foreach (Course c in knownCourses.List)
             {

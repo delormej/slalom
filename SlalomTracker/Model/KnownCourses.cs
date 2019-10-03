@@ -49,8 +49,11 @@ namespace SlalomTracker
             {
                 _knownCourses = _storage.GetCourses();
                 // Add reverse for each of the courses.
+                List<Course> reverseCourses = new List<Course>();
                 foreach (Course c in _knownCourses) 
-                    _knownCourses.Add(ReverseCourse(c));
+                    reverseCourses.Add(ReverseCourse(c));
+                
+                _knownCourses.AddRange(reverseCourses);
             }
         }
 

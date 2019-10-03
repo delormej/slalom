@@ -52,14 +52,13 @@ namespace SlalomTracker.Cloud
 
         public Course ToCourse() 
         {
-            Course course = new Course();
-            if (this.Course55EntryCL !=null && this.Course55ExitCL != null)
+            Course course = null;
+            if (this.Course55EntryCL != null && this.Course55ExitCL != null)
             {
-                course.Course55EntryCL = this.Course55EntryCL;
-                course.Course55ExitCL = this.Course55ExitCL;
-            };
-            course.FriendlyName = this.FriendlyName;
-            course.Name = this.RowKey;
+                course = new Course(this.Course55EntryCL, this.Course55ExitCL);
+                course.FriendlyName = this.FriendlyName;
+                course.Name = this.RowKey;                
+            }
 
             return course;
         }
