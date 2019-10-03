@@ -105,5 +105,15 @@ namespace SlalomTracker
 
             return outside;
         }
+
+        public GeoCoordinate GetNewCoordinates(string courseName,
+            double meters, double heading)
+        {
+            Course course = ByName(courseName);
+            if (course == null)
+                throw new ApplicationException($"Unable to find course named {courseName}");
+            GeoCoordinate newCoord = Util.MoveTo(course.Course55EntryCL, meters, heading);
+            return newCoord;
+        }
     }
 }

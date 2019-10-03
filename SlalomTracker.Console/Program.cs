@@ -87,6 +87,12 @@ namespace SkiConsole
             }
             else if (args[0] == "-x") {
                 PrintCourses();
+                if (args.Length > 3) {
+                    string course = args[1];
+                    double meters = double.Parse(args[2]);
+                    double heading = double.Parse(args[3]);
+                    GetNewCoords(course, meters, heading);
+                }
             }
             else
                 ShowUsage();
@@ -229,8 +235,20 @@ namespace SkiConsole
             Console.WriteLine("Courses available:");
             foreach (Course c in knownCourses.List)
             {
-                Console.WriteLine("\t{0}\\{1}\\{2}", c.Name, c.Course55EntryCL.Latitude, c.Course55ExitCL.Latitude);
+                Console.WriteLine("\tName:{0}, Entry(Lat/Lon):{1}\\{2}, Heading:{3}", 
+                    c.Name, 
+                    c.Course55EntryCL.Latitude, 
+                    c.Course55EntryCL.Longitude,
+                    c.GetCourseHeadingDeg());
             }
+        }
+
+        private static void GetNewCoords(string courseName, double meters, double heading)
+        {
+            Console.WriteLine($"Moving {courseName} by {meters}m @ {heading} degrees.");
+            KnownCourses courses = new KnownCourses();
+            var coords = courses.GetNewCoordinates(courseName, meters, heading);
+            Console.WriteLine($"Lat: {coords.Latitude}, Lon: {coords.Longitude}");
         }
     }
 }
