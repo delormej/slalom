@@ -1,2 +1,2 @@
 # This needs to be run from source root (down a directory)
-docker build -t skiwebapi:v6.0 -f ./SlalomTracker.WebApi/Dockerfile . && docker run --rm --name ski-dbg -p 80:80 -it -e SKIBLOBS=$SKIBLOBS skiwebapi:v6.0
+docker build -t skiwebapi:v6.0 -f ./SlalomTracker.WebApi/Dockerfile . && docker run --rm --name ski-dbg -p 80:80 -it -e SKIBLOBS=\"$SKIBLOBS\" skiwebapi:v6.0
