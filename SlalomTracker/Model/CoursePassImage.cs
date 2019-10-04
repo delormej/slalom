@@ -4,6 +4,7 @@ using System.Text;
 using System.Drawing;
 using GeoCoordinatePortable;
 using System.Reflection;
+using System.Linq;
 
 namespace SlalomTracker
 {
@@ -74,6 +75,9 @@ namespace SlalomTracker
                 if (start != Point.Empty && end != Point.Empty)
                     _graphics.DrawLine(coursePen, start, end);
 
+                if (Math.Round(m.HandlePosition.X, 0) == 0)
+                    DrawHandleSpeed(i);
+
                 // DrawBoat() -- TODO refactor 
                 PointF boatStart = PointFromCoursePosition(m.BoatPosition);
                 PointF boatEnd = PointFromCoursePosition(_pass.Measurements[i + 1].BoatPosition);
@@ -98,6 +102,24 @@ namespace SlalomTracker
             Font font = new Font(FontFamily.GenericMonospace, 16);
             PointF point = new PointF(5,5);
             _graphics.DrawString(version, font, Brushes.OrangeRed, point);
+        }
+
+        private void DrawHandleSpeed(int measurementIndex)
+        {
+            const float textMargin = 10.0F;
+            if (measurementIndex <= 10)
+                return;
+
+            Measurement m = _pass.Measurements[measurementIndex];
+            // Get the average of the last 10 measurements.
+            double averageSpeed = _pass.Measurements.GetRange(measurementIndex-10, 10)
+                .Average(s => s.HandleSpeedMps) * 2.23694;
+            string speed = Math.Round(averageSpeed, 1) + "mph";
+            Font font = new Font(FontFamily.GenericMonospace, 12);
+
+            PointF point = PointFromCoursePosition(m.HandlePosition);
+            point.X += 10;
+            _graphics.DrawString(speed, font, Brushes.LightSeaGreen, point);
         }
 
         private void DrawCourseBounds(List<GeoCoordinate> list, Color color)
