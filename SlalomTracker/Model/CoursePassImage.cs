@@ -62,6 +62,7 @@ namespace SlalomTracker
 
             int i = 0; // FirstInCourse(_pass.Measurements);
             int last = _pass.Measurements.Count - 2; // LastInCourse(_pass.Measurements); 
+            int lastHandleSpeedDraw = 0;
             for (; i < last; i++)
             {
                 var m = _pass.Measurements[i];
@@ -75,8 +76,13 @@ namespace SlalomTracker
                 if (start != Point.Empty && end != Point.Empty)
                     _graphics.DrawLine(coursePen, start, end);
 
-                if (Math.Round(m.HandlePosition.X, 0) == 0)
+                // Draw the Handle speed.
+                if (Math.Round(m.HandlePosition.X, 0) == 0 &&
+                    i > (lastHandleSpeedDraw + 10))
+                {
                     DrawHandleSpeed(i);
+                    lastHandleSpeedDraw = i;
+                }
 
                 // DrawBoat() -- TODO refactor 
                 PointF boatStart = PointFromCoursePosition(m.BoatPosition);
@@ -106,7 +112,7 @@ namespace SlalomTracker
 
         private void DrawHandleSpeed(int measurementIndex)
         {
-            const float textMargin = 10.0F;
+            const float textMargin = 15.0F;
             if (measurementIndex <= 10)
                 return;
 
@@ -118,7 +124,7 @@ namespace SlalomTracker
             Font font = new Font(FontFamily.GenericMonospace, 12);
 
             PointF point = PointFromCoursePosition(m.HandlePosition);
-            point.X += 10;
+            point.X += textMargin;
             _graphics.DrawString(speed, font, Brushes.LightSeaGreen, point);
         }
 
