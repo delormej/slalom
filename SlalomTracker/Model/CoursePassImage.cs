@@ -5,6 +5,7 @@ using System.Drawing;
 using GeoCoordinatePortable;
 using System.Reflection;
 using System.Linq;
+using static SlalomTracker.MathHelpers;
 
 namespace SlalomTracker
 {
@@ -117,9 +118,11 @@ namespace SlalomTracker
                 return;
 
             Measurement m = _pass.Measurements[measurementIndex];
-            // Get the average of the last 10 measurements.
+            // Get the root mean square of the last 10 measurements.
             double averageSpeed = _pass.Measurements.GetRange(measurementIndex-10, 10)
-                .Average(s => s.HandleSpeedMps) * 2.23694;
+                .Select(s => s.HandleSpeedMps)
+                .RootMeanSquare() * 2.23694;
+
             string speed = Math.Round(averageSpeed, 1) + "mph";
             Font font = new Font(FontFamily.GenericMonospace, 12);
 
@@ -183,6 +186,6 @@ namespace SlalomTracker
             float x = ScaleFactor * ((float)position.X + CenterOffset);
             float y = (ScaleFactor * (float)position.Y) + TopBottomMargin;
             return new PointF(x, y);
-        }
+        }   
     }
 }

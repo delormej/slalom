@@ -1,10 +1,23 @@
 ﻿using System;
 using GeoCoordinatePortable;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace SlalomTracker
 {
+    public static class MathHelpers
+    {
+        public static double RootMeanSquare(this IEnumerable<double> source)
+        {
+            if (source.Count() < 2)
+                throw new InvalidOperationException("Source must have at least 2 elements");
+
+            double s = source.Aggregate(0.0, (x, d) => x += Math.Pow(d, 2));
+
+            return Math.Sqrt(s / source.Count());
+        }    
+    }
+
     internal class Util
     {
         const double EarthRadius = 6378137.0;
