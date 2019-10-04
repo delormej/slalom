@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Drawing;
 using GeoCoordinatePortable;
 using System.Reflection;
 using System.Linq;
-using static SlalomTracker.MathHelpers;
 
 namespace SlalomTracker
 {

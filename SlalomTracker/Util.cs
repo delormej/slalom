@@ -9,12 +9,15 @@ namespace SlalomTracker
     {
         public static double RootMeanSquare(this IEnumerable<double> source)
         {
-            if (source.Count() < 2)
-                throw new InvalidOperationException("Source must have at least 2 elements");
+            if (source.Count() < 4)
+                throw new InvalidOperationException("Source must have at least 4 elements");
 
-            double s = source.Aggregate(0.0, (x, d) => x += Math.Pow(d, 2));
+            // Remove min and max values.
+            IEnumerable<double> filtered = source.Where(v => v < source.Max() && v > source.Min());
 
-            return Math.Sqrt(s / source.Count());
+            double s = filtered.Aggregate(0.0, (x, d) => x += Math.Pow(d, 2));
+
+            return Math.Sqrt(s / filtered.Count());
         }    
     }
 
