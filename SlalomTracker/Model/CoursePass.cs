@@ -146,12 +146,12 @@ namespace SlalomTracker
                 }
 
                 if (m_courseEntry == null && 
-                        this.Course.IsBoatInEntry(current.BoatGeoCoordinate))
+                    this.Course.IsBoatInEntry(current.BoatGeoCoordinate))
                 {
                     m_courseEntry = current;
                 }
                 else if (m_courseExit == null &&
-                        this.Course.IsBoatInExit(current.BoatGeoCoordinate))
+                    this.Course.IsBoatInExit(current.BoatGeoCoordinate))
                 {
                     m_courseExit = current;
                     CalculateCoursePassSpeed();
@@ -164,19 +164,20 @@ namespace SlalomTracker
             if (current.BoatPosition == CoursePosition.Empty)
                 return;
 
-            double ropeArcLength = 0;
+            // double ropeArcLength = 0;
+            double seconds = 0;
 
             // All subsequent calculations are based on movement since the last measurement.
             if (previous != null)
             {
                 // Time since last event in partial seconds.
-                double seconds = current.Timestamp.Subtract(previous.Timestamp).TotalSeconds;
+                seconds = current.Timestamp.Subtract(previous.Timestamp).TotalSeconds;
 
                 // Convert radians per second to degrees per second.  
                 current.RopeAngleDegrees = previous.RopeAngleDegrees +
                     Util.RadiansToDegrees(current.RopeSwingSpeedRadS * seconds);
-                ropeArcLength = GetRopeArcLength(current, previous);
-                current.HandleSpeedMps = ropeArcLength / seconds;
+                // ropeArcLength = GetRopeArcLength(current, previous);
+                // current.HandleSpeedMps = ropeArcLength / seconds;
             }
             else
             {
@@ -190,7 +191,24 @@ namespace SlalomTracker
             double y = current.BoatPosition.Y - virtualHandlePos.Y;
             double x = current.BoatPosition.X - virtualHandlePos.X;
             current.HandlePosition = new CoursePosition(x, y);
+
+            // Calculate handle speed.
+            current.HandleSpeedMps = CalculateHandleSpeed(previous, current, seconds);
             Measurements.Add(current);
+        }
+
+        private double CalculateHandleSpeed(Measurement previous, Measurement current, double time) 
+        {
+            if (previous == null || time == 0)
+                return 0.0d;
+
+            // Calculate 1 side of right angle triangle
+            double dX = current.HandlePosition.X - previous.HandlePosition.X;
+            double dY = current.HandlePosition.Y - previous.HandlePosition.Y;
+            // a^2 + b^2 = c^2
+            double distance = Math.Sqrt((dY * dY) + (dX * dX));
+            
+            return distance / time;
         }
 
         public double GetRopeArcLength(Measurement current, Measurement previous)
