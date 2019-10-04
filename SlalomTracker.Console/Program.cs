@@ -85,7 +85,8 @@ namespace SkiConsole
             {
                 PrintCreationTime(args[1]);
             }
-            else if (args[0] == "-x") {
+            else if (args[0] == "-x") 
+            {
                 PrintCourses();
                 if (args.Length > 3) {
                     string course = args[1];
@@ -93,6 +94,10 @@ namespace SkiConsole
                     double heading = double.Parse(args[3]);
                     GetNewCoords(course, meters, heading);
                 }
+            }
+            else if (args[0] == "-s" && args.Length > 2) 
+            {
+                OutputHandleSpeed(args[1], double.Parse(args[2]));
             }
             else
                 ShowUsage();
@@ -120,7 +125,9 @@ namespace SkiConsole
                                 "Print video creation time.\n\t\t" +
                                 "ski -c 2018-06-20/GOPR0194.MP4\n\t\t" +
                                 "Download courses.\n\t\t" +
-                                "ski -x"                                 
+                                "ski -x\n\t\t" +
+                                "Output handle speed.\n\t\t" +
+                                "ski -s\n\t\t"                                
                             );
         }
 
@@ -190,6 +197,21 @@ namespace SkiConsole
             Console.WriteLine("Wrote image to: " + imagePath);
 
             return imagePath;
+        }
+
+        private static void OutputHandleSpeed(string jsonPath, double rope)
+        {
+            if (!jsonPath.StartsWith("http")) 
+                throw new ApplicationException("Must pass http path to jsonUrl.");
+
+            CoursePassFactory factory = new CoursePassFactory();
+            factory.RopeLengthOff = rope;
+            CoursePass pass = factory.FromUrl(jsonPath);     
+       
+            foreach(var m in pass.Measurements) 
+            {
+                Console.WriteLine($"{m.Timestamp.ToString("ss.fff")}, {m.HandleSpeedMps}");
+            }
         }
 
         private static bool IsDirectory(string localPath)

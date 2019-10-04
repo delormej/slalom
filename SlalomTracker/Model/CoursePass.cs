@@ -176,6 +176,7 @@ namespace SlalomTracker
                 current.RopeAngleDegrees = previous.RopeAngleDegrees +
                     Util.RadiansToDegrees(current.RopeSwingSpeedRadS * seconds);
                 ropeArcLength = GetRopeArcLength(current, previous);
+                current.HandleSpeedMps = ropeArcLength / seconds;
             }
             else
             {
@@ -199,11 +200,9 @@ namespace SlalomTracker
             // Create a triangle between A->C, C->B
             // Calculate the angle at C
 
-            // This is incorrect.
-            //double distance = current.BoatPosition.X - previous.BoatPosition.X;
-            //double angleDelta = Math.Abs(current.RopeAngleDegrees - previous.RopeAngleDegrees);
-            //return GetRopeArcLength(distance, Rope.LengthM, angleDelta);
-            return 0;
+            double distance = current.BoatPosition.X - previous.BoatPosition.X;
+            double angleDelta = Math.Abs(current.RopeAngleDegrees - previous.RopeAngleDegrees);
+            return GetRopeArcLength(distance, Rope.LengthM, angleDelta);
         }
 
         public double GetRopeArcLength(double boatDistance, double ropeLengthM, double angleDelta)
