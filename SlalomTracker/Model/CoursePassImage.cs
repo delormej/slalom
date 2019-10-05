@@ -55,49 +55,37 @@ namespace SlalomTracker
 
         private void DrawCoursePass()
         {
-            Pen inCoursePen = new Pen(Color.Green, 3);
-            Pen outCoursePen = new Pen(Color.Pink, 3);
-            Pen boatPen = new Pen(Color.Yellow, 1);
-
             int i = 0; // FirstInCourse(_pass.Measurements);
             int last = _pass.Measurements.Count - 2; // LastInCourse(_pass.Measurements); 
-            int lastHandleSpeedDraw = 0;
+            HandleSpeed handleSpeed = new HandleSpeed(this);
             for (; i < last; i++)
             {
                 var m = _pass.Measurements[i];
                 if (m.BoatPosition == CoursePosition.Empty)
                     continue;
                 
-                // DrawHandle() -- TODO refactor
-                Pen coursePen = m.InCourse ? inCoursePen : outCoursePen;
-                PointF start = PointFromCoursePosition(m.HandlePosition);
-                PointF end = PointFromCoursePosition(_pass.Measurements[i + 1].HandlePosition);
-                if (start != Point.Empty && end != Point.Empty)
-                    _graphics.DrawLine(coursePen, start, end);
-
-                // Draw the Handle speed.
-                if (Math.Round(m.HandlePosition.X, 0) == 0 &&
-                    i > (lastHandleSpeedDraw + 10))
-                {
-                    DrawHandleSpeed(i);
-                    lastHandleSpeedDraw = i;
-                }
-
-                // DrawBoat() -- TODO refactor 
-                PointF boatStart = PointFromCoursePosition(m.BoatPosition);
-                PointF boatEnd = PointFromCoursePosition(_pass.Measurements[i + 1].BoatPosition);
-                if (boatStart != Point.Empty && boatEnd != Point.Empty)
-                    _graphics.DrawLine(boatPen, boatStart, boatEnd);
-
-                if (m.BoatPosition.Y >= 314 && m.BoatPosition.Y < 315)
-                {
-                    Console.WriteLine($"[{i} of {last} @ {m.Timestamp}s] Reached end of course: {m.BoatPosition} : {m.BoatGeoCoordinate}");
-                }
-                else if (m.BoatPosition.Y >= 55 && m.BoatPosition.Y < 56)
-                {
-                    Console.WriteLine($"[{i} of {last} @ {m.Timestamp}s] Reached beginning of course: {m.BoatPosition} : {m.BoatGeoCoordinate}");
-                }
+                DrawBoat(m, i);
+                DrawHandle(m, i);
+                handleSpeed.Draw(m, i);
             }            
+        }
+
+        private void DrawHandle(Measurement m, int i) 
+        {
+            Pen coursePen = new Pen(m.InCourse ? Color.Green : Color.Pink, 3);
+            PointF start = PointFromCoursePosition(m.HandlePosition);
+            PointF end = PointFromCoursePosition(_pass.Measurements[i + 1].HandlePosition);
+            if (start != Point.Empty && end != Point.Empty)
+                _graphics.DrawLine(coursePen, start, end);            
+        }
+
+        private void DrawBoat(Measurement m, int i)
+        {
+            Pen boatPen = new Pen(Color.Yellow, 1);
+            PointF boatStart = PointFromCoursePosition(m.BoatPosition);
+            PointF boatEnd = PointFromCoursePosition(_pass.Measurements[i + 1].BoatPosition);
+            if (boatStart != Point.Empty && boatEnd != Point.Empty)
+                _graphics.DrawLine(boatPen, boatStart, boatEnd);
         }
 
         private void DrawVersion()
@@ -107,26 +95,6 @@ namespace SlalomTracker
             Font font = new Font(FontFamily.GenericMonospace, 16);
             PointF point = new PointF(5,5);
             _graphics.DrawString(version, font, Brushes.OrangeRed, point);
-        }
-
-        private void DrawHandleSpeed(int measurementIndex)
-        {
-            const float textMargin = 15.0F;
-            if (measurementIndex <= 10)
-                return;
-
-            Measurement m = _pass.Measurements[measurementIndex];
-            // Get the root mean square of the last 10 measurements.
-            double averageSpeed = _pass.Measurements.GetRange(measurementIndex-10, 10)
-                .Select(s => s.HandleSpeedMps)
-                .RootMeanSquare() * 2.23694;
-
-            string speed = Math.Round(averageSpeed, 1) + "mph";
-            Font font = new Font(FontFamily.GenericMonospace, 12);
-
-            PointF point = PointFromCoursePosition(m.HandlePosition);
-            point.X += textMargin;
-            _graphics.DrawString(speed, font, Brushes.LightSeaGreen, point);
         }
 
         private void DrawCourseBounds(List<GeoCoordinate> list, Color color)
@@ -185,5 +153,45 @@ namespace SlalomTracker
             float y = (ScaleFactor * (float)position.Y) + TopBottomMargin;
             return new PointF(x, y);
         }   
+
+        internal class HandleSpeed 
+        {
+            int lastHandleSpeedDraw = 0;
+            CoursePassImage parent;
+
+            internal HandleSpeed(CoursePassImage image)
+            {
+                this.parent = image;
+            }
+
+            internal void Draw(Measurement m, int i)
+            {      
+                if (Math.Round(m.HandlePosition.X, 0) == 0 &&
+                    i > (lastHandleSpeedDraw + 10))
+                {
+                    DrawHandleSpeed(m, i);
+                    lastHandleSpeedDraw = i;
+                }
+            }
+
+            void DrawHandleSpeed(Measurement m, int measurementIndex)
+            {
+                const float textMargin = 15.0F;
+                if (measurementIndex <= 10)
+                    return;
+
+                // Get the root mean square of the last 10 measurements.
+                double averageSpeed = parent._pass.Measurements.GetRange(measurementIndex-10, 10)
+                    .Select(s => s.HandleSpeedMps)
+                    .RootMeanSquare() * 2.23694;
+
+                string speed = Math.Round(averageSpeed, 1) + "mph";
+                Font font = new Font(FontFamily.GenericMonospace, 12);
+
+                PointF point = parent.PointFromCoursePosition(m.HandlePosition);
+                point.X += textMargin;
+                parent._graphics.DrawString(speed, font, Brushes.LightSeaGreen, point);
+            }
+        }
     }
 }
