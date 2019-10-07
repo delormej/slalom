@@ -42,6 +42,8 @@ namespace SlalomTracker
             DrawCenterLine();
             DrawCoursePass();
 
+            DrawMaxRopeAngles();
+
             return _bitmap;
         }
 
@@ -154,6 +156,33 @@ namespace SlalomTracker
             return new PointF(x, y);
         }   
 
+        private void DrawMaxRopeAngles()
+        {
+            int nth = 20; // skip every 20
+            var ordered = _pass.Measurements.OrderBy(m => m.HandlePosition.Y).Where((x, i) => i % nth == 0);
+            var low = ordered.OrderBy(m => m.RopeAngleDegrees).Take(6);
+            var high = ordered.Where(m => m.HandlePosition.Y < Course.LengthM).
+                OrderByDescending(m => m.RopeAngleDegrees).Take(6);
+            var combined = low.Concat(high);
+            // System.Console.WriteLine($"Found {high.Count()} high(s).");
+            foreach (var m in combined)
+            {
+                string text = Math.Round(m.RopeAngleDegrees, 1) + "°";
+                // Console.WriteLine($"High of ${m.RopeAngleDegrees} at {m.HandlePosition.X},{m.HandlePosition.Y}");
+                DrawTextNearMeasurement(m, text);
+            }
+        }
+
+        private void DrawTextNearMeasurement(Measurement m, string text)
+        {
+            const float textMargin = 15.0F;
+            Font font = new Font(FontFamily.GenericMonospace, 12);
+
+            PointF point = PointFromCoursePosition(m.HandlePosition);
+            point.X += textMargin;
+            _graphics.DrawString(text, font, Brushes.LightSeaGreen, point);            
+        }
+
         internal class HandleSpeed 
         {
             int lastHandleSpeedDraw = 0;
@@ -176,7 +205,6 @@ namespace SlalomTracker
 
             void DrawHandleSpeed(Measurement m, int measurementIndex)
             {
-                const float textMargin = 15.0F;
                 if (measurementIndex <= 10)
                     return;
 
@@ -186,11 +214,7 @@ namespace SlalomTracker
                     .RootMeanSquare() * 2.23694;
 
                 string speed = Math.Round(averageSpeed, 1) + "mph";
-                Font font = new Font(FontFamily.GenericMonospace, 12);
-
-                PointF point = parent.PointFromCoursePosition(m.HandlePosition);
-                point.X += textMargin;
-                parent._graphics.DrawString(speed, font, Brushes.LightSeaGreen, point);
+                parent.DrawTextNearMeasurement(m, speed);
             }
         }
     }
