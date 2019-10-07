@@ -1,5 +1,4 @@
 FROM microsoft/dotnet:2.1-sdk as build
-ARG nuget
 
 # Workaround, dependencies for graphics libraries, per this issue: https://github.com/dotnet/corefx/issues/25102
 RUN apt-get update \
