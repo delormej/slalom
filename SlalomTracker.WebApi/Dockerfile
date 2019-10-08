@@ -8,6 +8,9 @@ RUN apt-get update \
 COPY ./ /ski
 WORKDIR /ski
 
+# Force a restore of dependent library which inturn builds gpmf dependency
+# Normal build doesn't accomodate this.
+RUN dotnet restore ./SlalomTracker/SlalomTracker.csproj
 # Publish application
 RUN dotnet publish ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj -c Release -o /ski/build/
 
