@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <Version>4.10.0</Version>
+    <Version>4.10.1</Version>
     <AssemblyName>ski</AssemblyName>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>    
   </PropertyGroup>
@@ -15,12 +15,12 @@
 
   <!-- This is a hack workaround, because package restore through nuget doesn't put 
        gpmfdemo in the right spot. 
-  -->
+  
   <Target Name="MoveGPMFBinary" AfterTargets="Publish">
     <Exec Command="echo 'Copying gpmfdemo to $(PublishDir)'" />
     <Copy SourceFiles="$(OutDir)/gpmf/build/gpmfdemo"
             DestinationFiles="$(PublishDir)/gpmfdemo" />
     <RemoveDir Directories="$(PublishDir)/gpmf" />
   </Target>
-
+-->
 </Project>

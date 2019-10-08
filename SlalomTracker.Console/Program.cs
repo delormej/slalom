@@ -133,7 +133,7 @@ namespace SkiConsole
 
         private static void PrintVersion()
         {
-            SkiVideoEntity video = new SkiVideoEntity();
+            SkiVideoEntity video = new SkiVideoEntity("http://test/test", DateTime.Now);
             Console.WriteLine("Version: " + video.SlalomTrackerVersion);
         }
 

@@ -66,8 +66,8 @@ namespace SlalomTracker.Cloud
         {
             var extractor = typeof(MetadataExtractor.Extract).Assembly.GetName();
             var assembly = System.Reflection.Assembly.GetEntryAssembly().GetName();
-            string version = $"{extractor.Name}:v{extractor.Version.ToString()}," +
-                $"{assembly.Name}:v{assembly.Version.ToString()}";
+            string version = $"{assembly.Name}:v{assembly.Version.ToString()}" +
+                $"{extractor.Name}:v{extractor.Version.ToString()},";
 
             return version;
         }
