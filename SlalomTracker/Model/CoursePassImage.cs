@@ -44,7 +44,7 @@ namespace SlalomTracker
             DrawCenterLine();
             DrawCoursePass();
 
-            DrawMaxRopeAngles();
+            DrawPullOutAngle();
 
             return _bitmap;
         }
@@ -163,24 +163,20 @@ namespace SlalomTracker
             return new PointF(x, y);
         }   
 
-        private void DrawMaxRopeAngles()
+        private void DrawPullOutAngle()
         {
-            //
-            // Find the maximum angle during pull out and draw.
-            // GetMaxRopeHandleOnPullOut()
-            // int nth = 20; // skip every 20
-            // var ordered = _pass.Measurements.OrderBy(m => m.HandlePosition.Y).Where((x, i) => i % nth == 0);
-            // var low = ordered.OrderBy(m => m.RopeAngleDegrees).Take(6);
-            // var high = ordered.Where(m => m.HandlePosition.Y < Course.LengthM).
-            //     OrderByDescending(m => m.RopeAngleDegrees).Take(6);
-            // var combined = low.Concat(high);
-            // // System.Console.WriteLine($"Found {high.Count()} high(s).");
-            // foreach (var m in combined)
-            // {
-            //     string text = Math.Round(m.RopeAngleDegrees, 1) + "°";
-            //     // Console.WriteLine($"High of ${m.RopeAngleDegrees} at {m.HandlePosition.X},{m.HandlePosition.Y}");
-            //     DrawTextNearMeasurement(m, text);
-            // }
+            var range = _pass.Measurements.Where(
+                /* In between 55s and Gates */
+                m => m.HandlePosition.Y > _pass.Course.PreGates[0].Y &&
+                m.HandlePosition.Y < _pass.Course.Gates[0].Y);
+            double maxRopeAngle = range.Min(m => m.RopeAngleDegrees); // always pulls to the left which is a negative #.
+            Measurement maxPullout = range.Where(m => m.RopeAngleDegrees == maxRopeAngle).Last();
+
+            if (maxPullout != null)            
+            {
+                string text = Math.Round(maxPullout.RopeAngleDegrees, 1) + "°";
+                DrawTextNearMeasurement(maxPullout, text);
+            }
         }
 
         private void DrawTextNearMeasurement(Measurement m, string text)
