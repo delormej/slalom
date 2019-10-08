@@ -4,6 +4,7 @@ using System.Net;
 using System.Collections.Generic;
 using GeoCoordinatePortable;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace SlalomTracker
 {
@@ -135,13 +136,95 @@ namespace SlalomTracker
             return bestPass;
         }
 
+        // private CoursePass CreatePass(List<Measurement> measurements)
+        // {
+        //     CoursePass pass = new CoursePass(m_course, m_rope, CenterLineDegreeOffset);
+        //     foreach (var r in measurements)
+        //         pass.Track(r);
+
+        //     return pass;
+        // }
+
         private CoursePass CreatePass(List<Measurement> measurements)
         {
             CoursePass pass = new CoursePass(m_course, m_rope, CenterLineDegreeOffset);
-            foreach (var r in measurements)
-                pass.Track(r);
+            for (int i = 0; i < measurements.Count; i++)
+            {
+                Measurement current = measurements[i];
+                current.BoatPosition = pass.CoursePositionFromGeo(current.BoatGeoCoordinate);               
+                if (current.BoatPosition == CoursePosition.Empty)
+                    continue;               
+                Calculate(measurements, i);
+                pass.Track(current);
+            }
 
             return pass;
         }
+
+        private void Calculate(List<Measurement> measurements, int index)
+        {
+            Measurement current = measurements[index];
+            Measurement previous = null;
+            double seconds = 0.0d;
+
+            if (index == 0)
+            {
+                measurements[index].RopeAngleDegrees = CenterLineDegreeOffset;
+            }
+            else 
+            {
+                previous = measurements[index - 1];
+                seconds = current.Timestamp.Subtract(previous.Timestamp).TotalSeconds;
+                
+                // Convert radians per second to degrees per second.  
+                double averageRopeSwingSpeedRadS = AverageRopeSwingSpeedRadS(measurements, index);
+                current.RopeAngleDegrees = previous.RopeAngleDegrees +
+                    Util.RadiansToDegrees(averageRopeSwingSpeedRadS * seconds);
+            }
+
+            current.HandlePosition = CalculateRopeHandlePosition(current);
+            current.HandleSpeedMps = CalculateHandleSpeed(previous, current, seconds);
+        }
+
+        private double AverageRopeSwingSpeedRadS(List<Measurement> measurements, int index)
+        {
+            const int HalfWindowSize = 4;
+            double average = 0.0d;
+
+            if (index < HalfWindowSize || (index + HalfWindowSize) >= measurements.Count)
+                average = measurements[index].RopeSwingSpeedRadS;
+            else 
+                average = measurements.GetRange(index-HalfWindowSize, 2*HalfWindowSize)
+                    .Select(v => v.RopeSwingSpeedRadS)
+                    .Average();
+            return average;
+        }
+
+        ///
+        /// <summary> Get handle position in x,y coordinates from the pilon. </summary>
+        ///
+        private CoursePosition CalculateRopeHandlePosition(Measurement current) 
+        {
+            CoursePosition virtualHandlePos = m_rope.GetHandlePosition(current.RopeAngleDegrees);
+
+            // Actual handle position is calculated relative to the pilon/boat position, behind the boat.
+            double y = current.BoatPosition.Y - virtualHandlePos.Y;
+            double x = current.BoatPosition.X - virtualHandlePos.X;
+            return new CoursePosition(x, y);            
+        }
+
+        private double CalculateHandleSpeed(Measurement previous, Measurement current, double time) 
+        {
+            if (previous == null || time == 0)
+                return 0.0d;
+
+            // Calculate 1 side of right angle triangle
+            double dX = current.HandlePosition.X - previous.HandlePosition.X;
+            double dY = current.HandlePosition.Y - previous.HandlePosition.Y;
+            // a^2 + b^2 = c^2
+            double distance = Math.Sqrt((dY * dY) + (dX * dX));
+            
+            return distance / time;
+        }        
     }
 }

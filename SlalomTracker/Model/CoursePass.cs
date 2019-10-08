@@ -104,35 +104,6 @@ namespace SlalomTracker
             CenterLineDegreeOffset = 0;
         }
 
-        public void Track(DateTime timestamp, double ropeSwingRadS, double latitude, double longitude, double speed)
-        {
-            GeoCoordinate boatPosition = new GeoCoordinate(latitude, longitude);
-            boatPosition.Speed = speed;
-            Track(timestamp, ropeSwingRadS, boatPosition);
-        }
-
-        /// <summary>
-        /// Calculates and records an event along the skiers course pass.
-        /// </summary>
-        public void Track(DateTime timestamp, double ropeSwingRadS, double latitude, double longitude)
-        {
-            GeoCoordinate boatPosition = new GeoCoordinate(latitude, longitude);
-            Track(timestamp, ropeSwingRadS, boatPosition);
-        }
-
-        /// <summary>
-        /// Calculates and records an event along the skiers course pass, using GeoCoordinate.
-        /// </summary>
-        public void Track(DateTime timestamp, double ropeSwingRadS, GeoCoordinate boatPosition)
-        {
-            Measurement current = new Measurement();
-            current.BoatGeoCoordinate = boatPosition;
-            current.RopeSwingSpeedRadS = ropeSwingRadS;
-            current.Timestamp = timestamp;
-            current.BoatSpeedMps = boatPosition.Speed; // TODO: this is redundant, because it's now in BoatGeoCoordinate.
-            Track(current);
-        }
-
         public void Track(Measurement current)
         { 
             current.InCourse = this.Course.IsBoatInCourse(current.BoatGeoCoordinate);
@@ -158,57 +129,7 @@ namespace SlalomTracker
                 }
             }
 
-            // Calculate measurements.
-            Measurement previous = Measurements.Count > 0 ? Measurements[Measurements.Count - 1] : null;
-            current.BoatPosition = CoursePositionFromGeo(current.BoatGeoCoordinate);
-            if (current.BoatPosition == CoursePosition.Empty)
-                return;
-
-            // double ropeArcLength = 0;
-            double seconds = 0;
-
-            // All subsequent calculations are based on movement since the last measurement.
-            if (previous != null)
-            {
-                // Time since last event in partial seconds.
-                seconds = current.Timestamp.Subtract(previous.Timestamp).TotalSeconds;
-
-                // Convert radians per second to degrees per second.  
-                current.RopeAngleDegrees = previous.RopeAngleDegrees +
-                    Util.RadiansToDegrees(current.RopeSwingSpeedRadS * seconds);
-                // ropeArcLength = GetRopeArcLength(current, previous);
-                // current.HandleSpeedMps = ropeArcLength / seconds;
-            }
-            else
-            {
-                current.RopeAngleDegrees = CenterLineDegreeOffset;
-            }
-
-            // Get handle position in x,y coordinates from the pilon.
-            CoursePosition virtualHandlePos = Rope.GetHandlePosition(current.RopeAngleDegrees);
-
-            // Actual handle position is calculated relative to the pilon/boat position, behind the boat.
-            double y = current.BoatPosition.Y - virtualHandlePos.Y;
-            double x = current.BoatPosition.X - virtualHandlePos.X;
-            current.HandlePosition = new CoursePosition(x, y);
-
-            // Calculate handle speed.
-            current.HandleSpeedMps = CalculateHandleSpeed(previous, current, seconds);
             Measurements.Add(current);
-        }
-
-        private double CalculateHandleSpeed(Measurement previous, Measurement current, double time) 
-        {
-            if (previous == null || time == 0)
-                return 0.0d;
-
-            // Calculate 1 side of right angle triangle
-            double dX = current.HandlePosition.X - previous.HandlePosition.X;
-            double dY = current.HandlePosition.Y - previous.HandlePosition.Y;
-            // a^2 + b^2 = c^2
-            double distance = Math.Sqrt((dY * dY) + (dX * dX));
-            
-            return distance / time;
         }
 
         public double GetRopeArcLength(Measurement current, Measurement previous)
