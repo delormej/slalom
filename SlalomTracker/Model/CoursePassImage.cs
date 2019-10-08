@@ -176,11 +176,14 @@ namespace SlalomTracker
             Measurement maxPullout = range.Where(m => m.RopeAngleDegrees == maxRopeAngle).Last();
 
             if (maxPullout != null)            
-            {
-                string text = Math.Round(maxPullout.RopeAngleDegrees, 1) + "°";
-                DrawTextNearMeasurement(maxPullout, text);
-            }
+                DrawAngleAtBall(maxPullout);
         }
+
+        private void DrawAngleAtBall(Measurement m)
+        {
+            string text = Math.Round(Math.Abs(m.RopeAngleDegrees), 1) + "°";
+            DrawTextNearMeasurement(m, text);
+        }            
 
         private void DrawTextNearMeasurement(Measurement m, string text)
         {
@@ -214,11 +217,10 @@ namespace SlalomTracker
                     if (lastBall < parent._pass.Course.Balls.Length &&
                         m.HandlePosition.Y >= parent._pass.Course.Balls[lastBall].Y)
                     {
-                        string text = Math.Round(m.RopeAngleDegrees, 1) + "°";
-                        parent.DrawTextNearMeasurement(m, text);
+                        parent.DrawAngleAtBall(m);
                         lastBall++;
-                    }
-                }
+                    }        
+                }            
             }
 
             void DrawHandleSpeed(Measurement m, int measurementIndex)
