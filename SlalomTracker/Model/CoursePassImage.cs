@@ -29,6 +29,8 @@ namespace SlalomTracker
         public Bitmap Draw()
         {
             DrawVersion();
+            DrawCourseSpeed();
+            DrawRopeLength();
 
             //DrawCourseBounds(_pass.Course.Polygon, Color.CadetBlue);
             DrawCourseBounds(_pass.Course.EntryPolygon, Color.Green);
@@ -98,6 +100,25 @@ namespace SlalomTracker
             PointF point = new PointF(5,5);
             _graphics.DrawString(version, font, Brushes.OrangeRed, point);
         }
+
+        private void DrawCourseSpeed()
+        {
+            string speed = $"Course speed: {_pass.AverageBoatSpeed}mph";
+            Font font = new Font(FontFamily.GenericMonospace, 12);
+
+            PointF point = new PointF(5,30);
+            _graphics.DrawString(speed, font, Brushes.Yellow, point);            
+        }
+
+        private void DrawRopeLength()
+        {
+            string speed = $"Rope length: {Math.Round(_pass.Rope.FtOff,0)}' off";
+            Font font = new Font(FontFamily.GenericMonospace, 12);
+
+            PointF point = new PointF(5,51);
+            _graphics.DrawString(speed, font, Brushes.Green, point);
+        }
+
 
         private void DrawCourseBounds(List<GeoCoordinate> list, Color color)
         {
