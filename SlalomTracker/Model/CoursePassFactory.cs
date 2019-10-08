@@ -147,6 +147,10 @@ namespace SlalomTracker
 
         private CoursePass CreatePass(List<Measurement> measurements)
         {
+            //
+            // TODO: raise pass, measurements, current, previous to class members so 
+            // we're not constantly passing these around.
+
             CoursePass pass = new CoursePass(m_course, m_rope, CenterLineDegreeOffset);
             for (int i = 0; i < measurements.Count; i++)
             {
@@ -154,11 +158,42 @@ namespace SlalomTracker
                 current.BoatPosition = pass.CoursePositionFromGeo(current.BoatGeoCoordinate);               
                 if (current.BoatPosition == CoursePosition.Empty)
                     continue;               
+                
+                CalculateInCourse(pass, measurements, i);
                 Calculate(measurements, i);
                 pass.Track(current);
             }
 
             return pass;
+        }
+
+        private void CalculateInCourse(CoursePass pass, List<Measurement> measurements, int i)
+        {
+            Measurement current = measurements[i];
+            if (i == 0)
+            {
+                current.InCourse = false;
+                return;
+            }
+            
+            Measurement previous = measurements[i-1];
+            if (current.BoatPosition.Y >= m_course.Gates[0].Y && 
+                current.BoatPosition.Y <= m_course.Gates[3].Y )
+            {
+                current.InCourse = true;
+                if (previous.InCourse == false)
+                    pass.Entry = current;
+            }
+            else if (previous.InCourse && current.BoatPosition.Y >= m_course.Gates[3].Y)
+            {
+                current.InCourse = false;
+                pass.Exit = current;
+                CalculateCoursePassSpeed(pass);
+            }
+            else
+            {
+                current.InCourse = false;
+            }
         }
 
         private void Calculate(List<Measurement> measurements, int index)
@@ -185,6 +220,21 @@ namespace SlalomTracker
             current.HandlePosition = CalculateRopeHandlePosition(current);
             current.HandleSpeedMps = CalculateHandleSpeed(previous, current, seconds);
         }
+
+        private void CalculateCoursePassSpeed(CoursePass pass)
+        {
+            TimeSpan duration = pass.Exit.Timestamp.Subtract(pass.Entry.Timestamp);
+            double distance = pass.Exit.BoatGeoCoordinate.GetDistanceTo(
+                pass.Entry.BoatGeoCoordinate);
+            
+            if (duration == null || duration.Seconds <= 0 || distance <= 0)
+            {
+                throw new ApplicationException("Could not calculate time and distance for course entry/exit.");
+            }
+
+            double speedMps = distance / duration.TotalSeconds;
+            pass.AverageBoatSpeed = Math.Round(speedMps * CoursePass.MPS_TO_MPH, 1);
+        }        
 
         private double AverageRopeSwingSpeedRadS(List<Measurement> measurements, int index)
         {

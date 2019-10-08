@@ -59,7 +59,7 @@ namespace SlalomTracker
         {
             int i = 0; // FirstInCourse(_pass.Measurements);
             int last = _pass.Measurements.Count - 2; // LastInCourse(_pass.Measurements); 
-            HandleSpeed handleSpeed = new HandleSpeed(this);
+            HandleMeasurements handleMeasurements = new HandleMeasurements(this);
             for (; i < last; i++)
             {
                 var m = _pass.Measurements[i];
@@ -68,7 +68,7 @@ namespace SlalomTracker
                 
                 DrawBoat(m, i);
                 DrawHandle(m, i);
-                handleSpeed.Draw(m, i);
+                handleMeasurements.Draw(m, i);
             }            
         }
 
@@ -127,20 +127,6 @@ namespace SlalomTracker
             }
         }
 
-       private int FirstInCourse(List<Measurement> measurements)
-        {
-            int i = 0;
-            while (!measurements[i++].InCourse && i < measurements.Count);
-            return i;
-        }
-
-        private int LastInCourse(List<Measurement> measurements)
-        {
-            int i = measurements.Count - 1;
-            while (!measurements[i--].InCourse && i > 0);
-            return i;
-        }
-
         /// <summary>
         /// Converts relative course position X,Y coordiantes to a point on the drawable screen.
         /// Screen size is always positive, for example (0,0) upper left (46,738) lower right at a ScaleFactor of 2.0.
@@ -158,19 +144,22 @@ namespace SlalomTracker
 
         private void DrawMaxRopeAngles()
         {
-            int nth = 20; // skip every 20
-            var ordered = _pass.Measurements.OrderBy(m => m.HandlePosition.Y).Where((x, i) => i % nth == 0);
-            var low = ordered.OrderBy(m => m.RopeAngleDegrees).Take(6);
-            var high = ordered.Where(m => m.HandlePosition.Y < Course.LengthM).
-                OrderByDescending(m => m.RopeAngleDegrees).Take(6);
-            var combined = low.Concat(high);
-            // System.Console.WriteLine($"Found {high.Count()} high(s).");
-            foreach (var m in combined)
-            {
-                string text = Math.Round(m.RopeAngleDegrees, 1) + "°";
-                // Console.WriteLine($"High of ${m.RopeAngleDegrees} at {m.HandlePosition.X},{m.HandlePosition.Y}");
-                DrawTextNearMeasurement(m, text);
-            }
+            //
+            // Find the maximum angle during pull out and draw.
+            // GetMaxRopeHandleOnPullOut()
+            // int nth = 20; // skip every 20
+            // var ordered = _pass.Measurements.OrderBy(m => m.HandlePosition.Y).Where((x, i) => i % nth == 0);
+            // var low = ordered.OrderBy(m => m.RopeAngleDegrees).Take(6);
+            // var high = ordered.Where(m => m.HandlePosition.Y < Course.LengthM).
+            //     OrderByDescending(m => m.RopeAngleDegrees).Take(6);
+            // var combined = low.Concat(high);
+            // // System.Console.WriteLine($"Found {high.Count()} high(s).");
+            // foreach (var m in combined)
+            // {
+            //     string text = Math.Round(m.RopeAngleDegrees, 1) + "°";
+            //     // Console.WriteLine($"High of ${m.RopeAngleDegrees} at {m.HandlePosition.X},{m.HandlePosition.Y}");
+            //     DrawTextNearMeasurement(m, text);
+            // }
         }
 
         private void DrawTextNearMeasurement(Measurement m, string text)
@@ -183,38 +172,80 @@ namespace SlalomTracker
             _graphics.DrawString(text, font, Brushes.LightSeaGreen, point);            
         }
 
-        internal class HandleSpeed 
+        internal class HandleMeasurements 
         {
-            int lastHandleSpeedDraw = 0;
+            double maxHandleSpeed;
+            int lastBall;
             CoursePassImage parent;
 
-            internal HandleSpeed(CoursePassImage image)
+            internal HandleMeasurements(CoursePassImage image)
             {
                 this.parent = image;
+                //maxHandleSpeed = this.parent._pass.Measurements.Max(v => v.HandleSpeedMps);
+                maxHandleSpeed = 20.0d;
+                lastBall = 0;
             }
 
             internal void Draw(Measurement m, int i)
-            {      
-                if (Math.Round(m.HandlePosition.X, 0) == 0 &&
-                    i > (lastHandleSpeedDraw + 10))
+            {
+                DrawHandleSpeed(m, i);
+                if (m.InCourse)
                 {
-                    DrawHandleSpeed(m, i);
-                    lastHandleSpeedDraw = i;
+                    if (lastBall < parent._pass.Course.Balls.Length &&
+                        m.HandlePosition.Y >= parent._pass.Course.Balls[lastBall].Y)
+                    {
+                        string text = Math.Round(m.RopeAngleDegrees, 1) + "°";
+                        parent.DrawTextNearMeasurement(m, text);
+                        lastBall++;
+                    }
                 }
             }
 
             void DrawHandleSpeed(Measurement m, int measurementIndex)
             {
-                if (measurementIndex <= 10)
-                    return;
+                const double SpeedGraphHeight = 10.0d;
+                double speedHeight = (m.HandleSpeedMps / maxHandleSpeed) * SpeedGraphHeight;
+                bool accelerating = false;
 
-                // Get the root mean square of the last 10 measurements.
-                double averageSpeed = parent._pass.Measurements.GetRange(measurementIndex-10, 10)
-                    .Select(s => s.HandleSpeedMps)
-                    .RootMeanSquare() * 2.23694;
+                if (speedHeight == SpeedGraphHeight)
+                {
+                    string maxSpeed = Math.Round(m.HandleSpeedMps * 2.23694, 1) + "mph";
+                    parent.DrawTextNearMeasurement(m, maxSpeed);
+                }
 
-                string speed = Math.Round(averageSpeed, 1) + "mph";
-                parent.DrawTextNearMeasurement(m, speed);
+                if (measurementIndex > 0)
+                {
+                    double prevSpeed = parent._pass.Measurements[measurementIndex - 1].HandleSpeedMps;
+                    accelerating = m.HandleSpeedMps >= prevSpeed;
+                }
+
+                // Course.WidthM
+                CoursePosition startPosition = new CoursePosition(Course.WidthM, m.HandlePosition.Y);
+                CoursePosition endPosition = new CoursePosition(Course.WidthM - speedHeight, m.HandlePosition.Y);
+
+                PointF startPoint = parent.PointFromCoursePosition(startPosition);
+                PointF endPoint = parent.PointFromCoursePosition(endPosition);
+
+                Color color = GetAcceleratingColor(accelerating);
+                Pen pen = new Pen(color, 1.0f);
+
+                parent._graphics.DrawLine(pen, startPoint, endPoint);
+
+                // // Get the root mean square of the last 10 measurements.
+                // double averageSpeed = parent._pass.Measurements.GetRange(measurementIndex-10, 10)
+                //     .Select(s => s.HandleSpeedMps)
+                //     .RootMeanSquare() * 2.23694;
+
+                // string speed = Math.Round(averageSpeed, 1) + "mph";
+                // parent.DrawTextNearMeasurement(m, speed);
+            }
+
+            private Color GetAcceleratingColor(bool accelerating)
+            {
+                // Make color slightly transparent.
+                int alpha = 128;
+                Color color = accelerating ? Color.Green : Color.Red;
+                return Color.FromArgb(alpha, color);
             }
         }
     }

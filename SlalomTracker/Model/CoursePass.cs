@@ -15,8 +15,17 @@ namespace SlalomTracker
         private Measurement m_courseEntry;
         private Measurement m_courseExit;
 
-        public Measurement Entry { get { return m_courseEntry; } }
-        public Measurement Exit { get { return m_courseExit; } }
+        public Measurement Entry 
+        { 
+            get { return m_courseEntry; } 
+            internal set { m_courseEntry = value;} 
+        }
+        
+        public Measurement Exit 
+        { 
+            get { return m_courseExit; } 
+            internal set { m_courseExit = value; }    
+        }
 
         public List<Measurement> Measurements;
 
@@ -30,9 +39,9 @@ namespace SlalomTracker
         /// <summary>
         /// Average boat speed (i.e. 30.4,32.3,34.2,36 mph) for the course.
         /// </summary>
-        public double AverageBoatSpeed { get; private set; }
+        public double AverageBoatSpeed { get; internal set; }
 
-        const double MPS_TO_MPH = 2.23694d;
+        public const double MPS_TO_MPH = 2.23694d;
 
         /// <summary>
         /// Calibration offset in degrees from which rope angle is calculated from.  
@@ -106,29 +115,9 @@ namespace SlalomTracker
 
         public void Track(Measurement current)
         { 
-            current.InCourse = this.Course.IsBoatInCourse(current.BoatGeoCoordinate);
-
-            // Block on this to enure only the first event entering the course gets recorded.
-            lock (this)
-            {
-                if (!m_entered55s && current.InCourse)
-                {
-                    m_entered55s = true;
-                }
-
-                if (m_courseEntry == null && 
-                    this.Course.IsBoatInEntry(current.BoatGeoCoordinate))
-                {
-                    m_courseEntry = current;
-                }
-                else if (m_courseExit == null &&
-                    this.Course.IsBoatInExit(current.BoatGeoCoordinate))
-                {
-                    m_courseExit = current;
-                    CalculateCoursePassSpeed();
-                }
-            }
-
+            if (!m_entered55s && this.Course.IsBoatInCourse(current.BoatGeoCoordinate))
+                m_entered55s = true;
+                
             Measurements.Add(current);
         }
 
@@ -202,21 +191,6 @@ namespace SlalomTracker
                 if ((int)m.HandlePosition.Y == (int)y)
                     return m;
             return null;
-        }
-
-        private void CalculateCoursePassSpeed()
-        {
-            TimeSpan duration = m_courseExit.Timestamp.Subtract(m_courseEntry.Timestamp);
-            double distance = m_courseExit.BoatGeoCoordinate.GetDistanceTo(
-                m_courseEntry.BoatGeoCoordinate);
-            
-            if (duration == null || duration.Seconds <= 0 || distance <= 0)
-            {
-                throw new ApplicationException("Could not calculate time and distance for course entry/exit.");
-            }
-
-            double speedMps = distance / duration.TotalSeconds;
-            AverageBoatSpeed = Math.Round(speedMps * MPS_TO_MPH, 1);
         }
     }
 }
