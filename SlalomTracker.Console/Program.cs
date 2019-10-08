@@ -116,8 +116,8 @@ namespace SkiConsole
                                 "Generate an image of skiers path from video <center line offset>, <rope length>:\n\t\t" +
                                 "ski -i GOPR0194.json 0 22\n\t\t" +
                                 "ski -i https://delormej.blob.core.windows.net/ski/2018-08-24/GOPR0565.json 0 22\n\t\t" +
-                                "ski -i https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4\n\t" +
-                                "ski -i https://skivideostorage.blob.core.windows.net/ski/2019-09-27/GOPR2170_ts.json 0 32 42.286974 -71.36495 42.285677 -71.362336\n\t\t" +
+                                "ski -i https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4\n\t\t" +
+                                "ski -i https://skivideostorage.blob.core.windows.net/ski/2019-09-27/GOPR2170_ts.json 0 32 42.286974 -71.36495 42.285677 -71.362336\n\t" +
                                 "Download video, process and upload metadata.\n\t\t" +
                                 "ski -p https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4\n\t" +
                                 "Update video to YouTube.\n\t\t" +
