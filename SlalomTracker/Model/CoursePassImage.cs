@@ -66,7 +66,10 @@ namespace SlalomTracker
             {
                 var m = _pass.Measurements[i];
                 if (m.BoatPosition == CoursePosition.Empty)
+                {
+                    Console.WriteLine($"Out of course {i}");
                     continue;
+                }
                 
                 DrawBoat(m, i);
                 DrawHandle(m, i);
@@ -199,7 +202,7 @@ namespace SlalomTracker
             {
                 this.parent = image;
                 //maxHandleSpeed = this.parent._pass.Measurements.Max(v => v.HandleSpeedMps);
-                maxHandleSpeed = 20.0d;
+                maxHandleSpeed = 1.0d;
                 lastBall = 0;
             }
 
@@ -221,19 +224,19 @@ namespace SlalomTracker
             void DrawHandleSpeed(Measurement m, int measurementIndex)
             {
                 const double SpeedGraphHeight = 10.0d;
-                double speedHeight = (m.HandleSpeedMps / maxHandleSpeed) * SpeedGraphHeight;
+                double speedHeight = (Math.Abs(m.RopeSwingSpeedRadS) / maxHandleSpeed) * SpeedGraphHeight;
                 bool accelerating = false;
 
-                if (speedHeight == SpeedGraphHeight)
-                {
-                    string maxSpeed = Math.Round(m.HandleSpeedMps * 2.23694, 1) + "mph";
-                    parent.DrawTextNearMeasurement(m, maxSpeed);
-                }
+                // if (speedHeight == SpeedGraphHeight)
+                // {
+                //     string maxSpeed = Math.Round(m.HandleSpeedMps * 2.23694, 1) + "mph";
+                //     parent.DrawTextNearMeasurement(m, maxSpeed);
+                // }
 
                 if (measurementIndex > 0)
                 {
-                    double prevSpeed = parent._pass.Measurements[measurementIndex - 1].HandleSpeedMps;
-                    accelerating = m.HandleSpeedMps >= prevSpeed;
+                    double prevSpeed = parent._pass.Measurements[measurementIndex - 1].RopeSwingSpeedRadS;
+                    accelerating = Math.Abs(m.RopeSwingSpeedRadS) >= Math.Abs(prevSpeed);
                 }
 
                 // Course.WidthM
@@ -244,7 +247,7 @@ namespace SlalomTracker
                 PointF endPoint = parent.PointFromCoursePosition(endPosition);
 
                 Color color = GetAcceleratingColor(accelerating);
-                Pen pen = new Pen(color, 1.0f);
+                Pen pen = new Pen(color, 5.0f);
 
                 parent._graphics.DrawLine(pen, startPoint, endPoint);
 
@@ -260,7 +263,7 @@ namespace SlalomTracker
             private Color GetAcceleratingColor(bool accelerating)
             {
                 // Make color slightly transparent.
-                int alpha = 128;
+                int alpha = 100;
                 Color color = accelerating ? Color.Green : Color.Red;
                 return Color.FromArgb(alpha, color);
             }
