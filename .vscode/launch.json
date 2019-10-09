@@ -57,7 +57,7 @@
                 "quoteArgs": false
             },
             "sourceFileMap": {
-                "/ski": "${workspaceRoot}/SlalomTracker.WebApi/"
+                "/ski": "${workspaceRoot}/"
             }
         }        
     ,]

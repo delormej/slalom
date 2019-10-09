@@ -8,6 +8,7 @@ using System.Drawing;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Net;
 
 namespace SkiConsole
 {
@@ -15,6 +16,7 @@ namespace SkiConsole
     {
         static void Main(string[] args)
         {
+            PrintVersion();
             if (args.Length < 1)
             {
                 ShowUsage();
@@ -85,15 +87,18 @@ namespace SkiConsole
             {
                 PrintCreationTime(args[1]);
             }
-            else if (args[0] == "-x") 
+            else if (args[0] == "-x" && args.Length == 2) 
             {
-                PrintCourses();
-                if (args.Length > 3) {
-                    string course = args[1];
-                    double meters = double.Parse(args[2]);
-                    double heading = double.Parse(args[3]);
-                    GetNewCoords(course, meters, heading);
-                }
+                // -x is really for experimental testing of things...
+                                   
+                CropImage(args[1]);
+                // PrintCourses();
+                // if (args.Length > 3) {
+                //     string course = args[1];
+                //     double meters = double.Parse(args[2]);
+                //     double heading = double.Parse(args[3]);
+                //     GetNewCoords(course, meters, heading);
+                // }
             }
             else if (args[0] == "-s" && args.Length > 2) 
             {
@@ -105,7 +110,6 @@ namespace SkiConsole
 
         private static void ShowUsage()
         {
-            PrintVersion();
             Console.WriteLine("Usage:\n\t" +
                                 "Download a video from cloud storage:\n\t\t" +
                                 "ski -d https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4)\n\t" +
@@ -197,6 +201,38 @@ namespace SkiConsole
             Console.WriteLine("Wrote image to: " + imagePath);
 
             return imagePath;
+        }
+
+        private static void  CropImage(string url)
+        {
+            const int cropWidth = 400;
+            const int cropHeight = 1000;
+            
+            string filename = DownloadImage(url);
+            Bitmap src = Image.FromFile(filename) as Bitmap;
+            int x = (src.Width / 2) - cropWidth;
+            int y = (src.Height - cropHeight);
+            Rectangle cropRect = new Rectangle(x, y, cropWidth, cropHeight);
+
+            Bitmap target = new Bitmap(cropWidth, cropHeight);
+            using(Graphics g = Graphics.FromImage(target))
+            {
+                g.DrawImage(src, new Rectangle(0, 0, target.Width, target.Height), 
+                    cropRect,                        
+                    GraphicsUnit.Pixel);
+            }
+            target.Save("cropped_" + filename, ImageFormat.Png);
+            System.Console.WriteLine($"Wrote cropped image to cropped_{filename}");
+        }
+
+        private static string DownloadImage(string url)
+        {
+            string filename = System.IO.Path.GetFileName(url);
+            using (WebClient client = new WebClient()) 
+            {
+                client.DownloadFile(new Uri(url), filename);
+            }            
+            return filename;
         }
 
         private static void OutputHandleSpeed(string jsonPath, double rope)

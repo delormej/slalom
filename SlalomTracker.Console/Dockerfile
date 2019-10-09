@@ -1,9 +1,13 @@
 FROM microsoft/dotnet:2.1-sdk AS build
-#FROM dotnet-debug
 
 # Install Video Processing Libraries in FFMPEG
-RUN apt update && \
-    apt install ffmpeg -y
+RUN apt-get update \
+    && apt-get install -y --allow-unauthenticated \
+        libc6-dev \
+        libgdiplus \
+        libx11-dev \
+        ffmpeg \
+     && rm -rf /var/lib/apt/lists/* \
 
 COPY ./ /ski
 WORKDIR /ski/bin

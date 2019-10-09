@@ -1,13 +1,16 @@
 FROM microsoft/dotnet:2.1-sdk as dotnet-debug
-RUN apt update && \
-    apt install -y curl && \
-    apt install -y procps && \
-    apt install unzip && \
-    curl -sSL https://aka.ms/getvsdbgsh | /bin/sh /dev/stdin -v latest -l /vsdbg
 
-# Install Video Processing Libraries in FFMPEG
-RUN apt update && \
-    apt install ffmpeg -y
+RUN apt-get update \
+    && apt-get install -y --allow-unauthenticated \
+        libc6-dev \
+        libgdiplus \
+        libx11-dev \
+        ffmpeg \
+        curl \
+        procps \
+        unzip \
+     && rm -rf /var/lib/apt/lists/* \
+     && curl -sSL https://aka.ms/getvsdbgsh | /bin/sh /dev/stdin -v latest -l /vsdbg        
 
 COPY ./ /ski
 WORKDIR /ski/bin
