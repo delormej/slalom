@@ -7,7 +7,7 @@ RUN apt-get update \
         libgdiplus \
         libx11-dev \
         ffmpeg \
-     && rm -rf /var/lib/apt/lists/* \
+     && rm -rf /var/lib/apt/lists/*
 
 COPY ./ /ski
 WORKDIR /ski/bin
