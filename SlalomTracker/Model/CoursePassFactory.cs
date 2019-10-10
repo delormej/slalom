@@ -164,10 +164,13 @@ namespace SlalomTracker
                 CalculateInCourse(pass, measurements, i);
                 CalculateCurrent(measurements, i);
                 pass.Track(current);
+
+                // If the handle has passed the 55s, we're done here.
+                if (current.HandlePosition.Y > Course.LengthM)
+                    break;
             }
             
             CalculateCoursePassSpeed(pass);
-
             return pass;
         }
 

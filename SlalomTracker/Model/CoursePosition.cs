@@ -10,6 +10,9 @@ namespace SlalomTracker
     /// </summary>
     public class CoursePosition
     {
+        /// <summary>
+        /// X,Y are nominally in meters, X is course width (ball to ball), Y is course length (entry to exit).
+        /// </summary>
         public double X, Y;
 
         public CoursePosition(double x, double y)
