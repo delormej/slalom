@@ -26,9 +26,9 @@ namespace SlalomTracker.Video
             string finalVideoUrl;
             try
             {
-                string localPath = Cloud.Storage.DownloadVideo(videoUrl);
-                var creationTimeTask = _videoTasks.GetCreationTimeAsync(localPath);
-                string json = MetadataExtractor.Extract.ExtractMetadata(localPath);
+                string videoLocalPath = Cloud.Storage.DownloadVideo(videoUrl);
+                var creationTimeTask = _videoTasks.GetCreationTimeAsync(videoLocalPath);
+                string json = MetadataExtractor.Extract.ExtractMetadata(videoLocalPath);
                 CoursePassFactory factory = new CoursePassFactory();
                 CoursePass pass = factory.FromJson(json);
 
@@ -37,20 +37,23 @@ namespace SlalomTracker.Video
                 creationTimeTask.Wait();
                 DateTime creationTime = creationTimeTask.Result;
 
-                var thumbnailTask = CreateThumbnailAsync(localPath, creationTime, 
+                var thumbnailTask = CreateThumbnailAsync(videoLocalPath, creationTime, 
                     pass.GetSecondsAtEntry());               
-                string processedLocalPath = TrimAndSilenceVideo(localPath, pass);
+                string processedLocalPath = TrimAndSilenceVideo(videoLocalPath, pass);
                 finalVideoUrl = _storage.UploadVideo(processedLocalPath, creationTime);
                 
                 SkiVideoEntity entity = new SkiVideoEntity(finalVideoUrl, creationTime);
                 CopyCoursePassToEntity(pass, entity);
 
-                thumbnailTask.Wait();
-                entity.ThumbnailUrl = thumbnailTask.Result;               
-
-                // TODO: Predict rope length & skier.
+                thumbnailTask.ContinueWith(t => 
+                { 
+                    entity.ThumbnailUrl = t.Result;
+                    entity.RopeLengthM = PredictRopeLength(t.Result); 
+                }).Wait();
 
                 _storage.AddMetadata(entity, json);
+                
+                // Wait until everything succeeds before deleting source video.
                 _storage.DeleteIngestedBlob(videoUrl);
             }
             catch (System.AggregateException aggEx)
@@ -60,15 +63,6 @@ namespace SlalomTracker.Video
             }
 
             return finalVideoUrl;
-        }
-
-        private void CopyCoursePassToEntity(CoursePass pass, SkiVideoEntity entity)
-        {
-            entity.BoatSpeedMph = pass.AverageBoatSpeed;
-            entity.CourseName = pass.Course.Name;
-            entity.EntryTime = pass.GetSecondsAtEntry();     
-            entity.RopeLengthM = pass.Rope != null ? pass.Rope.FtOff : 0;
-            entity.CenterLineDegreeOffset = pass.CenterLineDegreeOffset;      
         }
 
         private string TrimAndSilenceVideo(string localPath, CoursePass pass)
@@ -129,5 +123,19 @@ namespace SlalomTracker.Video
                 });
             return thumbnailTask;
         }
+
+        private double PredictRopeLength(string thumbnailUrl)
+        {
+            return 0.0;
+        }
+
+        private void CopyCoursePassToEntity(CoursePass pass, SkiVideoEntity entity)
+        {
+            entity.BoatSpeedMph = pass.AverageBoatSpeed;
+            entity.CourseName = pass.Course.Name;
+            entity.EntryTime = pass.GetSecondsAtEntry();     
+            entity.RopeLengthM = pass.Rope != null ? pass.Rope.FtOff : 0;
+            entity.CenterLineDegreeOffset = pass.CenterLineDegreeOffset;      
+        }        
     }
 }
