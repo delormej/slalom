@@ -61,6 +61,16 @@ namespace SlalomTracker
             return FromJson(json);
         }
 
+        public CoursePass FromUrl(string url)
+        {
+            WebClient client = new WebClient();
+            string json = client.DownloadString(url);
+            if (string.IsNullOrEmpty(json))
+                throw new ApplicationException("No JSON file at url: " + url);
+            
+            return FromJson(json);
+        }
+
         /// <summary>
         /// Loads a List<Measurment> collection serialized as JSON in the string.
         /// </summary>
@@ -89,16 +99,6 @@ namespace SlalomTracker
                 throw new ApplicationException("Unable to find a course for this ski run.");
 
             return CreatePass(measurements);
-        }
-
-        public CoursePass FromUrl(string url)
-        {
-            WebClient client = new WebClient();
-            string json = client.DownloadString(url);
-            if (string.IsNullOrEmpty(json))
-                throw new ApplicationException("No JSON file at url: " + url);
-            
-            return FromJson(json);
         }
 
         /// <summary>
@@ -150,6 +150,8 @@ namespace SlalomTracker
             //
             // TODO: raise pass, measurements, current, previous to class members so 
             // we're not constantly passing these around.
+            if (m_rope == null)
+                m_rope = Rope.Default;
 
             CoursePass pass = new CoursePass(m_course, m_rope, CenterLineDegreeOffset);
             for (int i = 0; i < measurements.Count; i++)
@@ -160,9 +162,11 @@ namespace SlalomTracker
                     continue;               
                 
                 CalculateInCourse(pass, measurements, i);
-                Calculate(measurements, i);
+                CalculateCurrent(measurements, i);
                 pass.Track(current);
             }
+            
+            CalculateCoursePassSpeed(pass);
 
             return pass;
         }
@@ -188,7 +192,6 @@ namespace SlalomTracker
             {
                 current.InCourse = false;
                 pass.Exit = current;
-                CalculateCoursePassSpeed(pass);
             }
             else
             {
@@ -196,7 +199,7 @@ namespace SlalomTracker
             }
         }
 
-        private void Calculate(List<Measurement> measurements, int index)
+        private void CalculateCurrent(List<Measurement> measurements, int index)
         {
             Measurement current = measurements[index];
             Measurement previous = null;
@@ -223,6 +226,12 @@ namespace SlalomTracker
 
         private void CalculateCoursePassSpeed(CoursePass pass)
         {
+            if (pass.Exit == null || pass.Entry == null)
+            {
+                Console.WriteLine("Skiping course pass speed calculation since Entry or Exit are null.");
+                return;
+            }
+
             TimeSpan duration = pass.Exit.Timestamp.Subtract(pass.Entry.Timestamp);
             double distance = pass.Exit.BoatGeoCoordinate.GetDistanceTo(
                 pass.Entry.BoatGeoCoordinate);

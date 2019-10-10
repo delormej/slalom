@@ -1,3 +1,4 @@
+: ${SKIBLOBS?"Need to set SKIBLOBS env variable."}
 #
 # This file used for DEBUG build
 #

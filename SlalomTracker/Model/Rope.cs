@@ -28,6 +28,8 @@ namespace SlalomTracker
             return m_ropeArcLengthM;
         }
 
+        public static Rope Default = Rope.Off(15);
+
         public static Rope Off(double ft)
         {
             return new Rope((75 - ft) * 0.3048);
