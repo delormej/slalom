@@ -32,7 +32,7 @@ namespace SlalomTracker.WebApi.Controllers
         private Bitmap CropImage(string url)
         {
             const int cropWidth = 400;
-            const int cropHeight = 1000;
+            const int cropHeight = 800;
             
             string filename = DownloadImage(url);
             Bitmap src = Image.FromFile(filename) as Bitmap;
