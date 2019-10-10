@@ -133,7 +133,7 @@ namespace SlalomTracker.Video
 
         private double PredictRopeLength(string thumbnailUrl)
         {
-            const string cropThumbnailUrl = "https://dev-ski-app.azurewebsites.net/api/crop?thumbnailUrl=";
+            const string cropThumbnailUrl = "https://ski-app.azurewebsites.net/api/crop?thumbnailUrl=";
 
             const string CustomVisionEndPoint = "https://ropelengthvision.cognitiveservices.azure.com/";
             const string CustomVisionPredictionKey = "8d326cd29a0b4636beced3a4658c09cb";
