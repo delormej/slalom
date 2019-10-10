@@ -6,7 +6,7 @@
     <ApplicationIcon />
     <OutputType>Library</OutputType>
     <StartupObject />
-    <Version>1.5.2</Version>
+    <Version>1.6.0</Version>
 
     <!-- Required to publish nuget package. -->
     <PackageId>SlalomTracker</PackageId>
@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <PackageReference Include="GeoCoordinate.NetStandard1" Version="1.0.1" />
+    <PackageReference Include="Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction" Version="1.0.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="System.Drawing.Common" Version="4.5.0" />
@@ -35,7 +36,7 @@
   </ItemGroup>
 
   <Target Name="PrintMe" BeforeTargets="Restore">
-      <Message Importance="High" Text="OS is: $(OS)"/>
+      <Message Importance="High" Text="OS is: $(OS)" />
   </Target>
 
   <!-- Build dependent submodule. -->
