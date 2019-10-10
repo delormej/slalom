@@ -20,12 +20,6 @@ namespace SlalomTracker.Cloud
             this.SlalomTrackerVersion = GetVersion();
         }
 
-        public void SetFromCoursePass(CoursePass pass)
-        {
-            BoatSpeedMph = pass.AverageBoatSpeed;
-            CourseName = pass.Course.Name;
-            EntryTime = pass.GetSecondsAtEntry();            
-        }
 
         public string Url { get; set; }
         
@@ -34,6 +28,8 @@ namespace SlalomTracker.Cloud
         public string JsonUrl { get; set; }
         
         public string Skier { get; set; }
+
+        public double CenterLineDegreeOffset { get; set; }
 
         public double RopeLengthM { get; set; }
 

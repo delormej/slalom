@@ -32,6 +32,8 @@ namespace SlalomTracker.Video
                 CoursePassFactory factory = new CoursePassFactory();
                 CoursePass pass = factory.FromJson(json);
 
+                // TODO: Try to fit CLOffset
+
                 creationTimeTask.Wait();
                 DateTime creationTime = creationTimeTask.Result;
 
@@ -41,9 +43,12 @@ namespace SlalomTracker.Video
                 finalVideoUrl = _storage.UploadVideo(processedLocalPath, creationTime);
                 
                 SkiVideoEntity entity = new SkiVideoEntity(finalVideoUrl, creationTime);
-                entity.SetFromCoursePass(pass);
+                CopyCoursePassToEntity(pass, entity);
+
                 thumbnailTask.Wait();
                 entity.ThumbnailUrl = thumbnailTask.Result;               
+
+                // TODO: Predict rope length & skier.
 
                 _storage.AddMetadata(entity, json);
                 _storage.DeleteIngestedBlob(videoUrl);
@@ -55,6 +60,15 @@ namespace SlalomTracker.Video
             }
 
             return finalVideoUrl;
+        }
+
+        private void CopyCoursePassToEntity(CoursePass pass, SkiVideoEntity entity)
+        {
+            entity.BoatSpeedMph = pass.AverageBoatSpeed;
+            entity.CourseName = pass.Course.Name;
+            entity.EntryTime = pass.GetSecondsAtEntry();     
+            entity.RopeLengthM = pass.Rope != null ? pass.Rope.FtOff : 0;
+            entity.CenterLineDegreeOffset = pass.CenterLineDegreeOffset;      
         }
 
         private string TrimAndSilenceVideo(string localPath, CoursePass pass)
