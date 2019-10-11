@@ -17,7 +17,7 @@ namespace SlalomTracker.WebApi.Controllers
             try 
             {
                 Storage storage = new Storage();
-                Task<List<SkiVideoEntity>> task = storage.GetAllMetdata();
+                Task<List<SkiVideoEntity>> task = storage.GetAllMetdataAsync();
                 task.Wait();
                 List<SkiVideoEntity> list = task.Result;
                 var filtered = list.Where(s => s.MarkedForDelete == false);

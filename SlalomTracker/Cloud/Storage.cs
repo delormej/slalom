@@ -60,7 +60,7 @@ namespace SlalomTracker.Cloud
             updateTask.Wait();               
         }
 
-        public async Task<List<SkiVideoEntity>> GetAllMetdata()
+        public async Task<List<SkiVideoEntity>> GetAllMetdataAsync()
         {
             CloudTableClient client = _account.CreateCloudTableClient();
             CloudTable table = client.GetTableReference(SKITABLE);
