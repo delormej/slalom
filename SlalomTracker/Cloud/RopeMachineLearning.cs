@@ -3,6 +3,8 @@ using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction;
 using PredictionModels = Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
+using TrainingModels = Microsoft.Azure.CognitiveServices.Vision.CustomVision.Training.Models;
+
 
 namespace SlalomTracker.Cloud
 {
@@ -49,18 +51,28 @@ namespace SlalomTracker.Cloud
             return ropeLength;
         }
 
-        protected override IList<Guid> GetTagIds(SkiVideoEntity video)
+        protected override string GetTagValue(SkiVideoEntity video)
         {
-            // Requires a list object, but only a single tag is ever put in the list.
-            List<Guid> tagIds = null;
-            var ropeTag = mlTags.GetRopeTagId(video);
-            if (ropeTag != null)
-            {
-                tagIds = new List<Guid>();
-                tagIds.Add((Guid)ropeTag);
-            }
+            return video.RopeLengthM.ToString();
+        }
 
-            return tagIds;
+        protected override bool TagSelector(TrainingModels.Tag tag, SkiVideoEntity video)
+        {
+            if (tag == null || video == null)
+                return false;
+            else
+                return tag.Name == video.RopeLengthM.ToString();
+        }
+
+        protected override bool EnoughSelector(SkiVideoEntity video, string tag)
+        {
+            double rope;
+            if (video == null)
+                return false;
+            if (!double.TryParse(tag, out rope))
+                return false;
+            
+            return video.RopeLengthM == rope;
         }
     }
 }

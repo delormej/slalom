@@ -6,7 +6,7 @@
     <ApplicationIcon />
     <OutputType>Library</OutputType>
     <StartupObject />
-    <Version>1.6.8</Version>
+    <Version>1.6.10</Version>
 
     <!-- Required to publish nuget package. -->
     <PackageId>SlalomTracker</PackageId>

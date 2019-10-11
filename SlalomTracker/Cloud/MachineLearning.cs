@@ -17,7 +17,7 @@ namespace SlalomTracker.Cloud
         protected CustomVisionPredictionClient predictionApi;
         protected CustomVisionTrainingClient trainingApi;
         protected List<TrainingModels.ImageUrlCreateEntry> entries;
-        protected MachineLearningTags mlTags;
+        protected IList<TrainingModels.Tag> tags;
         protected Guid ProjectId;
 
         public MachineLearning()
@@ -42,22 +42,17 @@ namespace SlalomTracker.Cloud
 
         public void Train(List<SkiVideoEntity> videos)
         {
-            const int BatchSize = 63;
-            var filteredVideos = videos.Where(v => 
-                    v.RopeLengthM > 0 && 
-                    !string.IsNullOrEmpty(v.Skier) &&
-                    !string.IsNullOrEmpty(v.ThumbnailUrl)
-            );
+            const int BatchSize = 10;
 
             try
             {
-                mlTags = new MachineLearningTags(trainingApi, ProjectId, filteredVideos);
+                tags = trainingApi.GetTags(ProjectId);
                 entries = new List<TrainingModels.ImageUrlCreateEntry>();
 
-                foreach (var video in filteredVideos)
+                foreach (var video in FilterVideos(videos))
                 {
                     IList<Guid> tagIds = GetTagIds(video);
-                    if (tagIds == null) // No tags.
+                    if (tagIds == null) // No tags, move on.
                         continue;
 
                     entries.Add(new TrainingModels.ImageUrlCreateEntry() 
@@ -82,9 +77,57 @@ namespace SlalomTracker.Cloud
             }            
         }
 
-        protected virtual IList<Guid> GetTagIds(SkiVideoEntity video)
+        private IEnumerable<SkiVideoEntity> FilterVideos(IEnumerable<SkiVideoEntity> videos)
         {
-            return null;
+            // Just select the valid videos that are valid for tagging.
+            return videos.Where(v => 
+                        v.RopeLengthM > 0 && 
+                        !string.IsNullOrEmpty(v.Skier) &&
+                        !string.IsNullOrEmpty(v.ThumbnailUrl)
+                    );
+        }
+
+        private IList<Guid> GetTagIds(SkiVideoEntity video)
+        {
+            //
+            // Returns a list of Guids, even though there is only 1 item, or return null if none.
+            //
+
+            List<Guid> tagIds = null;
+            var tag = GetTagId(video, GetTagValue(video), TagSelector, EnoughSelector);
+            if (tag != null)
+            {
+                tagIds = new List<Guid>();
+                tagIds.Add((Guid)tag);
+            }
+
+            return tagIds;
+        }
+
+        private Guid? GetTagId(SkiVideoEntity video, string tagName,
+            Func<TrainingModels.Tag, SkiVideoEntity, bool> tagSelector,
+            Func<SkiVideoEntity, string, bool> enoughSelector)
+        {
+            // Forgive the ridiculous nature of all the Func<> parameters, but this generalizes this 
+            // function so that the derived classes can specify their own implementation of what 
+            // constitutes a tag without repeating itself; i.e. skier, ropeLength, etc...
+
+            var tag = tags.Where(t => tagSelector(t, video)).FirstOrDefault();
+            // No tags, see if we have enough data to create one.
+            if (tag == null && enoughSelector(video, tagName))
+                tag = CreateTag(video, tagName);
+            
+            if (tag != null)
+                return tag.Id;
+            else 
+                return null;
+        }        
+
+        private TrainingModels.Tag CreateTag(SkiVideoEntity video, string tagName)
+        {
+            TrainingModels.Tag tag = trainingApi.CreateTag(ProjectId, tagName);
+            tags.Add(tag);
+            return tag;
         }
 
         private void SendBatch()    
@@ -100,5 +143,9 @@ namespace SlalomTracker.Cloud
                 Console.WriteLine("Error writing ML training batch." + e);
             }
         }
+
+        protected abstract bool TagSelector(TrainingModels.Tag tag, SkiVideoEntity video);
+        protected abstract bool EnoughSelector(SkiVideoEntity video, string tag);
+        protected abstract string GetTagValue(SkiVideoEntity video);        
     }
 }
