@@ -29,16 +29,8 @@ namespace SlalomTracker.WebApi.Controllers
                 return StatusCode(500);
             }
         }
-<<<<<<< HEAD
         private Bitmap CropImage(string url, int cropWidth, int cropHeight)
         {   
-=======
-        private Bitmap CropImage(string url)
-        {
-            const int cropWidth = 400;
-            const int cropHeight = 800;
-            
->>>>>>> 27db1de0938e5c2b2be6156021705f6c31730b56
             string filename = DownloadImage(url);
             Bitmap src = Image.FromFile(filename) as Bitmap;
             int x = (src.Width / 2) - (cropWidth / 2);
