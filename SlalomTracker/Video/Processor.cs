@@ -52,7 +52,7 @@ namespace SlalomTracker.Video
                 { 
                     entity.ThumbnailUrl = t.Result;
 
-                    MachineLearning ml = new MachineLearning();
+                    RopeMachineLearning ml = new RopeMachineLearning();
                     entity.RopeLengthM = ml.PredictRopeLength(t.Result); 
                 }).Wait();
 

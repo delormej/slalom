@@ -89,8 +89,7 @@ namespace SkiConsole
             }
             else if (args[0] == "-t") 
             {
-                MachineLearning ml = new MachineLearning();
-                ml.Train();
+                Train();
             }
             else if (args[0] == "-x")
             {
@@ -182,6 +181,22 @@ namespace SkiConsole
             return url;
         }
 
+        private static void Train()
+        {
+            var metadataTask = LoadVideosAsync();
+            Console.WriteLine("Loading videos to train.");
+            metadataTask.Wait();
+            List<SkiVideoEntity> videos = metadataTask.Result;
+            
+            Console.WriteLine("Training rope length detection.");
+            RopeMachineLearning ropeMl = new RopeMachineLearning();
+            ropeMl.Train(videos);
+
+            // Console.WriteLine("Training skier detection.");
+            // SkierMachineLearning skierMl = new SkierMachineLearning();
+            // skierMl.Train(videos);
+        }
+
         private static string CreateImage(string jsonPath, double clOffset, double rope, 
             CourseCoordinates coords)
         {
@@ -230,15 +245,20 @@ namespace SkiConsole
 
         private static void PrintAllMetadata()
         {
-            Storage storage = new Storage();
-            Task<List<SkiVideoEntity>> result = storage.GetAllMetdataAsync();
-            result.Wait();
+            var metadataTask = LoadVideosAsync();
+            metadataTask.Wait();
             Console.WriteLine("Videos available:");
-            foreach (SkiVideoEntity e in result.Result)
+            foreach (SkiVideoEntity e in metadataTask.Result)
             {
                 Console.WriteLine("\t{0}\\{1}", e.PartitionKey, e.RowKey);
             }
         }
+
+        private static Task<List<SkiVideoEntity>> LoadVideosAsync()
+        {
+            Storage storage = new Storage();
+            return storage.GetAllMetdataAsync();
+        }        
 
         private static void PrintCreationTime(string inputFile)
         {
