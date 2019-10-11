@@ -12,17 +12,18 @@ namespace SlalomTracker.Cloud
 {
     public class MachineLearning
     {
-        const string cropThumbnailUrl = "https://ski-app.azurewebsites.net/api/crop?thumbnailUrl=";
+        const string CropThumbnailUrl = "https://ski-app.azurewebsites.net/api/crop?thumbnailUrl=";
 
         const string CustomVisionEndPoint = "https://ropelengthvision.cognitiveservices.azure.com/";
         const string CustomVisionPredictionKey = "8d326cd29a0b4636beced3a4658c09cb";
-        string CustomVisionTrainingKey = "7191c8190b4949b98b35c140efd7b7e6";
+        const string CustomVisionTrainingKey = "7191c8190b4949b98b35c140efd7b7e6";
 
         const string CustomVisionModelName = "RopeLength";
-        static Guid projectId = new Guid("4668e0c2-7e00-40cb-a58a-914eb988f44d");
 
         private CustomVisionPredictionClient predictionApi;
         private CustomVisionTrainingClient trainingApi;
+
+        public static Guid ProjectId = new Guid("4668e0c2-7e00-40cb-a58a-914eb988f44d");
 
         public MachineLearning()
         {
@@ -43,8 +44,8 @@ namespace SlalomTracker.Cloud
         {
             Console.WriteLine("Making a prediction of rope length for: " + thumbnailUrl);
 
-            PredictionModels.ImageUrl thumbnail = new PredictionModels.ImageUrl(cropThumbnailUrl + thumbnailUrl);
-            var result = predictionApi.ClassifyImageUrl(projectId, CustomVisionModelName, thumbnail);
+            PredictionModels.ImageUrl thumbnail = new PredictionModels.ImageUrl(CropThumbnailUrl + thumbnailUrl);
+            var result = predictionApi.ClassifyImageUrl(ProjectId, CustomVisionModelName, thumbnail);
 
             // Loop over each prediction and write out the results
             foreach (var c in result.Predictions)
@@ -61,7 +62,7 @@ namespace SlalomTracker.Cloud
             {
                 // Load videos & tags.
                 var loadVideosTask = LoadVideosAsync();
-                var getTagsTask = trainingApi.GetTagsAsync(projectId);
+                var getTagsTask = trainingApi.GetTagsAsync(ProjectId);
                 Task.WaitAll(loadVideosTask, getTagsTask);
 
                 // Tag all the videos & train the model.
@@ -77,7 +78,8 @@ namespace SlalomTracker.Cloud
         {
             double ropeLength = 0.0d;
             
-            string ropeTagName = predictions.OrderByDescending(p => p.Probability)
+            string ropeTagName = predictions.Where(p => IsTagRopeLength(p.TagName))
+                .OrderByDescending(p => p.Probability)
                 .Select(p => p.TagName)
                 .First();
 
@@ -85,6 +87,12 @@ namespace SlalomTracker.Cloud
                 ropeLength = double.Parse(ropeTagName);
             
             return ropeLength;
+        }
+
+        private bool IsTagRopeLength(string tagName)
+        {
+            double rope;
+            return double.TryParse(tagName, out rope);
         }
 
         private Task<List<SkiVideoEntity>> LoadVideosAsync()
@@ -96,11 +104,13 @@ namespace SlalomTracker.Cloud
         private void Train(List<SkiVideoEntity> videos, IList<TrainingModels.Tag> tags)
         {
             const int BatchSize = 63;
+            
+            MachineLearningTags mlTags = new MachineLearningTags(trainingApi, videos, tags);
             List<TrainingModels.ImageUrlCreateEntry> entries = new List<TrainingModels.ImageUrlCreateEntry>();
 
             foreach (var video in videos)
             {
-                IList<Guid> tagIds = GetTagIds(video, tags);
+                IList<Guid> tagIds = mlTags.GetTagIds(video);
                 if (tagIds.Count == 0) // No tags.
                     continue;
 
@@ -109,7 +119,7 @@ namespace SlalomTracker.Cloud
 
                 entries.Add(new TrainingModels.ImageUrlCreateEntry() 
                 { 
-                    Url = cropThumbnailUrl + video.ThumbnailUrl, 
+                    Url = CropThumbnailUrl + video.ThumbnailUrl, 
                     TagIds = tagIds
                 });
 
@@ -121,72 +131,15 @@ namespace SlalomTracker.Cloud
             }
 
             // Kick off the training.
-            trainingApi.TrainProject(projectId);
+            trainingApi.TrainProject(ProjectId);
         }
-
-        private IList<Guid> GetTagIds(SkiVideoEntity video, IList<TrainingModels.Tag> tags)
-        {
-            List<Guid> tagIds = new List<Guid>();
-
-            var ropeTag = GetRopeTagId(video, tags);
-            var skierTag = GetSkierTagId(video, tags);
-            
-            if (ropeTag != null)
-                tagIds.Add((Guid)ropeTag);
-            if (skierTag != null)
-                tagIds.Add((Guid)skierTag);
-
-            return tagIds;
-        }
-
-        private Guid? GetRopeTagId(SkiVideoEntity video, IList<TrainingModels.Tag> tags)
-        {
-            if (video.RopeLengthM == 0)
-                return null;
-            
-            string rope = video.RopeLengthM.ToString();
-            
-            var tag = tags.Where(t => t.Name == rope).FirstOrDefault();               
-            if (tag == null)
-            {
-                tag = trainingApi.CreateTag(projectId, rope, null, "Rope");
-                tags.Add(tag);
-            }
-
-            return tag.Id;
-        }
-
-        private Guid? GetSkierTagId(SkiVideoEntity video, IList<TrainingModels.Tag> tags)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(video.Skier))
-                    return null;
-
-                string skier = video.Skier.Trim();
-
-                var tag = tags.Where(t => t.Name == skier).FirstOrDefault();               
-                if (tag == null)
-                {
-                    tag = trainingApi.CreateTag(projectId, skier, null, "Skier");
-                    tags.Add(tag);
-                }
-
-                return tag.Id;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Unable to get SkierTag for {video.Skier}\n" + e);
-                return null;
-            }
-        }    
 
         private void SendBatch(List<TrainingModels.ImageUrlCreateEntry> entries)    
         {
             try
             {
                 var batch = new TrainingModels.ImageUrlCreateBatch(entries);
-                trainingApi.CreateImagesFromUrls(projectId, batch);        
+                trainingApi.CreateImagesFromUrls(ProjectId, batch);        
             }
             catch (Exception e)
             {
