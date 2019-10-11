@@ -12,7 +12,7 @@ namespace SlalomTracker.WebApi.Controllers
     public class CropThumbnailController : Controller
     {
         [HttpGet]
-        public IActionResult Get(string thumbnailUrl, int width = 400, int height = 800)
+        public IActionResult Get(string thumbnailUrl, int width = 600, int height = 1200)
         {
             try
             {
