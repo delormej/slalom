@@ -117,12 +117,22 @@ namespace SlalomTracker.Cloud
 
                 string directory = Path.GetDirectoryName(path);
                 if (directory != String.Empty && !Directory.Exists(directory))
+                {
+                    // Edge case! Ensure a file doesn't also exist already with that name.
+                    if (File.Exists(directory))
+                    {
+                        const string prefix = "_tmp_";
+                        directory = prefix + directory;
+                        path = prefix + path;
+                    }
                     Directory.CreateDirectory(directory);
+                }
+                    
                 WebClient client = new WebClient();
                 client.DownloadFile(videoUrl, path);
             }
 
-            Console.WriteLine("Files is here: " + path);
+            Console.WriteLine("File is here: " + path);
             return path;
         }       
 

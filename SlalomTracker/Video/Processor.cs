@@ -1,7 +1,11 @@
 using System;
+using System.Linq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using SlalomTracker;
 using SlalomTracker.Cloud;
+using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction;
+using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
 
 namespace SlalomTracker.Video 
 {
@@ -26,9 +30,10 @@ namespace SlalomTracker.Video
             string finalVideoUrl;
             try
             {
-                string localPath = Cloud.Storage.DownloadVideo(videoUrl);
-                var creationTimeTask = _videoTasks.GetCreationTimeAsync(localPath);
-                string json = MetadataExtractor.Extract.ExtractMetadata(localPath);
+                string videoLocalPath = Cloud.Storage.DownloadVideo(videoUrl);
+                var creationTimeTask = _videoTasks.GetCreationTimeAsync(videoLocalPath);
+                string json = MetadataExtractor.Extract.ExtractMetadata(videoLocalPath);
+                
                 CoursePassFactory factory = new CoursePassFactory();
                 CoursePass pass = factory.FromJson(json);
 
@@ -37,20 +42,25 @@ namespace SlalomTracker.Video
                 creationTimeTask.Wait();
                 DateTime creationTime = creationTimeTask.Result;
 
-                var thumbnailTask = CreateThumbnailAsync(localPath, creationTime, 
+                var thumbnailTask = CreateThumbnailAsync(videoLocalPath, creationTime, 
                     pass.GetSecondsAtEntry());               
-                string processedLocalPath = TrimAndSilenceVideo(localPath, pass);
-                finalVideoUrl = _storage.UploadVideo(processedLocalPath, creationTime);
+                
+                string processedLocalPath = TrimAndSilenceVideo(videoLocalPath, pass); // TODO: this could happen async as well.
+                
+                finalVideoUrl = _storage.UploadVideo(processedLocalPath, creationTime); // This could be a continuation of creationTime & Silence
                 
                 SkiVideoEntity entity = new SkiVideoEntity(finalVideoUrl, creationTime);
                 CopyCoursePassToEntity(pass, entity);
 
-                thumbnailTask.Wait();
-                entity.ThumbnailUrl = thumbnailTask.Result;               
-
-                // TODO: Predict rope length & skier.
+                thumbnailTask.ContinueWith(t => 
+                { 
+                    entity.ThumbnailUrl = t.Result;
+                    entity.RopeLengthM = PredictRopeLength(t.Result); 
+                }).Wait();
 
                 _storage.AddMetadata(entity, json);
+                
+                // Wait until everything succeeds before deleting source video.
                 _storage.DeleteIngestedBlob(videoUrl);
             }
             catch (System.AggregateException aggEx)
@@ -60,15 +70,6 @@ namespace SlalomTracker.Video
             }
 
             return finalVideoUrl;
-        }
-
-        private void CopyCoursePassToEntity(CoursePass pass, SkiVideoEntity entity)
-        {
-            entity.BoatSpeedMph = pass.AverageBoatSpeed;
-            entity.CourseName = pass.Course.Name;
-            entity.EntryTime = pass.GetSecondsAtEntry();     
-            entity.RopeLengthM = pass.Rope != null ? pass.Rope.FtOff : 0;
-            entity.CenterLineDegreeOffset = pass.CenterLineDegreeOffset;      
         }
 
         private string TrimAndSilenceVideo(string localPath, CoursePass pass)
@@ -129,5 +130,56 @@ namespace SlalomTracker.Video
                 });
             return thumbnailTask;
         }
+
+        private double PredictRopeLength(string thumbnailUrl)
+        {
+            const string cropThumbnailUrl = "https://ski-app.azurewebsites.net/api/crop?thumbnailUrl=";
+
+            const string CustomVisionEndPoint = "https://ropelengthvision.cognitiveservices.azure.com/";
+            const string CustomVisionPredictionKey = "8d326cd29a0b4636beced3a4658c09cb";
+            const string CustomVisionModelName = "RopeLength";
+            Guid projectId = new Guid("4668e0c2-7e00-40cb-a58a-914eb988f44d");
+
+            Console.WriteLine("Making a prediction of rope length for: " + thumbnailUrl);
+            CustomVisionPredictionClient endpoint = new CustomVisionPredictionClient()
+            {
+                ApiKey = CustomVisionPredictionKey,
+                Endpoint = CustomVisionEndPoint
+            };
+
+            ImageUrl thumbnail = new ImageUrl(cropThumbnailUrl + thumbnailUrl);
+            var result = endpoint.ClassifyImageUrl(projectId, CustomVisionModelName, thumbnail);
+
+            // Loop over each prediction and write out the results
+            foreach (var c in result.Predictions)
+            {
+                Console.WriteLine($"\t{c.TagName}: {c.Probability:P1}");
+            }
+
+            return GetHighestRankedPrediction(result.Predictions);
+        }
+
+        private double GetHighestRankedPrediction(IList<PredictionModel> predictions)
+        {
+            double ropeLength = 0.0d;
+            
+            string ropeTagName = predictions.OrderByDescending(p => p.Probability)
+                .Select(p => p.TagName)
+                .First();
+
+            if (ropeTagName != null)
+                ropeLength = double.Parse(ropeTagName);
+            
+            return ropeLength;
+        }
+
+        private void CopyCoursePassToEntity(CoursePass pass, SkiVideoEntity entity)
+        {
+            entity.BoatSpeedMph = pass.AverageBoatSpeed;
+            entity.CourseName = pass.Course.Name;
+            entity.EntryTime = pass.GetSecondsAtEntry();     
+            entity.RopeLengthM = pass.Rope != null ? pass.Rope.FtOff : 0;
+            entity.CenterLineDegreeOffset = pass.CenterLineDegreeOffset;      
+        }        
     }
 }
