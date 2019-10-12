@@ -11,17 +11,16 @@ namespace SlalomTracker.Cloud
     {
         public SkierMachineLearning()
         {
-            throw new NotImplementedException();
-            ProjectId = new Guid("");
-            CustomVisionEndPoint = "";
+            ProjectId = new Guid("6cd1137c-b7db-46ee-a764-08af11ac012d");
             CustomVisionPredictionKey = "";
-            CustomVisionTrainingKey = "";     
-            CustomVisionModelName = "";      
+            CustomVisionTrainingKey = "7191c8190b4949b98b35c140efd7b7e6";     
+            CustomVisionModelName = "SkierModel";      
             InitializeApis(); 
         }
 
         public string PredictSkier(string thumbnailUrl)
         {
+            throw new NotImplementedException();
             return "";
         }
 
@@ -40,11 +39,7 @@ namespace SlalomTracker.Cloud
 
         protected override bool EnoughSelector(SkiVideoEntity video, string tag)
         {
-            double rope;
-            if (!double.TryParse(tag, out rope))
-                return false;
-            else
-                return video.RopeLengthM == rope;
+            return video.Skier.Trim() == tag;
         }
     }
 }

@@ -18,11 +18,14 @@ namespace SlalomTracker.Cloud
         protected CustomVisionTrainingClient trainingApi;
         protected List<TrainingModels.ImageUrlCreateEntry> entries;
         protected IList<TrainingModels.Tag> tags;
+        protected IEnumerable<SkiVideoEntity> videos;
         protected Guid ProjectId;
+        protected const int MinimumForTag = 5;
 
         public MachineLearning()
         {
-            CropThumbnailUrl = "https://ski-app.azurewebsites.net/api/crop?thumbnailUrl=";         
+            CropThumbnailUrl = "https://ski-app.azurewebsites.net/api/crop?thumbnailUrl=";
+            CustomVisionEndPoint = "https://ropelengthvision.cognitiveservices.azure.com/";     
         }
 
         protected void InitializeApis()
@@ -40,16 +43,17 @@ namespace SlalomTracker.Cloud
             };              
         }
 
-        public void Train(List<SkiVideoEntity> videos)
+        public void Train(List<SkiVideoEntity> allVideos)
         {
             const int BatchSize = 10;
+            this.videos = FilterVideos(allVideos);
 
             try
             {
                 tags = trainingApi.GetTags(ProjectId);
                 entries = new List<TrainingModels.ImageUrlCreateEntry>();
 
-                foreach (var video in FilterVideos(videos))
+                foreach (var video in this.videos)
                 {
                     IList<Guid> tagIds = GetTagIds(video);
                     if (tagIds == null) // No tags, move on.
@@ -73,14 +77,17 @@ namespace SlalomTracker.Cloud
             }
             catch (TrainingModels.CustomVisionErrorException e)
             {
-                System.Console.WriteLine("Unable to train model.\n" + e.Message);
+                System.Console.WriteLine("Unable to train model:\n" + 
+                    e.Response.Content);
+                if (e.InnerException != null)
+                    System.Console.WriteLine("\n"+e.InnerException.Message);
             }            
         }
 
-        private IEnumerable<SkiVideoEntity> FilterVideos(IEnumerable<SkiVideoEntity> videos)
+        protected virtual IEnumerable<SkiVideoEntity> FilterVideos(IEnumerable<SkiVideoEntity> toFilter)
         {
             // Just select the valid videos that are valid for tagging.
-            return videos.Where(v => 
+            return toFilter.Where(v => 
                         v.RopeLengthM > 0 && 
                         !string.IsNullOrEmpty(v.Skier) &&
                         !string.IsNullOrEmpty(v.ThumbnailUrl)
@@ -114,7 +121,7 @@ namespace SlalomTracker.Cloud
 
             var tag = tags.Where(t => tagSelector(t, video)).FirstOrDefault();
             // No tags, see if we have enough data to create one.
-            if (tag == null && enoughSelector(video, tagName))
+            if (tag == null && EnoughForTag(tagName, enoughSelector))
                 tag = CreateTag(video, tagName);
             
             if (tag != null)
@@ -142,6 +149,15 @@ namespace SlalomTracker.Cloud
             {
                 Console.WriteLine("Error writing ML training batch." + e);
             }
+        }
+
+        /// <summary>
+        /// Ensures there are enough entries for a tag (ML requires at least 5).
+        /// </summary>
+        private bool EnoughForTag(string tagName,Func<SkiVideoEntity, string, bool> enoughSelector)
+        {
+            int count = videos.Where(v => enoughSelector(v, tagName)).Count();
+            return count >= MinimumForTag;
         }
 
         protected abstract bool TagSelector(TrainingModels.Tag tag, SkiVideoEntity video);
