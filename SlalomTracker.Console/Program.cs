@@ -188,9 +188,9 @@ namespace SkiConsole
             metadataTask.Wait();
             List<SkiVideoEntity> videos = metadataTask.Result;
             
-            // Console.WriteLine("Training rope length detection.");
-            // RopeMachineLearning ropeMl = new RopeMachineLearning();
-            // ropeMl.Train(videos);
+            Console.WriteLine("Training rope length detection.");
+            RopeMachineLearning ropeMl = new RopeMachineLearning();
+            ropeMl.Train(videos);
 
             Console.WriteLine("Training skier detection.");
             SkierMachineLearning skierMl = new SkierMachineLearning();

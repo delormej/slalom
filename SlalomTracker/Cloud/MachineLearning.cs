@@ -65,12 +65,16 @@ namespace SlalomTracker.Cloud
                         TagIds = tagIds
                     });
 
-                    if (entries.Count >= BatchSize)
+                    if (entries.Count >= BatchSize) 
                     {
                         SendBatch();
                         entries.Clear();
                     }
                 }
+
+                // Send any remaining.
+                if (entries.Count > 0)
+                    SendBatch();
 
                 // Kick off the training.
                 trainingApi.TrainProject(ProjectId);
@@ -154,7 +158,7 @@ namespace SlalomTracker.Cloud
         /// <summary>
         /// Ensures there are enough entries for a tag (ML requires at least 5).
         /// </summary>
-        private bool EnoughForTag(string tagName,Func<SkiVideoEntity, string, bool> enoughSelector)
+        private bool EnoughForTag(string tagName, Func<SkiVideoEntity, string, bool> enoughSelector)
         {
             int count = videos.Where(v => enoughSelector(v, tagName)).Count();
             return count >= MinimumForTag;
