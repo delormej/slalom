@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction;
 using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Training;
+using PredictionModels = Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
 using TrainingModels = Microsoft.Azure.CognitiveServices.Vision.CustomVision.Training.Models;
 
 namespace SlalomTracker.Cloud
@@ -87,6 +88,32 @@ namespace SlalomTracker.Cloud
                     System.Console.WriteLine("\n"+e.InnerException.Message);
             }            
         }
+
+        public virtual string Predict(string thumbnailUrl)
+        {
+            Console.WriteLine("Making a prediction of rope length for: " + thumbnailUrl);
+
+            PredictionModels.ImageUrl thumbnail = new PredictionModels.ImageUrl(CropThumbnailUrl + thumbnailUrl);
+            var result = predictionApi.ClassifyImageUrl(ProjectId, CustomVisionModelName, thumbnail);
+
+            // Loop over each prediction and write out the results
+            foreach (var c in result.Predictions)
+            {
+                Console.WriteLine($"\t{c.TagName}: {c.Probability:P1}");
+            }
+
+            return GetHighestRankedPrediction(result.Predictions);
+        }
+
+        private string GetHighestRankedPrediction(IList<PredictionModels.PredictionModel> predictions)
+        {
+            string ropeTagName = predictions
+                .OrderByDescending(p => p.Probability)
+                .Select(p => p.TagName)
+                .First();
+            
+            return ropeTagName;
+        }        
 
         protected virtual IEnumerable<SkiVideoEntity> FilterVideos(IEnumerable<SkiVideoEntity> toFilter)
         {

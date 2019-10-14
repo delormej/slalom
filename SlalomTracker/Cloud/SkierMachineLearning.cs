@@ -12,16 +12,10 @@ namespace SlalomTracker.Cloud
         public SkierMachineLearning()
         {
             ProjectId = new Guid("6cd1137c-b7db-46ee-a764-08af11ac012d");
-            CustomVisionPredictionKey = "";
+            CustomVisionPredictionKey = "8d326cd29a0b4636beced3a4658c09cb";
             CustomVisionTrainingKey = "7191c8190b4949b98b35c140efd7b7e6";     
             CustomVisionModelName = "SkierModel";      
             InitializeApis(); 
-        }
-
-        public string PredictSkier(string thumbnailUrl)
-        {
-            throw new NotImplementedException();
-            return "";
         }
 
         protected override string GetTagValue(SkiVideoEntity video)
