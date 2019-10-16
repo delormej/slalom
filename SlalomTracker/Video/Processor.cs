@@ -51,9 +51,7 @@ namespace SlalomTracker.Video
                 thumbnailTask.ContinueWith(t => 
                 { 
                     entity.ThumbnailUrl = t.Result;
-
-                    RopeMachineLearning ml = new RopeMachineLearning();
-                    entity.RopeLengthM = ml.PredictRopeLength(t.Result); 
+                    PredictValues(t.Result, entity);
                 }).Wait();
 
                 _storage.AddMetadata(entity, json);
@@ -136,6 +134,15 @@ namespace SlalomTracker.Video
             entity.EntryTime = pass.GetSecondsAtEntry();     
             entity.RopeLengthM = pass.Rope != null ? pass.Rope.FtOff : 0;
             entity.CenterLineDegreeOffset = pass.CenterLineDegreeOffset;      
-        }        
+        }
+
+        private void PredictValues(string thumbnailUrl, SkiVideoEntity entity)
+        {
+            RopeMachineLearning ropeMl = new RopeMachineLearning();
+            entity.RopeLengthM = ropeMl.PredictRopeLength(thumbnailUrl);
+
+            SkierMachineLearning skierMl = new SkierMachineLearning();
+            entity.Skier = skierMl.Predict(thumbnailUrl);
+        }
     }
 }
