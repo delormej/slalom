@@ -2,28 +2,26 @@ name: Build and push slalom cli
 
 on: [push]
 
-jobs:
-  login:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: Azure/github-actions/login@master
-      env:
+jobs:            
+  build:
+     runs-on: ubuntu-latest
+     steps:
+     - uses: Azure/github-actions/login@master
+       env:
         AZURE_SUBSCRIPTION: "40a293b5-bd26-47ef-acc3-c001a5bfce82"
         AZURE_SERVICE_APP_ID: ${{ secrets.AZURE_SERVICE_APP_ID }}
         AZURE_SERVICE_PASSWORD: ${{ secrets.AZURE_SERVICE_PASSWORD }}
         AZURE_SERVICE_TENANT: ${{ secrets.AZURE_SERVICE_TENANT }}       
-            
-  build:
-     runs-on: ubuntu-latest
-     needs: login
-     steps:
      - uses: actions/checkout@v1
        with:
          submodules: true
      - uses: actions/setup-dotnet@v1
-    
+
+     - name: Look for Azure token
+       run: cat ~/.azure/accessTokens.json
+
      - name: Test Azure Connection
-       run: az account list -o table
+       run: az group list -o table
     
      - name: Build dependent SlalomTracker library
        run: dotnet restore ./SlalomTracker/SlalomTracker.csproj
