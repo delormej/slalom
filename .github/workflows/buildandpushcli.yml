@@ -3,29 +3,31 @@ name: Build and push slalom cli
 on: [push]
 
 jobs:
-
-  build:
- 
+  login:
     runs-on: ubuntu-latest
- 
     steps:
-    - uses: actions/checkout@v1
-      with:
-        submodules: true
-    - uses: actions/setup-dotnet@v1
     - uses: Azure/github-actions/login@master
       env:
         AZURE_SUBSCRIPTION: "40a293b5-bd26-47ef-acc3-c001a5bfce82"
         AZURE_SERVICE_APP_ID: ${{ secrets.AZURE_SERVICE_APP_ID }}
         AZURE_SERVICE_PASSWORD: ${{ secrets.AZURE_SERVICE_PASSWORD }}
         AZURE_SERVICE_TENANT: ${{ secrets.AZURE_SERVICE_TENANT }}       
+            
+  build:
+     runs-on: ubuntu-latest
+     needs: login
+     steps:
+     - uses: actions/checkout@v1
+       with:
+         submodules: true
+     - uses: actions/setup-dotnet@v1
     
-    - name: Test Azure Connection
-      run: az account list -o table
+     - name: Test Azure Connection
+       run: az account list -o table
     
-    - name: Build dependent SlalomTracker library
-      run: dotnet restore ./SlalomTracker/SlalomTracker.csproj
+     - name: Build dependent SlalomTracker library
+       run: dotnet restore ./SlalomTracker/SlalomTracker.csproj
     
-    - name: Build the Docker image
-      run: docker build . --file ./SlalomTracker.Console/Dockerfile --tag skiconsole:$(date +%s)
+     - name: Build the Docker image
+       run: docker build . --file ./SlalomTracker.Console/Dockerfile --tag skiconsole:$(date +%s)
 
