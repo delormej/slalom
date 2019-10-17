@@ -1,0 +1,14 @@
+name: Build and push slalom cli
+
+on: [push]
+
+jobs:
+
+  build:
+ 
+    runs-on: ubuntu-latest
+ 
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build the Docker image
+      run: docker build . --file ./SlalomTracker.Console/Dockerfile --tag skiconsole:$(date +%s)
