@@ -15,7 +15,10 @@ jobs:
     - uses: actions/setup-dotnet@v1
     - uses: Azure/github-actions/login@master
       with:
-        env: AZURE_SUBSCRIPTION = 40a293b5-bd26-47ef-acc3-c001a5bfce82
+        AZURE_SUBSCRIPTION: "40a293b5-bd26-47ef-acc3-c001a5bfce82"
+        AZURE_SERVICE_APP_ID: ${{ secrets.AZURE_SERVICE_APP_ID }}
+        AZURE_SERVICE_PASSWORD: ${{ secrets.AZURE_SERVICE_PASSWORD }}
+        AZURE_SERVICE_TENANT: ${{ secrets.AZURE_SERVICE_TENANT }}       
     
     - name: Azure Login
       run: az group list -o table
