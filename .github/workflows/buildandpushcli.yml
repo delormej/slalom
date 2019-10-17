@@ -20,8 +20,8 @@ jobs:
         AZURE_SERVICE_PASSWORD: ${{ secrets.AZURE_SERVICE_PASSWORD }}
         AZURE_SERVICE_TENANT: ${{ secrets.AZURE_SERVICE_TENANT }}       
     
-    - name: Azure Login
-      run: az group list -o table
+    - name: Test Azure Connection
+      run: az account list -o table
     
     - name: Build dependent SlalomTracker library
       run: dotnet restore ./SlalomTracker/SlalomTracker.csproj
