@@ -18,7 +18,7 @@ jobs:
      - uses: actions/setup-dotnet@v1
 
      - name: Look for Azure token
-       run: cat ~/.azure/accessTokens.json
+       run: echo $HOME && ls -la $HOME
 
      - name: Test Azure Connection
        run: az group list -o table
