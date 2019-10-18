@@ -12,16 +12,13 @@ jobs:
         AZURE_SERVICE_APP_ID: ${{ secrets.AZURE_SERVICE_APP_ID }}
         AZURE_SERVICE_PASSWORD: ${{ secrets.AZURE_SERVICE_PASSWORD }}
         AZURE_SERVICE_TENANT: ${{ secrets.AZURE_SERVICE_TENANT }}       
+     - uses: Azure/github-actions/cli@master
+       env: 
+         AZURE_SCRIPT: "az account list -o table"
      - uses: actions/checkout@v1
        with:
          submodules: true
      - uses: actions/setup-dotnet@v1
-
-     - name: Look for Azure token
-       run: echo $HOME && ls -la $HOME
-
-     - name: Test Azure Connection
-       run: az group list -o table
     
      - name: Build dependent SlalomTracker library
        run: dotnet restore ./SlalomTracker/SlalomTracker.csproj
