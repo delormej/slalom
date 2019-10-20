@@ -35,6 +35,12 @@ namespace SlalomTracker
             }
         }
         public CourseCoordinates Course55Coordinates { get; set; }
+
+        public Course Course 
+        { 
+            get { return m_course; } 
+            set { m_course = value; }
+        }
         
         private Course m_course;
         private Rope m_rope;
@@ -80,25 +86,54 @@ namespace SlalomTracker
         /// <returns></returns>
         public CoursePass FromJson(string json)
         { 
-            var measurements = (List<Measurement>)JsonConvert.DeserializeObject(json, typeof(List<Measurement>));
-            
-            if (Course55Coordinates.EntryLat != default(double)) 
-            {
-                this.m_course = new Course(
-                    new GeoCoordinate(Course55Coordinates.EntryLat, Course55Coordinates.EntryLon),
-                    new GeoCoordinate(Course55Coordinates.ExitLat, Course55Coordinates.ExitLon)
-                );
-            }
-            else 
-            {
-                KnownCourses knownCourses = new KnownCourses();
-                this.m_course = knownCourses.FindCourse(measurements);
-            }
-
-            if (this.m_course == null)
-                throw new ApplicationException("Unable to find a course for this ski run.");
-
+            var measurements = DeserializeMeasurements(json);
             return CreatePass(measurements);
+        }
+
+        /// <summary>
+        /// Returns another coures pass if one exists after the exit measurment in 
+        /// this collection of measurements of pass.  Returns null if there isn't another
+        /// course pass found.
+        /// </summary>
+        public CoursePass GetNextPass(Measurement exit, string json)
+        {
+            CoursePass nextPass = null;
+            var measurements = DeserializeMeasurements(json);
+            List<Measurement> nextMeasurements = GetNextPassMeasurements(exit, measurements);
+            if (nextMeasurements != null && nextMeasurements.Count > 0)
+            {
+                m_course = null; // Clear out existing course.
+                nextPass = CreatePass(nextMeasurements);
+            }
+            return nextPass;
+        }
+
+        private List<Measurement> DeserializeMeasurements(string json)
+        {
+            var measurements = (List<Measurement>)
+                JsonConvert.DeserializeObject(json, typeof(List<Measurement>));
+            return measurements;
+        }
+
+        private List<Measurement> GetNextPassMeasurements(
+            Measurement exit, List<Measurement> measurements)
+        {
+            const double NextCourseOffsetSeconds = 15;
+            DateTime offsetStart = exit.Timestamp.AddSeconds(NextCourseOffsetSeconds);  
+            
+            IEnumerable<Measurement> nextMeasurements = measurements.Where(
+                m => m.Timestamp > offsetStart
+            );
+
+            foreach (var m in nextMeasurements)
+            {
+                System.Console.WriteLine(m.Timestamp);
+            }
+
+            if (nextMeasurements != null && nextMeasurements.Count() > 0)
+                return nextMeasurements.ToList();
+            else
+                return null;
         }
 
         /// <summary>
@@ -136,6 +171,24 @@ namespace SlalomTracker
             return bestPass;
         }
 
+        private void FindCourse(List<Measurement> measurements)
+        {
+            if (Course55Coordinates.EntryLat != default(double)) 
+            {
+                this.m_course = new Course(
+                    new GeoCoordinate(Course55Coordinates.EntryLat, Course55Coordinates.EntryLon),
+                    new GeoCoordinate(Course55Coordinates.ExitLat, Course55Coordinates.ExitLon)
+                );
+            }
+            else 
+            {
+                KnownCourses knownCourses = new KnownCourses();
+                this.m_course = knownCourses.FindCourse(measurements);
+            }
+            if (m_course == null)
+                Console.WriteLine("Unable to find a course for this ski run.");           
+        }
+
         // private CoursePass CreatePass(List<Measurement> measurements)
         // {
         //     CoursePass pass = new CoursePass(m_course, m_rope, CenterLineDegreeOffset);
@@ -147,6 +200,9 @@ namespace SlalomTracker
 
         private CoursePass CreatePass(List<Measurement> measurements)
         {
+            if (this.m_course == null)
+                FindCourse(measurements);
+            
             //
             // TODO: raise pass, measurements, current, previous to class members so 
             // we're not constantly passing these around.

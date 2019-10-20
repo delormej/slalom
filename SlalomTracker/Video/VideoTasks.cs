@@ -12,16 +12,61 @@ namespace SlalomTracker
     {
         FFmpeg.NET.Engine _ffmpeg;
 
-        public VideoTasks()
+        int _fileOutputIndex = 0;
+
+        string _localVideoPath;
+
+        public VideoTasks(string localVideoPath)
         {
             _ffmpeg = new Engine("ffmpeg");
             _ffmpeg.Error += OnError;
+            _localVideoPath = localVideoPath;
         }
 
-        public async Task<string> TrimAsync(string localVideoPath, double start, double length)
+        public string TrimAndSilenceVideo(double start, double duration, double total)
         {
-            var inputFile = new MediaFile(localVideoPath);
-            var outputFile = new MediaFile(AppendToFileName(localVideoPath, "_t"));
+            // Increments the sequence # to output files.
+            _fileOutputIndex++;
+            
+            if (start > 0 && duration == 0.0d)
+            {
+                // Likely a crash or didn't exit course, grab 15 seconds or less of the video.
+                if (total > (start + 15.0d))
+                    duration = 15.0d;                    
+                else
+                    duration = (total - start);
+            }
+                
+            if (duration > 0.0d)
+            {
+                duration += 5.0; /* pad 5 seconds more */
+                Console.WriteLine(
+                    $"Trimming {_localVideoPath} from {start} seconds for {duration} seconds.");     
+                
+                var trimTask = TrimAsync(_localVideoPath, start, duration);
+                trimTask.Wait();
+                string trimmedPath = trimTask.Result;
+                
+                Console.WriteLine($"Trimmed: {trimmedPath}");
+                Console.WriteLine($"Removing audio from {_localVideoPath}.");
+                
+                var silenceTask = RemoveAudioAsync(trimmedPath);
+                silenceTask.Wait();
+                string silencedPath = silenceTask.Result;
+
+                return silencedPath;
+            }
+            else
+            {
+                throw new ApplicationException(
+                    $"Start ({start}) and duration ({duration}) invalid for video: {_localVideoPath}.  Total duration {total} seconds.");
+            }
+        }
+
+        private async Task<string> TrimAsync(string inputPath, double start, double length)
+        {
+            var inputFile = new MediaFile(inputPath);
+            var outputFile = new MediaFile(AppendToFileName(inputPath, "_t"));
             var options = new ConversionOptions();            
             options.CutMedia(TimeSpan.FromSeconds(start), TimeSpan.FromSeconds(length));   
             
@@ -32,14 +77,13 @@ namespace SlalomTracker
             catch (Exception e)
             {
                 throw new ApplicationException(
-                    "Unable to trim ski video, is FFMPEG installed?",
-                    e
+                    "Unable to trim ski video, is FFMPEG installed?", e
                 );
             }
             return outputFile.FileInfo.FullName;
         }
 
-        public async Task<string> RemoveAudioAsync(string inputFile)
+        private async Task<string> RemoveAudioAsync(string inputFile)
         {
             string outputFile = AppendToFileName(inputFile, "s");
             string parameters = $"-i {inputFile} -c copy -an {outputFile}";
@@ -49,16 +93,16 @@ namespace SlalomTracker
             return outputFile;
         }
 
-        public DateTime GetCreationTime(string inputFile)
+        public DateTime GetCreationTime()
         {
-            string output = GetFFPmegOutput(inputFile);
+            string output = GetFFPmegOutput(_localVideoPath);
             return ParseCreationDate(output);
         }
 
-        public async Task<DateTime> GetCreationTimeAsync(string inputFile)
+        public async Task<DateTime> GetCreationTimeAsync()
         {
             DateTime creationTime = await Task.Run( () => {
-                return GetCreationTime(inputFile);
+                return GetCreationTime();
             } );
             return creationTime;
         }        
@@ -66,17 +110,19 @@ namespace SlalomTracker
         /// <summary>
         /// Generates a thumbnail image at the seconds specified.  Returns the path.
         /// </summary>
-        public async Task<string> GetThumbnailAsync(string videoLocalPath, double atSeconds)
+        public async Task<string> GetThumbnailAsync(double atSeconds)
         {
-            if (!videoLocalPath.ToUpper().EndsWith(".MP4"))
-                throw new ApplicationException($"Cannot generate thumbnail, invalid video path: {videoLocalPath}");
-            string thumbnailPath = Path.ChangeExtension(videoLocalPath, ".PNG");
+            if (!_localVideoPath.ToUpper().EndsWith(".MP4"))
+                throw new ApplicationException($"Cannot generate thumbnail, invalid video path: {_localVideoPath}");
+            
+            string thumbnailPath = AppendToFileName(
+                Path.ChangeExtension(_localVideoPath, ".PNG"), "");
 
-            var inputFile = new MediaFile(videoLocalPath);
+            var inputFile = new MediaFile(_localVideoPath);
             var outputFile = new MediaFile(thumbnailPath);
             var options = new ConversionOptions { Seek = TimeSpan.FromSeconds(atSeconds) };
 
-            Console.WriteLine($"Generating thumbnail: {thumbnailPath} for video: {videoLocalPath} at {atSeconds} seconds.");
+            Console.WriteLine($"Generating thumbnail: {thumbnailPath} for video: {_localVideoPath} at {atSeconds} seconds.");
             await _ffmpeg.GetThumbnailAsync(inputFile, outputFile, options);
 
             return thumbnailPath;
@@ -84,16 +130,19 @@ namespace SlalomTracker
 
         private void OnError(object sender, ConversionErrorEventArgs e)
         {
-            Console.WriteLine("FFMPEG error: [{0} => {1}]: Error: {2}\n\t{3}", e.Input.FileInfo.Name, e.Output.FileInfo.Name, e.Exception.ExitCode, e.Exception.Message);
+            Console.WriteLine("FFMPEG error: [{0} => {1}]: Error: {2}\n\t{3}", 
+                e.Input.FileInfo.Name, e.Output.FileInfo.Name, e.Exception.ExitCode, e.Exception.Message);
         }    
 
         private string AppendToFileName(string inputFile, string suffix)
         {
-            int start = inputFile.LastIndexOf(".MP4");
+            //string fileIndex = _fileOutputIndex > 0 ? "_" + _fileOutputIndex.ToString() : "";
+            string extension = Path.GetExtension(inputFile);
+            int start = inputFile.LastIndexOf(extension);
             if (start <= 0)
                 throw new ApplicationException($"Could not generate an output filename from {inputFile}.");
 
-            string outputFile = $"{inputFile.Substring(0, start)}{suffix}.MP4";
+            string outputFile = $"{inputFile.Substring(0, start)}{suffix}{extension}";
             return outputFile;
         }    
 

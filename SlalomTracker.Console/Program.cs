@@ -73,7 +73,7 @@ namespace SkiConsole
             else if (args[0] == "-p" && args.Length >= 2)
             {
                 // eg. ski -p https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4
-                string url = ProcessVideo(args[1]);
+                ProcessVideo(args[1]);
             }
             else if (args[0] == "-m")
             {
@@ -149,6 +149,9 @@ namespace SkiConsole
             string localPath = Storage.DownloadVideo(url);
             string json = Extract.ExtractMetadata(localPath);
             CoursePass pass = new CoursePassFactory().FromJson(json);
+            if (pass == null)
+                throw new ApplicationException($"Unable to create a pass for {url}");  
+
             CoursePassImage image = new CoursePassImage(pass);
             Bitmap bitmap = image.Draw();
             string imagePath = localPath.Replace(".MP4", ".png");
@@ -174,11 +177,10 @@ namespace SkiConsole
             System.IO.File.WriteAllText(jsonPath, json);
         }
 
-        private static string ProcessVideo(string videoUrl)
+        private static void ProcessVideo(string videoUrl)
         {
-            SkiVideoProcessor processor = new SkiVideoProcessor();
-            string url = processor.Process(videoUrl);
-            return url;
+            SkiVideoProcessor processor = new SkiVideoProcessor(videoUrl);
+            processor.Process();
         }
 
         private static void Train()
@@ -211,6 +213,9 @@ namespace SkiConsole
             else
                 pass = factory.FromFile(jsonPath);
 
+            if (pass == null)
+                throw new ApplicationException($"Unable to create a pass for {jsonPath}");  
+
             string imagePath = GetImagePath(jsonPath);
             CoursePassImage image = new CoursePassImage(pass);
             Bitmap bitmap = image.Draw();
@@ -230,7 +235,9 @@ namespace SkiConsole
             CoursePassFactory factory = new CoursePassFactory();
             factory.RopeLengthOff = rope;
             CoursePass pass = factory.FromUrl(jsonPath);     
-       
+            if (pass == null)
+                throw new ApplicationException($"Unable to create a pass for {jsonPath}");    
+                     
             foreach(var m in pass.Measurements) 
             {
                 Console.WriteLine($"{m.Timestamp.ToString("ss.fff")}, {m.HandleSpeedMps}");
@@ -262,8 +269,8 @@ namespace SkiConsole
 
         private static void PrintCreationTime(string inputFile)
         {
-            VideoTasks video = new VideoTasks();
-            DateTime creation = video.GetCreationTime(inputFile);
+            VideoTasks video = new VideoTasks(inputFile);
+            DateTime creation = video.GetCreationTime();
             Console.WriteLine(
                 $"File: {inputFile}, video creationtime " +
                 creation.ToString("MM/dd/yyyy h:mm tt"));

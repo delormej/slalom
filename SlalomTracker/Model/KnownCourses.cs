@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using GeoCoordinatePortable;
 using System.Collections.Generic;
 using SlalomTracker.Cloud;
@@ -32,6 +33,31 @@ namespace SlalomTracker
             }
 
             return null;
+        }
+
+        public IEnumerable<FoundCourse> FindCourses(List<Measurement> measurements)
+        {
+            // Enforce unique course with KVP:
+            List<KeyValuePair<Course, Measurement>> foundKVCourses = 
+                new List<KeyValuePair<Course, Measurement>>();
+
+            for (int i = 0; i < measurements.Count; i++)
+            {
+                Measurement m = measurements[i];
+                foreach (Course course in _knownCourses)
+                {
+                    if (course.IsBoatInEntry(m.BoatGeoCoordinate))
+                    {
+                        foundKVCourses.Add(new KeyValuePair<Course, Measurement>(course, m));
+                        i+= 200; // move at least 200 measurments through to the end of the current course.
+                        break; // exit the course for loop
+                    }
+                }
+            }
+
+            IEnumerable<FoundCourse> found = foundKVCourses
+                .Select(v => new FoundCourse(v.Key, v.Value));
+            return found;
         }
 
         public Course ByName(string name)
@@ -69,43 +95,6 @@ namespace SlalomTracker
         // These functions below should not be needed if we can load from Azure Storage table.
         //
 
-        public void AddKnownCourses()
-        {
-            _storage.UpdateCourse(GetCoveCourse());
-            _storage.UpdateCourse(GetOutisdeCourse());
-        }        
-
-        private Course GetCoveCourse()
-        {
-            Course cove = new Course(
-                    new GeoCoordinate(Math.Round(42.28958014, 6), Math.Round(-71.35911924, 6)),
-                    new GeoCoordinate(Math.Round(42.28622924, 6), Math.Round(-71.35950488, 6))
-                );
-            cove.Name = "cove";
-            cove.FriendlyName = "Cove";
-            
-            return cove;
-        }
-
-        private Course GetOutisdeCourse()
-        {
-            var entry = new GeoCoordinate(42.286974, -71.36495);
-            var exit = new GeoCoordinate(42.285677, -71.362336);
-            double heading = Util.GetHeading(entry, exit);
-            double reverse = (heading + 180) % 360;
-            var entry55 = Util.MoveTo(entry, 55.0, reverse);
-            var exit55 = Util.MoveTo(exit, 55.0, heading);
-            Course outside = new Course(entry55, exit55);
-
-            // var Course55EntryCL = new GeoCoordinate(-71.35911924, 42.28958014);
-            // var Course55ExitCL = new GeoCoordinate(-71.35950488, 42.28622924);
-            // Course outside = new Course(Course55EntryCL, Course55ExitCL);
-            outside.Name = "outside";
-            outside.FriendlyName = "Outside";
-
-            return outside;
-        }
-
         public GeoCoordinate GetNewCoordinates(string courseName,
             double meters, double heading)
         {
@@ -115,5 +104,17 @@ namespace SlalomTracker
             GeoCoordinate newCoord = Util.MoveTo(course.Course55EntryCL, meters, heading);
             return newCoord;
         }
+    }
+
+    public class FoundCourse
+    {
+        public FoundCourse(Course course, Measurement entry) 
+        {
+            this.Course = course;
+            this.EntryMeasurement = entry;
+        }
+
+        public Course Course { get; set; }
+        public Measurement EntryMeasurement { get; set; }
     }
 }
