@@ -20,6 +20,8 @@ namespace SlalomTracker
 
     public class CoursePassFactory
     {
+        private string _json;
+
         public double CenterLineDegreeOffset { get; set; } = 0;
         public double RopeLengthOff { 
             get 
@@ -58,23 +60,22 @@ namespace SlalomTracker
         /// <returns></returns>
         public CoursePass FromFile(string path)
         {
-            string json = "";
             using (var sr = File.OpenText(path))
-                json = sr.ReadToEnd();
-            if (json == "")
+                _json = sr.ReadToEnd();
+            if (_json == "")
                 throw new ApplicationException("Json file was empty: " + path);
 
-            return FromJson(json);
+            return FromJson(_json);
         }
 
         public CoursePass FromUrl(string url)
         {
             WebClient client = new WebClient();
-            string json = client.DownloadString(url);
-            if (string.IsNullOrEmpty(json))
+            _json = client.DownloadString(url);
+            if (string.IsNullOrEmpty(_json))
                 throw new ApplicationException("No JSON file at url: " + url);
             
-            return FromJson(json);
+            return FromJson(_json);
         }
 
         /// <summary>
@@ -86,8 +87,8 @@ namespace SlalomTracker
         /// <returns></returns>
         public CoursePass FromJson(string json)
         { 
-            var measurements = DeserializeMeasurements(json);
-            return CreatePass(measurements);
+            _json = json;
+            return CreatePass();
         }
 
         /// <summary>
@@ -95,23 +96,24 @@ namespace SlalomTracker
         /// this collection of measurements of pass.  Returns null if there isn't another
         /// course pass found.
         /// </summary>
-        public CoursePass GetNextPass(Measurement exit, string json)
+        public CoursePass GetNextPass(Measurement exit)
         {
+            m_course = null; // Clear out existing course.
             CoursePass nextPass = null;
-            var measurements = DeserializeMeasurements(json);
+            
+            var measurements = DeserializeMeasurements(); // Should I really need to do this each time???
             List<Measurement> nextMeasurements = GetNextPassMeasurements(exit, measurements);
             if (nextMeasurements != null && nextMeasurements.Count > 0)
             {
-                m_course = null; // Clear out existing course.
                 nextPass = CreatePass(nextMeasurements);
             }
             return nextPass;
         }
 
-        private List<Measurement> DeserializeMeasurements(string json)
+        private List<Measurement> DeserializeMeasurements()
         {
             var measurements = (List<Measurement>)
-                JsonConvert.DeserializeObject(json, typeof(List<Measurement>));
+                JsonConvert.DeserializeObject(_json, typeof(List<Measurement>));
             return measurements;
         }
 
@@ -124,11 +126,6 @@ namespace SlalomTracker
             IEnumerable<Measurement> nextMeasurements = measurements.Where(
                 m => m.Timestamp > offsetStart
             );
-
-            foreach (var m in nextMeasurements)
-            {
-                System.Console.WriteLine(m.Timestamp);
-            }
 
             if (nextMeasurements != null && nextMeasurements.Count() > 0)
                 return nextMeasurements.ToList();
@@ -144,6 +141,9 @@ namespace SlalomTracker
         /// <returns></returns>
         public CoursePass FitPass(List<Measurement> measurements)
         {
+
+// TODO: I think this should be static and remove reference to CenterLineDegreeOffset, rather RETURN a CL offset.
+
             const int MAX = 45;
             const int MIN = -45;
             CoursePass bestPass = null;
@@ -189,14 +189,13 @@ namespace SlalomTracker
                 Console.WriteLine("Unable to find a course for this ski run.");           
         }
 
-        // private CoursePass CreatePass(List<Measurement> measurements)
-        // {
-        //     CoursePass pass = new CoursePass(m_course, m_rope, CenterLineDegreeOffset);
-        //     foreach (var r in measurements)
-        //         pass.Track(r);
-
-        //     return pass;
-        // }
+        private CoursePass CreatePass()
+        {
+            if (_json == null)
+                throw new ApplicationException("Must load json from File, Url or String.");
+            var measurements = DeserializeMeasurements();
+            return CreatePass(measurements);
+        }
 
         private CoursePass CreatePass(List<Measurement> measurements)
         {

@@ -35,23 +35,29 @@ namespace SlalomTracker.Video
                 _videoTasks = new VideoTasks(_localVideoPath);
 
                 var getCreationTime = GetCreationTimeAsync(); 
+                var extractMetadata = ExtractMetadataAsync();
+
+                CoursePass pass = null;
 
                 do {
-                    var extractMetadata = ExtractMetadataAsync();
+                    var createCoursePass = CreateCoursePass(extractMetadata);
                     var createThumbnail = CreateThumbnailAsync();
                     var uploadThumbnail = UploadThumbnailAsync(createThumbnail, getCreationTime);
-                    var trimAndSilence =  TrimAndSilenceAsync(extractMetadata); 
+                    var trimAndSilence =  TrimAndSilenceAsync(createCoursePass); 
 
                     var uploadVideo = UploadVideoAsync(trimAndSilence, getCreationTime);
                     
-                    Task.WaitAll(uploadThumbnail, uploadVideo);
-                    
+                    // TODO: so this seems like opp to use 'await' keyword??
+                    //pass = await createCoursePass;
+                    createCoursePass.Wait();
+                    pass = createCoursePass.Result;
+
                     CreateAndUploadMetadata(
-                        extractMetadata.Result,
-                        uploadThumbnail.Result,
-                        uploadVideo.Result
+                        pass,
+                        uploadThumbnail,
+                        uploadVideo
                     );
-                } while (HasAnotherPass());
+                } while ((pass = HasAnotherPass(in pass)) != null);
 
                 DeleteIngestVideo();
             }
@@ -60,11 +66,6 @@ namespace SlalomTracker.Video
                 throw new ApplicationException($"Unable to process {_sourceVideoUrl}.  Failed at: \n" +
                     aggEx.GetBaseException().Message);
             }
-        }
-
-        private bool HasAnotherPass()
-        {
-            return false;
         }
 
         private string DownloadVideo()
@@ -80,15 +81,13 @@ namespace SlalomTracker.Video
                 _creationTime = t.Result);
         }
 
-        private Task<CoursePass> ExtractMetadataAsync()
+        private Task ExtractMetadataAsync()
         {
             Console.WriteLine($"Extracting metadata from video {_sourceVideoUrl}...");
             return Task.Run(() => {
                 _json = MetadataExtractor.Extract.ExtractMetadata(_localVideoPath);
-                CoursePass pass = _factory.FromJson(_json);
-                return pass;
             });
-        }
+        }     
 
         private Task<string> CreateThumbnailAsync()
         {
@@ -135,11 +134,38 @@ namespace SlalomTracker.Video
             });
         }
 
-        private void CreateAndUploadMetadata(CoursePass pass, string thumbnailUrl, string videoUrl)
+        private Task<CoursePass> CreateCoursePass(Task extractMetadata)
         {
+            return Task.Run(() =>
+                {
+                    extractMetadata.Wait();
+                    return _factory.FromJson(_json);
+                }
+            );
+        }
+
+        private CoursePass HasAnotherPass(in CoursePass lastPass)
+        {
+            CoursePass nextPass = _factory.GetNextPass(lastPass.Exit);
+            return nextPass;
+        }   
+
+        private void CreateAndUploadMetadata(CoursePass pass,
+                        Task<string> uploadThumbnail,
+                        Task<string> uploadVideo)
+        {
+
+            Task.WaitAll(uploadThumbnail, uploadVideo);
+
+            string thumbnailUrl = uploadThumbnail.Result;
+            string videoUrl = uploadVideo.Result;
+
             Console.WriteLine($"Creating and uploading metadata for video {_localVideoPath}...");
             SkiVideoEntity entity = CreateSkiVideoEntity(pass, thumbnailUrl, videoUrl);
+             
+            // All I really need is the thumbnail to do predictions. TODO: Change this to parallelize.
             GetPredictions(entity);
+
             _storage.AddMetadata(entity, _json);
         }
 

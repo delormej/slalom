@@ -25,9 +25,6 @@ namespace SlalomTracker
 
         public string TrimAndSilenceVideo(double start, double duration, double total)
         {
-            // Increments the sequence # to output files.
-            _fileOutputIndex++;
-            
             if (start > 0 && duration == 0.0d)
             {
                 // Likely a crash or didn't exit course, grab 15 seconds or less of the video.
@@ -54,6 +51,9 @@ namespace SlalomTracker
                 silenceTask.Wait();
                 string silencedPath = silenceTask.Result;
 
+                // Increments the sequence # to output files.
+                _fileOutputIndex++;            
+
                 return silencedPath;
             }
             else
@@ -66,7 +66,7 @@ namespace SlalomTracker
         private async Task<string> TrimAsync(string inputPath, double start, double length)
         {
             var inputFile = new MediaFile(inputPath);
-            var outputFile = new MediaFile(AppendToFileName(inputPath, "_t"));
+            var outputFile = new MediaFile(AppendToFileName(inputPath, "_t", true));
             var options = new ConversionOptions();            
             options.CutMedia(TimeSpan.FromSeconds(start), TimeSpan.FromSeconds(length));   
             
@@ -116,7 +116,7 @@ namespace SlalomTracker
                 throw new ApplicationException($"Cannot generate thumbnail, invalid video path: {_localVideoPath}");
             
             string thumbnailPath = AppendToFileName(
-                Path.ChangeExtension(_localVideoPath, ".PNG"), "");
+                Path.ChangeExtension(_localVideoPath, ".PNG"), "", true);
 
             var inputFile = new MediaFile(_localVideoPath);
             var outputFile = new MediaFile(thumbnailPath);
@@ -134,15 +134,18 @@ namespace SlalomTracker
                 e.Input.FileInfo.Name, e.Output.FileInfo.Name, e.Exception.ExitCode, e.Exception.Message);
         }    
 
-        private string AppendToFileName(string inputFile, string suffix)
+        private string AppendToFileName(string inputFile, string suffix, bool appendFileIndex = false)
         {
-            //string fileIndex = _fileOutputIndex > 0 ? "_" + _fileOutputIndex.ToString() : "";
+            string fileIndex = "";
+            if (appendFileIndex && _fileOutputIndex > 0)
+                fileIndex = "_" + _fileOutputIndex.ToString();
+            
             string extension = Path.GetExtension(inputFile);
             int start = inputFile.LastIndexOf(extension);
             if (start <= 0)
                 throw new ApplicationException($"Could not generate an output filename from {inputFile}.");
 
-            string outputFile = $"{inputFile.Substring(0, start)}{suffix}{extension}";
+            string outputFile = $"{inputFile.Substring(0, start)}{fileIndex}{suffix}{extension}";
             return outputFile;
         }    
 

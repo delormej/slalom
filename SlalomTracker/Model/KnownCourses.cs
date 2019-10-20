@@ -35,31 +35,6 @@ namespace SlalomTracker
             return null;
         }
 
-        public IEnumerable<FoundCourse> FindCourses(List<Measurement> measurements)
-        {
-            // Enforce unique course with KVP:
-            List<KeyValuePair<Course, Measurement>> foundKVCourses = 
-                new List<KeyValuePair<Course, Measurement>>();
-
-            for (int i = 0; i < measurements.Count; i++)
-            {
-                Measurement m = measurements[i];
-                foreach (Course course in _knownCourses)
-                {
-                    if (course.IsBoatInEntry(m.BoatGeoCoordinate))
-                    {
-                        foundKVCourses.Add(new KeyValuePair<Course, Measurement>(course, m));
-                        i+= 200; // move at least 200 measurments through to the end of the current course.
-                        break; // exit the course for loop
-                    }
-                }
-            }
-
-            IEnumerable<FoundCourse> found = foundKVCourses
-                .Select(v => new FoundCourse(v.Key, v.Value));
-            return found;
-        }
-
         public Course ByName(string name)
         {
             foreach (Course c in _knownCourses)
@@ -104,17 +79,5 @@ namespace SlalomTracker
             GeoCoordinate newCoord = Util.MoveTo(course.Course55EntryCL, meters, heading);
             return newCoord;
         }
-    }
-
-    public class FoundCourse
-    {
-        public FoundCourse(Course course, Measurement entry) 
-        {
-            this.Course = course;
-            this.EntryMeasurement = entry;
-        }
-
-        public Course Course { get; set; }
-        public Measurement EntryMeasurement { get; set; }
     }
 }
