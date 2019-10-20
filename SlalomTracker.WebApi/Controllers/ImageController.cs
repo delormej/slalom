@@ -52,13 +52,57 @@ namespace SlalomTracker.WebApi.Controllers
             CoursePassFactory factory = new CoursePassFactory() 
             {
                 CenterLineDegreeOffset = clOffset,
-                RopeLengthOff = rope
+                RopeLengthOff = rope,
+                Course = GetCourseFromMetadata(storage, jsonUrl) 
             };
             CoursePass pass = factory.FromUrl(jsonUrl);
+            if (pass == null)
+                throw new ApplicationException($"Unable to create a pass for {jsonUrl}");  
+
             CoursePassImage image = new CoursePassImage(pass);
             Bitmap bitmap = image.Draw();
             return bitmap;
-            //bitmap.Save(imagePath, ImageFormat.Png);
+        }
+
+        private Course GetCourseFromMetadata(Storage storage, string jsonUrl)
+        {
+            string date = ParseDate(jsonUrl);
+            string filename = ParseMP4File(jsonUrl);
+            SkiVideoEntity entity = storage.GetSkiVideoEntity(date, filename);
+            
+            // Should probably throw an exception here? 
+            if (entity == null)
+            {
+                Console.WriteLine($"Couldn't load video metadata for {jsonUrl}");
+                return null;
+            }
+
+            if (string.IsNullOrEmpty(entity.CourseName))
+            {
+                Console.WriteLine($"No course saved for {jsonUrl}");
+                return null;
+            }
+            
+            KnownCourses courses = new KnownCourses();
+            return courses.ByName(entity.CourseName);
+        }
+
+        private string ParseDate(string jsonUrl)
+        {
+            // https://skivideostorage.blob.core.windows.net/ski/2019-10-10/GOPR2197_ts.json
+            // YYYY-MM-DD
+            string date = "";
+            string[] parts = jsonUrl.Split('/');
+            if (parts.Length > 2)
+                // return 2nd to last element.
+                date = parts[parts.Length - 2];
+            return date;
+        }
+
+        private string ParseMP4File(string jsonUrl)
+        {
+            // GOPR01444.MP4
+            return Path.GetFileName(jsonUrl);
         }
     }
 }
