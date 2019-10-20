@@ -14,99 +14,112 @@ namespace SkiConsole
 {
     class Program
     {
-        static void Main(string[] args)
+        const int Fail = -1;
+        const int Success = 0;
+
+        static int Main(string[] args)
         {
             PrintVersion();
             if (args.Length < 1)
             {
                 ShowUsage();
-                return;
+                return Fail;
             }
             
-            if (args[0].StartsWith("debug"))
+            try 
             {
-                args[0] = args[0].Replace("debug", "");
-                Console.WriteLine("Press any key to start debugging...");
-                Console.ReadKey();
-            }
-
-            if (args[0] == "-d" && args.Length >= 2)
-            {
-                // eg. ski -d https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4
-                DownloadVideo(args[1]);
-            }
-            else if (args[0] == "-e" && args.Length >= 3)
-            {
-                // eg. ski -e 2018-06-20/GOPR0194.MP4 GOPR0194.json
-                ExtractMetadataAsJson(args[1], args[2]);
-            }
-            else if (args[0] == "-i" && args.Length >= 2)
-            {
-                if (args.Length >= 4)
+                if (args[0].StartsWith("debug"))
                 {
-                    // eg. ski -i GOPR0194.json 0 22
-                    string jsonPath = args[1];
-                    double clOffset = args.Length > 2 ? double.Parse(args[2]) : 0;
-                    double rope = args.Length > 3 ? double.Parse(args[3]) : 22;
+                    args[0] = args[0].Replace("debug", "");
+                    Console.WriteLine("Press any key to start debugging...");
+                    Console.ReadKey();
+                }
 
-                    // Grab geo coordinates if passed.
-                    CourseCoordinates coords = CourseCoordinates.Default;
-                    if (args.Length >= 8)
+                if (args[0] == "-d" && args.Length >= 2)
+                {
+                    // eg. ski -d https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4
+                    DownloadVideo(args[1]);
+                }
+                else if (args[0] == "-e" && args.Length >= 3)
+                {
+                    // eg. ski -e 2018-06-20/GOPR0194.MP4 GOPR0194.json
+                    ExtractMetadataAsJson(args[1], args[2]);
+                }
+                else if (args[0] == "-i" && args.Length >= 2)
+                {
+                    if (args.Length >= 4)
                     {
-                        coords = new CourseCoordinates() {
-                            EntryLat = double.Parse(args[4]),
-                            EntryLon = double.Parse(args[5]),
-                            ExitLat = double.Parse(args[6]),
-                            ExitLon = double.Parse(args[7])
-                        };
-                    }
+                        // eg. ski -i GOPR0194.json 0 22
+                        string jsonPath = args[1];
+                        double clOffset = args.Length > 2 ? double.Parse(args[2]) : 0;
+                        double rope = args.Length > 3 ? double.Parse(args[3]) : 22;
 
-                    string imagePath = CreateImage(jsonPath, clOffset, rope, coords);
+                        // Grab geo coordinates if passed.
+                        CourseCoordinates coords = CourseCoordinates.Default;
+                        if (args.Length >= 8)
+                        {
+                            coords = new CourseCoordinates() {
+                                EntryLat = double.Parse(args[4]),
+                                EntryLon = double.Parse(args[5]),
+                                ExitLat = double.Parse(args[6]),
+                                ExitLon = double.Parse(args[7])
+                            };
+                        }
+
+                        string imagePath = CreateImage(jsonPath, clOffset, rope, coords);
+                    }
+                    else if (args.Length == 2)
+                    {
+                        // eg. ski -i https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4
+                        // does it all
+                        string imagePath = DownloadAndCreateImage(args[1]);
+                    }
                 }
-                else if (args.Length == 2)
+                else if (args[0] == "-p" && args.Length >= 2)
                 {
-                    // eg. ski -i https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4
-                    // does it all
-                    string imagePath = DownloadAndCreateImage(args[1]);
+                    // eg. ski -p https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4
+                    ProcessVideo(args[1]);
                 }
-            }
-            else if (args[0] == "-p" && args.Length >= 2)
-            {
-                // eg. ski -p https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4
-                ProcessVideo(args[1]);
-            }
-            else if (args[0] == "-m")
-            {
-                PrintAllMetadata();
-            }
-            else if (args[0] == "-y")
-            {
-                UploadYouTube(args[1]);
-            }
-            else if (args[0] == "-c" && args.Length >= 2)
-            {
-                PrintCreationTime(args[1]);
-            }
-            else if (args[0] == "-t") 
-            {
-                Train();
-            }
-            else if (args[0] == "-x")
-            {
-                PrintCourses();
-                if (args.Length > 3) {
-                    string course = args[1];
-                    double meters = double.Parse(args[2]);
-                    double heading = double.Parse(args[3]);
-                    GetNewCoords(course, meters, heading);
+                else if (args[0] == "-m")
+                {
+                    PrintAllMetadata();
                 }
+                else if (args[0] == "-y")
+                {
+                    UploadYouTube(args[1]);
+                }
+                else if (args[0] == "-c" && args.Length >= 2)
+                {
+                    PrintCreationTime(args[1]);
+                }
+                else if (args[0] == "-t") 
+                {
+                    Train();
+                }
+                else if (args[0] == "-x")
+                {
+                    PrintCourses();
+                    if (args.Length > 3) {
+                        string course = args[1];
+                        double meters = double.Parse(args[2]);
+                        double heading = double.Parse(args[3]);
+                        GetNewCoords(course, meters, heading);
+                    }
+                }
+                else if (args[0] == "-s" && args.Length > 2) 
+                {
+                    OutputHandleSpeed(args[1], double.Parse(args[2]));
+                }
+                else
+                    ShowUsage();
             }
-            else if (args[0] == "-s" && args.Length > 2) 
+            catch (Exception e)
             {
-                OutputHandleSpeed(args[1], double.Parse(args[2]));
+                System.Console.WriteLine("Failure: " + e.Message);
+                return Fail;
             }
-            else
-                ShowUsage();
+
+            return Success;
         }
 
         private static void ShowUsage()
