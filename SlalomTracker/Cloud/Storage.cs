@@ -286,6 +286,20 @@ namespace SlalomTracker.Cloud
             insertTask.Wait();
         }
 
+        public SkiVideoEntity GetSkiVideoEntity(string recordedDate, string mp4Filename)
+        {
+            // ParitionKey format YYYY-MM-DD
+            // RowKey format e.g. GOPR01444.MP4
+
+            CloudTableClient client = _account.CreateCloudTableClient();
+            CloudTable table = client.GetTableReference(SKITABLE);
+            TableOperation retrieve = TableOperation.Retrieve(recordedDate, mp4Filename);
+            Task<TableResult> retrieveTask = table.ExecuteAsync(retrieve);
+            retrieveTask.Wait();
+            SkiVideoEntity entity = retrieveTask.Result.Result as SkiVideoEntity;
+            return entity;
+        }
+
         public List<Course> GetCourses()
         {
             CloudTableClient client = _account.CreateCloudTableClient();
