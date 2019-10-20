@@ -184,7 +184,6 @@ namespace SlalomTracker.Video
 
         private void GetPredictions(SkiVideoEntity entity)
         {
-            return;
             // Avoiding for now
 
             Console.WriteLine($"Getting machine learning preditions for video {_localVideoPath}...");
