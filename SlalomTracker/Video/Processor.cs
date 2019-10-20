@@ -146,6 +146,9 @@ namespace SlalomTracker.Video
 
         private CoursePass HasAnotherPass(in CoursePass lastPass)
         {
+            if (lastPass.Exit == null)
+                return null;
+                
             CoursePass nextPass = _factory.GetNextPass(lastPass.Exit);
             return nextPass;
         }   

@@ -91,7 +91,7 @@ namespace SlalomTracker.Cloud
 
         public virtual string Predict(string thumbnailUrl)
         {
-            Console.WriteLine("Making a prediction of rope length for: " + thumbnailUrl);
+            Console.WriteLine($"Making a prediction of {CustomVisionModelName} for: " + thumbnailUrl);
 
             PredictionModels.ImageUrl thumbnail = new PredictionModels.ImageUrl(CropThumbnailUrl + thumbnailUrl);
             var result = predictionApi.ClassifyImageUrl(ProjectId, CustomVisionModelName, thumbnail);
