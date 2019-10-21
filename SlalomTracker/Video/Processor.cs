@@ -27,7 +27,7 @@ namespace SlalomTracker.Video
         /// generates thumbnail, uploads metadata, thumbnail, final video, deletes ingest video.
         /// </summary>
         /// <returns>Url of processed video.</returns>
-        public async void ProcessAsync()
+        public async Task ProcessAsync()
         {
             try
             {
@@ -128,7 +128,7 @@ namespace SlalomTracker.Video
         private Task ExtractMetadataAsync()
         {
             Console.WriteLine($"Extracting metadata from video {_sourceVideoUrl}...");
-            return Task.Run(() => {
+            return Task.Run(() => {              
                 _json = MetadataExtractor.Extract.ExtractMetadata(_localVideoPath);
             });
         }     
