@@ -192,8 +192,10 @@ namespace SkiConsole
 
         private static void ProcessVideo(string videoUrl)
         {
-            SkiVideoProcessor processor = new SkiVideoProcessor(videoUrl);
-            processor.Process();
+            Task.Run(() => {
+                SkiVideoProcessor processor = new SkiVideoProcessor(videoUrl);
+                processor.ProcessAsync();
+            }).Wait();
         }
 
         private static void Train()

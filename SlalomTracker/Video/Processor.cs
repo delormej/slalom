@@ -24,10 +24,10 @@ namespace SlalomTracker.Video
 
         /// <summary>
         /// Downloads video, extracts metadata, trims video to just the course pass, removes audio, 
-        /// generates thumbnail, and uploads metadata, thumbnail, final video, deletes ingest video.
+        /// generates thumbnail, uploads metadata, thumbnail, final video, deletes ingest video.
         /// </summary>
         /// <returns>Url of processed video.</returns>
-        public void Process()
+        public async void ProcessAsync()
         {
             try
             {
@@ -41,16 +41,12 @@ namespace SlalomTracker.Video
 
                 do {
                     var createCoursePass = CreateCoursePass(extractMetadata);
-                    var createThumbnail = CreateThumbnailAsync();
+                    var createThumbnail = CreateThumbnailAsync(createCoursePass);
                     var uploadThumbnail = UploadThumbnailAsync(createThumbnail, getCreationTime);
-                    var trimAndSilence =  TrimAndSilenceAsync(createCoursePass); 
-
+                    var trimAndSilence = TrimAndSilenceAsync(createCoursePass); 
                     var uploadVideo = UploadVideoAsync(trimAndSilence, getCreationTime);
                     
-                    // TODO: so this seems like opp to use 'await' keyword??
-                    //pass = await createCoursePass;
-                    createCoursePass.Wait();
-                    pass = createCoursePass.Result;
+                    pass = await createCoursePass; 
 
                     CreateAndUploadMetadata(
                         pass,
@@ -89,11 +85,16 @@ namespace SlalomTracker.Video
             });
         }     
 
-        private Task<string> CreateThumbnailAsync()
+        private async Task<string> CreateThumbnailAsync(Task<CoursePass> createCoursePass)
         {
+            // Need course pass seconds at entry before we can generate thumbnail.
+            CoursePass pass = await createCoursePass;
+            
             Console.WriteLine($"Creating Thumbnail for video {_sourceVideoUrl}...");
-            const double thumbnailAtSeconds = 0.5;
-            return _videoTasks.GetThumbnailAsync(thumbnailAtSeconds);
+            double thumbnailAtSeconds = pass.GetSecondsAtEntry();
+            string localThumbnailPath = await _videoTasks.GetThumbnailAsync(thumbnailAtSeconds);
+
+            return localThumbnailPath;
         }
 
         private Task<string> TrimAndSilenceAsync(Task<CoursePass> extractMetadata)
@@ -148,7 +149,7 @@ namespace SlalomTracker.Video
         {
             if (lastPass.Exit == null)
                 return null;
-                
+
             CoursePass nextPass = _factory.GetNextPass(lastPass.Exit);
             return nextPass;
         }   
@@ -157,7 +158,6 @@ namespace SlalomTracker.Video
                         Task<string> uploadThumbnail,
                         Task<string> uploadVideo)
         {
-
             Task.WaitAll(uploadThumbnail, uploadVideo);
 
             string thumbnailUrl = uploadThumbnail.Result;
@@ -187,8 +187,6 @@ namespace SlalomTracker.Video
 
         private void GetPredictions(SkiVideoEntity entity)
         {
-            // Avoiding for now
-
             Console.WriteLine($"Getting machine learning preditions for video {_localVideoPath}...");
             RopeMachineLearning ropeMl = new RopeMachineLearning();
             SkierMachineLearning skierMl = new SkierMachineLearning();
