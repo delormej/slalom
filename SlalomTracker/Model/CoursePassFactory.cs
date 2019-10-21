@@ -184,9 +184,7 @@ namespace SlalomTracker
             {
                 KnownCourses knownCourses = new KnownCourses();
                 this.m_course = knownCourses.FindCourse(measurements);
-            }
-            if (m_course == null)
-                Console.WriteLine("Unable to find a course for this ski run.");           
+            }    
         }
 
         private CoursePass CreatePass()
@@ -202,9 +200,12 @@ namespace SlalomTracker
             if (this.m_course == null)
                 FindCourse(measurements);
             
-            //
-            // TODO: raise pass, measurements, current, previous to class members so 
-            // we're not constantly passing these around.
+            if (this.m_course == null)
+            {
+                Console.WriteLine("Unable to find a course for this ski run.");       
+                return null;
+            }
+
             if (m_rope == null)
                 m_rope = Rope.Default;
 
