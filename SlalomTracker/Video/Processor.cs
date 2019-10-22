@@ -35,7 +35,7 @@ namespace SlalomTracker.Video
                 _videoTasks = new VideoTasks(_localVideoPath);
 
                 var getCreationTime = GetCreationTimeAsync(); 
-                CoursePass pass = await CreateCoursePass();
+                CoursePass pass = await CreateCoursePassAsync();
 
                 do {
                     var createThumbnail = CreateThumbnailAsync(pass); 
@@ -65,16 +65,14 @@ namespace SlalomTracker.Video
             return Cloud.Storage.DownloadVideo(_sourceVideoUrl);
         }
 
-        private Task<DateTime> GetCreationTimeAsync()
+        private async Task GetCreationTimeAsync()
         {
             Console.WriteLine($"Getting creation time from video {_sourceVideoUrl}...");
-            return _videoTasks.GetCreationTimeAsync().ContinueWith(t => 
-                _creationTime = t.Result);
+            _creationTime = await _videoTasks.GetCreationTimeAsync();
         }
 
         private async Task<string> CreateThumbnailAsync(CoursePass pass)
-        {
-           
+        {  
             Console.WriteLine($"Creating Thumbnail for video {_sourceVideoUrl}...");
             double thumbnailAtSeconds = pass.GetSecondsAtEntry();
             string localThumbnailPath = await _videoTasks.GetThumbnailAsync(thumbnailAtSeconds);
@@ -84,42 +82,37 @@ namespace SlalomTracker.Video
 
         private Task<string> TrimAndSilenceAsync(CoursePass pass)
         {
+            Console.WriteLine($"Trimming and silencing video {_sourceVideoUrl}...");
             return Task.Run(() => 
             {
-                Console.WriteLine($"Trimming and silencing video {_sourceVideoUrl}...");
                 double start = pass.GetSecondsAtEntry();
                 double duration = pass.GetDurationSeconds();
                 double total = pass.GetTotalSeconds();                           
+                
                 return _videoTasks.TrimAndSilenceVideo(start, duration, total); 
             });
         }
 
-        private Task<string> UploadThumbnailAsync(Task<string> createThumbnail, Task<DateTime> getCreationTime)
+        private async Task<string> UploadThumbnailAsync(Task<string> createThumbnail, Task getCreationTime)
         {
-            return createThumbnail.ContinueWith(t => 
-            {
-                // Ensure creation time has been generated.
-                getCreationTime.Wait();
+            await getCreationTime; // Ensure creation time has been generated.
+            string localThumbnailPath = await createThumbnail;
 
-                string localThumbnailPath = t.Result;
-                Console.WriteLine($"Uploading thumbnail {localThumbnailPath}...");
-                return _storage.UploadThumbnail(localThumbnailPath, _creationTime);
-            });
+            Console.WriteLine($"Uploading thumbnail {localThumbnailPath}...");
+            
+            return _storage.UploadThumbnail(localThumbnailPath, _creationTime);
         }
 
-        private Task<string> UploadVideoAsync(Task<string> trimAndSilence, Task<DateTime> getCreationTime)
+        private async Task<string> UploadVideoAsync(Task<string> trimAndSilence, Task getCreationTime)
         {
-            return trimAndSilence.ContinueWith(t => 
-            {
-                getCreationTime.Wait();
+            await getCreationTime; // Ensure creation time has been generated.
+            string processedVideoPath = await trimAndSilence;
 
-                string processedVideoPath = t.Result;
-                Console.WriteLine($"Uploading video {processedVideoPath}...");
-                return  _storage.UploadVideo(processedVideoPath, _creationTime);
-            });
+            Console.WriteLine($"Uploading video {processedVideoPath}...");
+            return  _storage.UploadVideo(processedVideoPath, _creationTime);
         }
 
-        private async Task<CoursePass> CreateCoursePass()
+        private async Task<CoursePass> CreateCoursePassAsync()
         {
             await ExtractMetadataAsync();
             return _factory.FromJson(_json);
@@ -163,20 +156,7 @@ namespace SlalomTracker.Video
 
             Console.WriteLine($"Creating and uploading metadata for video {_localVideoPath}...");
             _storage.AddMetadata(entity, _json);
-        }
-
-        private SkiVideoEntity CreateSkiVideoEntity(CoursePass pass, string thumbnailUrl, string videoUrl)
-        {
-            SkiVideoEntity entity = new SkiVideoEntity(videoUrl, _creationTime);
-            entity.BoatSpeedMph = pass.AverageBoatSpeed;
-            entity.CourseName = pass.Course.Name;
-            entity.EntryTime = pass.GetSecondsAtEntry();     
-            entity.RopeLengthM = pass.Rope != null ? pass.Rope.FtOff : 0;
-            entity.CenterLineDegreeOffset = pass.CenterLineDegreeOffset;   
-            entity.ThumbnailUrl = thumbnailUrl;   
-            
-            return entity;
-        }     
+        }   
 
         private Task<double> GetRopePredictionAsync(string thumbnailUrl)
         {
@@ -190,6 +170,19 @@ namespace SlalomTracker.Video
             return Task.Run(() => skierMl.Predict(thumbnailUrl));
         }
 
+        private SkiVideoEntity CreateSkiVideoEntity(CoursePass pass, string thumbnailUrl, string videoUrl)
+        {
+            SkiVideoEntity entity = new SkiVideoEntity(videoUrl, _creationTime);
+            entity.BoatSpeedMph = pass.AverageBoatSpeed;
+            entity.CourseName = pass.Course.Name;
+            entity.EntryTime = pass.GetSecondsAtEntry();     
+            entity.RopeLengthM = pass.Rope != null ? pass.Rope.FtOff : 0;
+            entity.CenterLineDegreeOffset = pass.CenterLineDegreeOffset;   
+            entity.ThumbnailUrl = thumbnailUrl;   
+            
+            return entity;
+        }  
+        
         private void DeleteIngestVideo()
         {
             Console.WriteLine($"Deleting source video at {_sourceVideoUrl}...");
