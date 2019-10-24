@@ -15,7 +15,7 @@ echo $PROCESS_ARG
 # This file used for DEBUG build
 #
 #dotnet restore ./SlalomTracker/SlalomTracker.csproj
-docker build -t skiconsole -f ./SlalomTracker.Console/debug.Dockerfile .
+docker build -t skiconsole -f ./SlalomTracker.Console/Dockerfile .
 #
 # Launch debug container
 #
