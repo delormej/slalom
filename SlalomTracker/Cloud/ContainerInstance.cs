@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using SlalomTracker;
 using System.Collections.Generic;
 using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
@@ -19,20 +20,8 @@ namespace SlalomTracker.Cloud
         const string ContainerImageEnvVar = "SKICONSOLE_IMAGE";
         const string RegistryResourceGroup = "ski";
         const string RegistryName = "jasondelAcr";
-        static readonly double CpuCoreCount = 1.0;
-        static readonly double MemoryInGb = 3.0;
-        const string MemoryInGbEnvVar = "ACI_MEMORY";
-        const string CpuCoreCountEnvVar = "ACI_CPU";
-
-        static ContainerInstance()
-        {
-            // Read env variables, or use defaults.
-            double memory, cpu;
-            if (double.TryParse(Environment.GetEnvironmentVariable(MemoryInGbEnvVar), out memory))
-                MemoryInGb = memory;
-            if (double.TryParse(Environment.GetEnvironmentVariable(CpuCoreCountEnvVar), out cpu))
-                CpuCoreCount = cpu;
-        }
+        static readonly double CpuCoreCount = Util.GetEnvironmentDouble("ACI_CPU", 1.0);
+        static readonly double MemoryInGb =  Util.GetEnvironmentDouble("ACI_MEMORY", 3.0);
 
         public static string Create(string videoUrl)
         {

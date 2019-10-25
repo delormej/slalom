@@ -25,6 +25,17 @@ namespace SlalomTracker
     {
         const double EarthRadius = 6378137.0;
 
+        public static double GetEnvironmentDouble(string variable, double defaultValue)
+        {
+            string value = Environment.GetEnvironmentVariable(variable);
+
+            double output;
+            if (value != null && double.TryParse(value, out output))
+                return output;
+            else
+                return defaultValue;
+        }
+
         /// <summary>
         /// Helper methods that coverts radians to degrees since Trig functions return radians.
         /// </summary>
