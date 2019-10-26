@@ -101,6 +101,7 @@ namespace SlalomTracker.Cloud
         private void LogPredicitions(IList<PredictionModels.PredictionModel> predictions)
         {
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            sb.AppendLine();
 
             foreach (var c in predictions)
                 sb.Append($"\t{c.TagName}: {c.Probability:P1}\n");
