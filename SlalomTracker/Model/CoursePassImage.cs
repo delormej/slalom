@@ -67,7 +67,7 @@ namespace SlalomTracker
                 var m = _pass.Measurements[i];
                 if (m.BoatPosition == CoursePosition.Empty)
                 {
-                    Console.WriteLine($"Out of course {i}");
+                    Logger.Log($"Out of course {i}");
                     continue;
                 }
                 

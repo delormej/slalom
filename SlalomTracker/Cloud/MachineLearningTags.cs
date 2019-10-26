@@ -69,7 +69,7 @@ namespace SlalomTracker.Cloud
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Unable to get SkierTag for {video.Skier}\n" + e);
+                Logger.Log($"Unable to get SkierTag for {video.Skier}\n" + e);
                 return null;
             }
         }    

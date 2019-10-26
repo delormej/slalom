@@ -202,7 +202,7 @@ namespace SlalomTracker
             
             if (this.m_course == null)
             {
-                Console.WriteLine("Unable to find a course for this ski run.");       
+                Logger.Log("Unable to find a course for this ski run.");       
                 return null;
             }
 
@@ -287,7 +287,7 @@ namespace SlalomTracker
         {
             if (pass.Exit == null || pass.Entry == null)
             {
-                Console.WriteLine("Skiping course pass speed calculation since Entry or Exit are null.");
+                Logger.Log("Skiping course pass speed calculation since Entry or Exit are null.");
                 return;
             }
 

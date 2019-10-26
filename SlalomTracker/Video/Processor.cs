@@ -61,28 +61,33 @@ namespace SlalomTracker.Video
 
         private string DownloadVideo()
         {
-            Console.WriteLine($"Downloading video {_sourceVideoUrl}...");
+            Logger.Log($"Downloading video {_sourceVideoUrl}...");
             return Cloud.Storage.DownloadVideo(_sourceVideoUrl);
         }
 
         private async Task GetCreationTimeAsync()
         {
-            Console.WriteLine($"Getting creation time from video {_sourceVideoUrl}...");
+            Logger.Log($"Getting creation time from video {_sourceVideoUrl}...");
             _creationTime = await _videoTasks.GetCreationTimeAsync();
+            Logger.Log($"Creation time is {_creationTime}");
         }
 
         private async Task<string> CreateThumbnailAsync(CoursePass pass)
         {  
-            Console.WriteLine($"Creating Thumbnail for video {_sourceVideoUrl}...");
+            Logger.Log($"Creating Thumbnail for video {_sourceVideoUrl}...");
+
             double thumbnailAtSeconds = pass.GetSecondsAtEntry();
             string localThumbnailPath = await _videoTasks.GetThumbnailAsync(thumbnailAtSeconds);
+
+            Logger.Log($"Thumbnail created at {localThumbnailPath}");
 
             return localThumbnailPath;
         }
 
         private Task<string> TrimAndSilenceAsync(CoursePass pass)
         {
-            Console.WriteLine($"Trimming and silencing video {_sourceVideoUrl}...");
+            Logger.Log($"Trimming and silencing video {_sourceVideoUrl}...");
+
             return Task.Run(() => 
             {
                 double start = pass.GetSecondsAtEntry();
@@ -98,9 +103,11 @@ namespace SlalomTracker.Video
             await getCreationTime; // Ensure creation time has been generated.
             string localThumbnailPath = await createThumbnail;
 
-            Console.WriteLine($"Uploading thumbnail {localThumbnailPath}...");
-            
-            return _storage.UploadThumbnail(localThumbnailPath, _creationTime);
+            Logger.Log($"Uploading thumbnail {localThumbnailPath}...");
+            string thumbnailUrl = _storage.UploadThumbnail(localThumbnailPath, _creationTime);
+            Logger.Log($"Uploaded thumbnail to {thumbnailUrl}");
+
+            return thumbnailUrl;
         }
 
         private async Task<string> UploadVideoAsync(Task<string> trimAndSilence, Task getCreationTime)
@@ -108,8 +115,10 @@ namespace SlalomTracker.Video
             await getCreationTime; // Ensure creation time has been generated.
             string processedVideoPath = await trimAndSilence;
 
-            Console.WriteLine($"Uploading video {processedVideoPath}...");
-            return  _storage.UploadVideo(processedVideoPath, _creationTime);
+            Logger.Log($"Uploading video {processedVideoPath}...");
+            string videoUrl = _storage.UploadVideo(processedVideoPath, _creationTime);
+            Logger.Log($"Video uploaded to {videoUrl}");
+            return videoUrl;
         }
 
         private async Task<CoursePass> CreateCoursePassAsync()
@@ -120,9 +129,10 @@ namespace SlalomTracker.Video
 
         private Task ExtractMetadataAsync()
         {
-            Console.WriteLine($"Extracting metadata from video {_sourceVideoUrl}...");
+            Logger.Log($"Extracting metadata from video {_sourceVideoUrl}...");
             return Task.Run(() => {              
                 _json = MetadataExtractor.Extract.ExtractMetadata(_localVideoPath);
+                Logger.Log("Extracted metadata.");
             });
         }     
 
@@ -154,7 +164,7 @@ namespace SlalomTracker.Video
             entity.Skier = await getSkierPrediction;
             entity.RopeLengthM = await getRopePrediction;
 
-            Console.WriteLine($"Creating and uploading metadata for video {_localVideoPath}...");
+            Logger.Log($"Creating and uploading metadata for video {_localVideoPath}...");
             _storage.AddMetadata(entity, _json);
         }   
 
@@ -185,7 +195,7 @@ namespace SlalomTracker.Video
         
         private void DeleteIngestVideo()
         {
-            Console.WriteLine($"Deleting source video at {_sourceVideoUrl}...");
+            Logger.Log($"Deleting source video at {_sourceVideoUrl}...");
             // Note this only deletes from the ingest folder.  It will fail if not ingest, but that's ok.
             _storage.DeleteIngestedBlob(_sourceVideoUrl);
         }       

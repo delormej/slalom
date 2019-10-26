@@ -40,4 +40,9 @@ curl -X POST -d "" http://ski-app.azurewebsites.net/api/acicleanup
  # 2) Launch ffmpeg (these could be combined)
  ffmpeg -i /video/GOPR1362.MP4 -ss 00:00:58 -t 00:00:50 -map 0:v -map 0:a -map 0:3 -copy_unknown -tag:2 gpmd -c copy /video/GOPR1362-b.MP4
 
- 
+curl -X POST -d "{'Url': 'https://skivideostorage.blob.core.windows.net/dev-ski-ingest/GOPR2175.MP4'}" http://dev-ski-app.azurewebsites.net/api/processvideo
+curl -X POST -d "{'Url': 'https://skivideostorage.blob.core.windows.net/ski-ingest/GOPR1908.MP4'}" http://dev-ski-app.azurewebsites.net/api/processvideo
+curl -X POST -d "{'Url': 'https://skivideostorage.blob.core.windows.net/dev-ski-ingest/GOPR2304.MP4'}" http://dev-ski-app.azurewebsites.net/api/processvideo
+curl -X POST -d "{'Url': 'https://skivideostorage.blob.core.windows.net/dev-ski-ingest/GOPR2181.MP4'}" http://dev-ski-app.azurewebsites.net/api/processvideo
+curl -X POST -d "{'Url': 'https://skivideostorage.blob.core.windows.net/dev-ski-ingest/GOPR1894.MP4'}" http://dev-ski-app.azurewebsites.net/api/processvideo
+  
