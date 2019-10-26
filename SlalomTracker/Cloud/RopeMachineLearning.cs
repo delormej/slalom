@@ -11,7 +11,7 @@ namespace SlalomTracker.Cloud
             ProjectId = new Guid("4668e0c2-7e00-40cb-a58a-914eb988f44d");
             CustomVisionPredictionKey = "8d326cd29a0b4636beced3a4658c09cb";
             CustomVisionTrainingKey = "7191c8190b4949b98b35c140efd7b7e6";     
-            CustomVisionModelName = "RopeLength"; 
+            CustomVisionModelName = "RopeLength9"; 
             InitializeApis();
         }
 
