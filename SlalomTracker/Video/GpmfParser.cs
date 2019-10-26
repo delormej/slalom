@@ -126,7 +126,7 @@ namespace MetadataExtractor
                 int mIndex = gyrosPerGps - (currentGyroCount / gyrosPerGps);
                 if (measurements.Count <= mIndex)
                 {
-                    Logger.Log("Not enough measurements?"); 
+                    // Logger.Log("Not enough measurements?"); 
                     return;
                 }
                 measurements[measurements.Count - mIndex].RopeSwingSpeedRadS = radS;
