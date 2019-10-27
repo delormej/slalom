@@ -1,25 +1,13 @@
-: ${SKIBLOBS?"Need to set SKIBLOBS env variable."}
-
-# If an argument is passed, use it as a video.
-if [ $# -eq 0 ]
-  then
-    echo "No arguments supplied"
-    PROCESS_ARG=/bin/bash
-  else
-    PROCESS_ARG="./ski -p $1"
-fi
-
-echo $PROCESS_ARG
+#!/bin/bash
+source prebuild.sh
 
 #
-# This file used for DEBUG build
+# Build .debug container
 #
-#dotnet restore ./SlalomTracker/SlalomTracker.csproj
+echo "Building DEBUG container."
 docker build -t skiconsole -f ./SlalomTracker.Console/debug.Dockerfile .
+
 #
 # Launch debug container
 #
-# Need to input env variable value here:
-#SKIBLOBS=
-# Ensure that $SKIBLOBS as an env variable has leading and trailing quotes ("")
 docker run -it -v$PWD:/data --rm -e SKIBLOBS="$SKIBLOBS" --name ski-dbg skiconsole $PROCESS_ARG
