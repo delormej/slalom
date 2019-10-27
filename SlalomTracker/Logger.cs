@@ -18,7 +18,7 @@ namespace SlalomTracker
             if (e != null)
                 sb.Append("\tERROR: " + e.Message);
             if (e.InnerException != null)
-                sb.Append("\n\tINNER ERROR:" + e.InnerException.Message);
+                sb.Append("\n\tINNER ERROR: " + e.InnerException.Message);
             
             ConsoleColor defaultColor = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Red;
