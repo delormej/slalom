@@ -258,6 +258,7 @@ namespace SlalomTracker.Cloud
         private static string GetConnectionString()
         {
             return Environment.GetEnvironmentVariable(ENV_SKIBLOBS);
+            //ENV SKIBLOBS = "DefaultEndpointsProtocol=https;AccountName=skivideostorage;AccountKey=74gV///fVtd/ZL+PzXZU6nsOVzIvt6XC59T9elFnY91vCVqmitlHxNA9QLbQsedTmnCzSR0BhtL0J8dwOVSWvA==;EndpointSuffix=core.windows.net"
         }
 
         private void ConnectToQueue()
