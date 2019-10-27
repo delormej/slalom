@@ -7,6 +7,13 @@ using System.Linq;
 
 namespace SlalomTracker
 {
+    
+//
+// Watch the following github issue until resolved in dotnetcore 3.1
+// This will hold up moving the webapi to dotnetcore3.0
+//
+#warning This is not working in aspnetcore3 due to issue: https://github.com/dotnet/corefx/issues/41292
+   
     public class CoursePassImage
     {
         private CoursePass _pass;
