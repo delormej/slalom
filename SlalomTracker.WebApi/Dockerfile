@@ -16,7 +16,7 @@ WORKDIR /ski
 RUN dotnet publish ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj -c Release -o /ski/build/
 
 # create the runtime image (smaller, doesn't need the full sdk for building)
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.0 as runtime
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.1 as runtime
 #FROM dotnet-debug as runtime
 
 # Environment Variables
