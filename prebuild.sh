@@ -8,6 +8,9 @@ fi
 
 : ${SKIBLOBS?"Need to set SKIBLOBS env variable or dev.env file with the value."}
 
+# Set subscription 
+export SUBSCRIPTIONID=$(az account show -o tsv --query id) 
+
 # If an argument is passed, use it as a video.
 if [ $# -eq 0 ]
   then
