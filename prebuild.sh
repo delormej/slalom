@@ -2,6 +2,8 @@
 DOTENV=dev.env
 if test -f "$DOTENV"; then
     source $DOTENV
+else
+    SKIBLOBS=$(az storage account show-connection-string --name skivideostorage --query connectionString)
 fi
 
 : ${SKIBLOBS?"Need to set SKIBLOBS env variable or dev.env file with the value."}
