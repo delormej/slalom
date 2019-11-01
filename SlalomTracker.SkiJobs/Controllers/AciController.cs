@@ -66,7 +66,7 @@ namespace SlalomTracker.SkiJobs.Controllers
 
         [HttpPost]
         [Route("create")]
-        public string Create(string videoUrl)
+        public string Create([FromBody]string videoUrl)
         {
             SkiJobs.ContainerInstance jobs = new SkiJobs.ContainerInstance(_aciClient) 
             {
@@ -84,7 +84,7 @@ namespace SlalomTracker.SkiJobs.Controllers
             
             //return Json(new {ContainerGroup=containerGroup,VideoUrl=videoUrl});            
 #warning "Need to fix return values."
-            return "DONE";
+            return containerGroup;
         }
 
         [HttpPost]

@@ -1,7 +1,10 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using Microsoft.Azure.Management.ContainerRegistry;
 using Microsoft.Azure.Management.ContainerInstance;
+using Microsoft.Azure.Management.ContainerInstance.Models;
+
 
 namespace SlalomTracker.SkiJobs
 {
@@ -38,54 +41,78 @@ namespace SlalomTracker.SkiJobs
         }
 
         public string Create(string videoUrl)
-        {          
-            string[] args = GetCommandLineArgs(videoUrl);
-            string containerGroup = GetContainerGroupName(videoUrl);
-            Dictionary<string, string> envVars = GetEnvironmentVariables();
-            InternalCreate(containerGroup, JobResourceGroup, ContainerImage, ExePath, args, envVars);
+        {
+            string name = GetContainerGroupName(videoUrl);
+            ContainerGroup group = GetContainerGroup(videoUrl);
+            group.Containers[0].Name = name + "-0";
+            _aciClient.ContainerGroups.CreateOrUpdate(JobResourceGroup, name, group);
             
-            return containerGroup;
+            return name;
         }
 
-        private static void InternalCreate(string containerGroupName, 
-            string resourceGroupName, 
-            string containerImage,
-            string commandLineExe,
-            string[] commandLineArgs,
-            Dictionary<string, string> environmentVariables)
+        private ContainerGroup GetContainerGroup(string videoUrl)
         {
-            // IAzure azure = Authenticate();
+            ContainerGroup group = new ContainerGroup();
+            group.Location = GetLocation();
+            group.OsType = "Linux";
+            group.ImageRegistryCredentials = GetAcrCredentials();
+            group.Containers = new List<Microsoft.Azure.Management.ContainerInstance.Models.Container>();
+            group.Containers.Add(GetContainer(videoUrl));
+            group.RestartPolicy = "Never";
 
-            // // Get private registry credentials.
-            // var acr = azure.ContainerRegistries.GetByResourceGroup(RegistryResourceGroup, RegistryName);
-            // var acrCredentials = acr.GetCredentials();
-            
-            // IResourceGroup group = azure.ResourceGroups.GetByName(resourceGroupName);
-            // var azureRegion = group.Region;
-            // azure.ContainerGroups.Define(containerGroupName)
-            //     .WithRegion(azureRegion)
-            //     .WithExistingResourceGroup(resourceGroupName)
-            //     .WithLinux()
-            //     .WithPrivateImageRegistry(acr.LoginServerUrl, 
-            //         acrCredentials.Username, 
-            //         acrCredentials.AccessKeys[AccessKeyType.Primary])
-            //     .WithoutVolume()
-            //     .DefineContainerInstance(containerGroupName + "-0")
-            //         .WithImage(containerImage)
-            //         .WithoutPorts()
-            //         .WithCpuCoreCount(CpuCoreCount)
-            //         .WithMemorySizeInGB(MemoryInGb)
-            //         .WithStartingCommandLine(commandLineExe, commandLineArgs)
-            //         .WithEnvironmentVariables(environmentVariables)
-            //         .Attach()
-            //     .WithRestartPolicy(ContainerGroupRestartPolicy.Never)
-            //     .CreateAsync();
+            return group;
         }
 
-        private string[] GetCommandLineArgs(string videoUrl)
+        private string GetLocation()
         {
-            string[] args = new string[] {"-p", videoUrl};
-            return args;
+            // Need to get this from the ResourceGroup
+            #warning "Get location from RG"
+            return "eastus";
+        }
+
+        private IList<ImageRegistryCredential> GetAcrCredentials()
+        {
+            ContainerRegistryManagementClient acrClient = new ContainerRegistryManagementClient(_aciClient.Credentials);
+            acrClient.SubscriptionId = _aciClient.SubscriptionId;
+            
+            IList<ImageRegistryCredential> credentials = new List<ImageRegistryCredential>();
+
+            var registry = acrClient.Registries.Get(RegistryResourceGroup, RegistryName);
+
+            var acrCredentials = acrClient.Registries.ListCredentials(RegistryResourceGroup, RegistryName);
+            if (acrCredentials.Passwords != null && acrCredentials.Passwords.Count > 0)
+            {
+                credentials.Add(new ImageRegistryCredential(
+                    registry.LoginServer, acrCredentials.Username, acrCredentials.Passwords[0].Value));
+            }
+
+            return credentials;
+        }
+
+        private Container GetContainer(string videoUrl)
+        {
+            Container container = new Container();
+            container.Image = ContainerImage;
+            container.Resources = GetResourceRequirements();
+            container.Command = GetCommandLineArgs(videoUrl);
+            container.EnvironmentVariables = GetEnvironmentVariables();
+
+            return container;
+        }
+
+        private ResourceRequirements GetResourceRequirements()
+        {
+            ResourceRequirements resources = new ResourceRequirements();
+            resources.Limits = new ResourceLimits(MemoryInGb, CpuCoreCount);
+            resources.Requests = new ResourceRequests(MemoryInGb, CpuCoreCount);
+            return resources;
+        }
+
+        private IList<string> GetCommandLineArgs(string videoUrl)
+        {
+            //string[] commands = { ExePath, "-p", videoUrl };
+            string[] commands = { ExePath, "-m" };
+            return commands.ToList();
         }
 
         private string GetContainerGroupName(string videoUrl)
@@ -95,15 +122,12 @@ namespace SlalomTracker.SkiJobs
             return (JobNamePrefix + unique).ToLower(); // upper case chars not allowed in ACI naming.
         }
 
-        private Dictionary<string, string> GetEnvironmentVariables()
+        private IList<EnvironmentVariable> GetEnvironmentVariables()
         {
-            return new Dictionary<string, string>
-            {
-                { 
-                    ENV_SKIBLOBS, 
-                    SkiBlobsConnectionString
-                }
-            };
+            IList<EnvironmentVariable> env = new List<EnvironmentVariable>();
+            env.Add(new EnvironmentVariable(ENV_SKIBLOBS, SkiBlobsConnectionString));
+
+            return env;
         }
 
         private string GetHash(string value)
