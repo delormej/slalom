@@ -6,6 +6,7 @@ using System.Net.Http;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Mvc;
 using SlalomTracker.Cloud;
+using System.Threading.Tasks;
 
 namespace SlalomTracker.WebApi.Controllers
 {
@@ -35,37 +36,22 @@ namespace SlalomTracker.WebApi.Controllers
        
         [HttpPost]
         [Route("api/processvideo")]
-        public IActionResult StartProcessVideo()
+        public async Task<IActionResult> StartProcessVideo()
         {
             string videoUrl = ""; 
             try
             {
                 videoUrl = GetVideoUrlFromRequest();
-                string containerGroup = ContainerInstance.Create(videoUrl);
-                return Json(new {ContainerGroup=containerGroup,VideoUrl=videoUrl});
+                var response = await CreateContainerInstance(videoUrl);
+                if (response.StatusCode != HttpStatusCode.OK)
+                    return StatusCode(500, response);
+                else
+                    return StatusCode(200, response);
             }
             catch (Exception e)
             {
                 Console.WriteLine($"Error creating container instance for {videoUrl}\nError:{e}");
                 return StatusCode(500, e.Message);
-            }
-        }
-
-        [HttpPost]
-        [Route("api/acicleanup")]
-        public IActionResult DeleteAllContainerGroups()
-        {
-            try 
-            {
-                int count = ContainerInstance.DeleteAllContainerGroups();
-                var result = new {deletedCount=count};
-                return Json(result);
-            }
-            catch (Exception e)
-            {
-                string message = $"Error deleting ACI container groups: \n{e.Message}";
-                Console.WriteLine(message);
-                return StatusCode(500, message);
             }
         }
 
@@ -121,5 +107,13 @@ namespace SlalomTracker.WebApi.Controllers
             Uri uri = new Uri(videoUrl);
             return uri.LocalPath;
         }        
+
+        private Task<HttpResponseMessage> CreateContainerInstance(string videoUrl)
+        {
+            HttpClient client = new HttpClient();
+            string url = Environment.GetEnvironmentVariable("ACI_SERVICE_ENDPOINT");
+            StringContent content = new StringContent(url);
+            return client.PostAsync(url, content);
+        }
     }
 }

@@ -8,6 +8,7 @@ using Microsoft.Azure.Management.ContainerInstance;
 using Microsoft.Azure.Management.ContainerRegistry;
 using Microsoft.Rest;
 using SlalomTracker.SkiJobs.Models;
+using SkiJobs = SlalomTracker.SkiJobs;
 
 namespace SlalomTracker.SkiJobs.Controllers
 {
@@ -19,7 +20,7 @@ namespace SlalomTracker.SkiJobs.Controllers
         private readonly ILogger<AciController> _logger;
         private readonly IConfiguration _config;
         private readonly string _subscriptionId;
-        private readonly string _resourceGroupName;
+        private readonly string _jobsResourceGroupName;
         private readonly ContainerInstanceManagementClient _aciClient;
 
         public AciController(ILogger<AciController> logger, 
@@ -29,7 +30,7 @@ namespace SlalomTracker.SkiJobs.Controllers
             _logger = logger;
             _config = config;
             _subscriptionId = _config["SUBSCRIPTIONID"];
-            _resourceGroupName = _config["ACI_RESOURCEGROUP"] ?? "ski-jobs";
+            _jobsResourceGroupName = _config["ACI_RESOURCEGROUP"] ?? "ski-jobs";
 
             _aciClient = GetClient(azureCredentials);
         }
@@ -56,7 +57,7 @@ namespace SlalomTracker.SkiJobs.Controllers
             string responseBody = "";
 
             string containerName = container + "-0"; // Default naming convention, only a single container in the group with -0 suffix
-            var logs = _aciClient.Container.ListLogs(_resourceGroupName, container, containerName);
+            var logs = _aciClient.Container.ListLogs(_jobsResourceGroupName, container, containerName);
             if (logs != null)
                 responseBody = logs.Content;
     
@@ -64,10 +65,50 @@ namespace SlalomTracker.SkiJobs.Controllers
         }
 
         [HttpPost]
+        [Route("create")]
+        public string Create(string videoUrl)
+        {
+            SkiJobs.ContainerInstance jobs = new SkiJobs.ContainerInstance(_aciClient) 
+            {
+                ContainerImage = _config["SKICONSOLE_IMAGE"],
+                RegistryResourceGroup = _config.GetValue("REGISTRY_RESOURCE_GROUP", "ski"),
+                RegistryName = _config.GetValue("REGISTRY_NAME", "jasondelAcr"),
+                JobResourceGroup = _jobsResourceGroupName,
+                CpuCoreCount = _config.GetValue<double>("ACI_CPU", 1.0),
+                MemoryInGb = _config.GetValue<double>("ACI_MEMORY", 3.0)
+            };            
+            string containerGroup = jobs.Create(videoUrl);
+
+            _logger.LogInformation(
+                $"Created container instance {containerGroup} in {_jobsResourceGroupName} for video: {videoUrl}");
+            
+            //return Json(new {ContainerGroup=containerGroup,VideoUrl=videoUrl});            
+#warning "Need to fix return values."
+            return "DONE";
+        }
+
+        [HttpPost]
         [Route("deleteall")]
         public int DeleteAll()
         {
-            return 0;
+#warning "Need to fix return values."            
+            try 
+            {
+                SkiJobs.ContainerInstance jobs = new SkiJobs.ContainerInstance(_aciClient);
+
+                int count = jobs.DeleteAllContainerGroups(_jobsResourceGroupName);
+                var result = new {deletedCount=count};
+
+                //return Json(result);
+                return count;
+            }
+            catch (Exception e)
+            {
+                string message = $"Error deleting ACI container groups: \n{e.Message}";
+                _logger.LogError(message);
+                //return StatusCode(500, message);
+                return -1;
+            }            
         }
 
         private ContainerInstanceManagementClient GetClient(ServiceClientCredentials azureCredentials)
