@@ -17,7 +17,8 @@ namespace SlalomTracker.SkiJobs.Models
             return new SkiJobContainer() {
                 Image = item.Containers[0].Image,
                 Name = item.Name,
-                Video = item.Containers[0].Command[2]
+                Video = item.Containers[0].Command.Count > 2 
+                    ? item.Containers[0].Command[2] : ""
             };
         }
     }

@@ -71,6 +71,7 @@ namespace SlalomTracker.SkiJobs.Controllers
             SkiJobs.ContainerInstance jobs = new SkiJobs.ContainerInstance(_aciClient) 
             {
                 ContainerImage = _config["SKICONSOLE_IMAGE"],
+                SkiBlobsConnectionString = _config["SKIBLOBS"],
                 RegistryResourceGroup = _config.GetValue("REGISTRY_RESOURCE_GROUP", "ski"),
                 RegistryName = _config.GetValue("REGISTRY_NAME", "jasondelAcr"),
                 JobResourceGroup = _jobsResourceGroupName,

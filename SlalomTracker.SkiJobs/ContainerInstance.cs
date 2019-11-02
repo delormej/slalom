@@ -125,7 +125,7 @@ namespace SlalomTracker.SkiJobs
         private IList<EnvironmentVariable> GetEnvironmentVariables()
         {
             IList<EnvironmentVariable> env = new List<EnvironmentVariable>();
-            env.Add(new EnvironmentVariable(ENV_SKIBLOBS, SkiBlobsConnectionString));
+            env.Add(new EnvironmentVariable(ENV_SKIBLOBS, null, SkiBlobsConnectionString));
 
             return env;
         }
