@@ -115,11 +115,13 @@ namespace SlalomTracker.WebApi.Controllers
             string url = baseUrl + "/aci/create";
             Console.WriteLine("Calling /aci/create @" + baseUrl);
 
-            // Encode parameters.
-            StringContent content = new StringContent(videoUrl);
+            string content = JsonConvert.SerializeObject(videoUrl);
 
-            HttpClient client = new HttpClient();            
-            return client.PostAsync(url, content);
+            // Encode parameters.
+            var httpContent = new StringContent(content, Encoding.UTF8, "application/json");
+
+            HttpClient client = new HttpClient();                 
+            return client.PostAsync(url, httpContent);
         }
     }
 }
