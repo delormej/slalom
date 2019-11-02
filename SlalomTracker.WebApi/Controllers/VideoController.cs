@@ -110,9 +110,15 @@ namespace SlalomTracker.WebApi.Controllers
 
         private Task<HttpResponseMessage> CreateContainerInstance(string videoUrl)
         {
-            HttpClient client = new HttpClient();
-            string url = Environment.GetEnvironmentVariable("ACI_SERVICE_ENDPOINT");
-            StringContent content = new StringContent(url);
+            // Construct end point url.
+            string baseUrl = Environment.GetEnvironmentVariable("SKIJOBS_SERVICE");
+            string url = baseUrl + "/aci/create";
+            Console.WriteLine("Calling /aci/create @" + baseUrl);
+
+            // Encode parameters.
+            StringContent content = new StringContent(videoUrl);
+
+            HttpClient client = new HttpClient();            
             return client.PostAsync(url, content);
         }
     }

@@ -41,7 +41,7 @@ namespace SlalomTracker.SkiJobs.Controllers
         {
             IEnumerable<SkiJobContainer> containers = null;
 
-            var list = _aciClient.ContainerGroups.List();
+            var list = _aciClient.ContainerGroups.ListByResourceGroup(_jobsResourceGroupName);
             if (list == null || list.Count() < 1)
                 containers = new List<SkiJobContainer>();
             else
@@ -72,8 +72,8 @@ namespace SlalomTracker.SkiJobs.Controllers
             {
                 ContainerImage = _config["SKICONSOLE_IMAGE"],
                 SkiBlobsConnectionString = _config["SKIBLOBS"],
-                RegistryResourceGroup = _config.GetValue("REGISTRY_RESOURCE_GROUP", "ski"),
-                RegistryName = _config.GetValue("REGISTRY_NAME", "jasondelAcr"),
+                RegistryResourceGroup = _config["REGISTRY_RESOURCE_GROUP"],
+                RegistryName = _config["REGISTRY_NAME"],
                 JobResourceGroup = _jobsResourceGroupName,
                 CpuCoreCount = _config.GetValue<double>("ACI_CPU", 1.0),
                 MemoryInGb = _config.GetValue<double>("ACI_MEMORY", 3.0)

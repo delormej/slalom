@@ -1,6 +1,7 @@
 #!/bin/bash
 DOTENV=dev.env
 if test -f "$DOTENV"; then
+    echo "Loading dev.env"
     source $DOTENV
 else
     SKIBLOBS=$(az storage account show-connection-string --name skivideostorage --query connectionString)
