@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Microsoft.Azure.Management.ContainerRegistry;
 using Microsoft.Azure.Management.ContainerInstance;
 using Microsoft.Azure.Management.ContainerInstance.Models;
-
+using Microsoft.Azure.Management.ResourceManager;
 
 namespace SlalomTracker.SkiJobs
 {
@@ -65,9 +65,13 @@ namespace SlalomTracker.SkiJobs
 
         private string GetLocation()
         {
-            // Need to get this from the ResourceGroup
-            #warning "Get location from RG"
-            return "eastus";
+            ResourceManagementClient client = new ResourceManagementClient(_aciClient.Credentials);
+            client.SubscriptionId = _aciClient.SubscriptionId;
+            var group = client.ResourceGroups.Get(JobResourceGroup);
+            if (group == null)
+                throw new ApplicationException($"Unable to find a resoure group named {JobResourceGroup}");
+            
+            return group.Location;
         }
 
         private IList<ImageRegistryCredential> GetAcrCredentials()
