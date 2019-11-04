@@ -56,7 +56,7 @@ namespace SlalomTracker.SkiJobs
             group.Location = GetLocation();
             group.OsType = "Linux";
             group.ImageRegistryCredentials = GetAcrCredentials();
-            group.Containers = new List<Microsoft.Azure.Management.ContainerInstance.Models.Container>();
+            group.Containers = new List<Container>();
             group.Containers.Add(GetContainer(videoUrl));
             group.RestartPolicy = "Never";
 
