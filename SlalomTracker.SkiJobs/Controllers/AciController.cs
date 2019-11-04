@@ -72,6 +72,7 @@ namespace SlalomTracker.SkiJobs.Controllers
             {
                 ContainerImage = _config["SKICONSOLE_IMAGE"],
                 SkiBlobsConnectionString = _config["SKIBLOBS"],
+                GoogleSecret = _config["GOOGLESKIVIDEOS"],
                 RegistryResourceGroup = _config["REGISTRY_RESOURCE_GROUP"],
                 RegistryName = _config["REGISTRY_NAME"],
                 JobResourceGroup = _jobsResourceGroupName,

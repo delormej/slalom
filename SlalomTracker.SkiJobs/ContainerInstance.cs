@@ -13,6 +13,10 @@ namespace SlalomTracker.SkiJobs
         const string ExePath = "./ski";
         const string JobNamePrefix = "aci-";
         const string ENV_SKIBLOBS = "SKIBLOBS";
+        const string SecretsVolumeName = "secretVolume";
+        const string SecretsVolumePath = "/mnt/secrets"; 
+        const string GoogleSecretName = "gcloud.json";
+        const string GoogleCredPath = SecretsVolumePath + "/" + GoogleSecretName;
 
         public string JobResourceGroup;
         public string ContainerImage;
@@ -21,6 +25,7 @@ namespace SlalomTracker.SkiJobs
         public double CpuCoreCount;
         public double MemoryInGb;
         public string SkiBlobsConnectionString { private get; set; }
+        public string GoogleSecret { private get; set; }
 
         private readonly ContainerInstanceManagementClient _aciClient;
 
@@ -100,6 +105,7 @@ namespace SlalomTracker.SkiJobs
             container.Resources = GetResourceRequirements();
             container.Command = GetCommandLineArgs(videoUrl);
             container.EnvironmentVariables = GetEnvironmentVariables();
+            container.VolumeMounts = GetVolumeMounts();
 
             return container;
         }
@@ -115,7 +121,7 @@ namespace SlalomTracker.SkiJobs
         private IList<string> GetCommandLineArgs(string videoUrl)
         {
             //string[] commands = { ExePath, "-p", videoUrl };
-            string[] commands = { ExePath, "-m" };
+            string[] commands = { ExePath, "debug-m" };
             return commands.ToList();
         }
 
@@ -130,8 +136,40 @@ namespace SlalomTracker.SkiJobs
         {
             IList<EnvironmentVariable> env = new List<EnvironmentVariable>();
             env.Add(new EnvironmentVariable(ENV_SKIBLOBS, null, SkiBlobsConnectionString));
+            env.Add(new EnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", GoogleCredPath));
 
             return env;
+        }
+
+        private IList<VolumeMount> GetVolumeMounts()
+        {
+            VolumeMount mount = new VolumeMount();
+            mount.Name = SecretsVolumeName;
+            mount.MountPath = SecretsVolumePath;
+            
+            var mounts = new List<VolumeMount>();
+            mounts.Add(mount);
+
+            return mounts;
+        }
+
+        private IList<Volume> GetVolumes()
+        {
+            Volume volume = new Volume();
+            volume.Name = SecretsVolumeName;
+            volume.Secret = GetSecret();
+
+            var volumes = new List<Volume>();
+            volumes.Add(volume);
+
+            return volumes; 
+        }        
+
+        private IDictionary<string, string> GetSecret()
+        {
+            var secret = new Dictionary<string, string>();
+            secret.Add(GoogleSecretName, GoogleSecret);
+            return secret;       
         }
 
         private string GetHash(string value)
