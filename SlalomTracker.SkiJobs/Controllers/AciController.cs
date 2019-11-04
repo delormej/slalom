@@ -8,7 +8,7 @@ using Microsoft.Azure.Management.ContainerInstance;
 using Microsoft.Azure.Management.ContainerRegistry;
 using Microsoft.Rest;
 using SlalomTracker.SkiJobs.Models;
-using SkiJobs = SlalomTracker.SkiJobs;
+using System.Text.Json;
 
 namespace SlalomTracker.SkiJobs.Controllers
 {
@@ -83,16 +83,15 @@ namespace SlalomTracker.SkiJobs.Controllers
             _logger.LogInformation(
                 $"Created container instance {containerGroup} in {_jobsResourceGroupName} for video: {videoUrl}");
             
-            //return Json(new {ContainerGroup=containerGroup,VideoUrl=videoUrl});            
-#warning "Need to fix return values."
-            return containerGroup;
+            string json = JsonSerializer.Serialize(
+                new {ContainerGroup=containerGroup,VideoUrl=videoUrl});
+            return json;
         }
 
         [HttpPost]
         [Route("deleteall")]
         public int DeleteAll()
         {
-#warning "Need to fix return values."            
             try 
             {
                 SkiJobs.ContainerInstance jobs = new SkiJobs.ContainerInstance(_aciClient);
@@ -100,15 +99,12 @@ namespace SlalomTracker.SkiJobs.Controllers
                 int count = jobs.DeleteAllContainerGroups(_jobsResourceGroupName);
                 var result = new {deletedCount=count};
 
-                //return Json(result);
                 return count;
             }
             catch (Exception e)
             {
                 string message = $"Error deleting ACI container groups: \n{e.Message}";
-                _logger.LogError(message);
-                //return StatusCode(500, message);
-                return -1;
+                throw new ApplicationException(message);
             }            
         }
 
