@@ -66,27 +66,40 @@ namespace SlalomTracker.SkiJobs.Controllers
 
         [HttpPost]
         [Route("create")]
-        public string Create([FromBody]string videoUrl)
+        public IActionResult Create([FromBody]string videoUrl)
         {
-            SkiJobs.ContainerInstance jobs = new SkiJobs.ContainerInstance(_aciClient) 
+            try
             {
-                ContainerImage = _config["SKICONSOLE_IMAGE"],
-                SkiBlobsConnectionString = _config["SKIBLOBS"],
-                GoogleSecret = _config["GOOGLESKIVIDEOS"],
-                RegistryResourceGroup = _config["REGISTRY_RESOURCE_GROUP"],
-                RegistryName = _config["REGISTRY_NAME"],
-                JobResourceGroup = _jobsResourceGroupName,
-                CpuCoreCount = _config.GetValue<double>("ACI_CPU", 1.0),
-                MemoryInGb = _config.GetValue<double>("ACI_MEMORY", 3.0)
-            };            
-            string containerGroup = jobs.Create(videoUrl);
+                SkiJobs.ContainerInstance jobs = new SkiJobs.ContainerInstance(_aciClient) 
+                {
+                    ContainerImage = _config["SKICONSOLE_IMAGE"],
+                    SkiBlobsConnectionString = _config["SKIBLOBS"],
+                    GoogleSecret = Base64Encode(_config["GOOGLESKIVIDEOS"] ?? "foobar_secret"),
+                    RegistryResourceGroup = _config["REGISTRY_RESOURCE_GROUP"],
+                    RegistryName = _config["REGISTRY_NAME"],
+                    JobResourceGroup = _jobsResourceGroupName,
+                    CpuCoreCount = _config.GetValue<double>("ACI_CPU", 1.0),
+                    MemoryInGb = _config.GetValue<double>("ACI_MEMORY", 3.0)
+                };            
+                string containerGroup = jobs.Create(videoUrl);
 
-            _logger.LogInformation(
-                $"Created container instance {containerGroup} in {_jobsResourceGroupName} for video: {videoUrl}");
-            
-            string json = JsonSerializer.Serialize(
-                new {ContainerGroup=containerGroup,VideoUrl=videoUrl});
-            return json;
+                _logger.LogInformation(
+                    $"Created container instance {containerGroup} in {_jobsResourceGroupName} for video: {videoUrl}");
+                
+                string json = JsonSerializer.Serialize(
+                    new {ContainerGroup=containerGroup,VideoUrl=videoUrl});
+                return StatusCode(200, json);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.Message);
+            }
+
+            // inline utility method just for simplicity/readability above.
+            static string Base64Encode(string plainText) {
+                var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
+                return System.Convert.ToBase64String(plainTextBytes);
+            }            
         }
 
         [HttpPost]

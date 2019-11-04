@@ -13,7 +13,7 @@ namespace SlalomTracker.SkiJobs
         const string ExePath = "./ski";
         const string JobNamePrefix = "aci-";
         const string ENV_SKIBLOBS = "SKIBLOBS";
-        const string SecretsVolumeName = "secretVolume";
+        const string SecretsVolumeName = "secret-volume";
         const string SecretsVolumePath = "/mnt/secrets"; 
         const string GoogleSecretName = "gcloud.json";
         const string GoogleCredPath = SecretsVolumePath + "/" + GoogleSecretName;
@@ -61,8 +61,8 @@ namespace SlalomTracker.SkiJobs
             group.Location = GetLocation();
             group.OsType = "Linux";
             group.ImageRegistryCredentials = GetAcrCredentials();
-            group.Containers = new List<Container>();
-            group.Containers.Add(GetContainer(videoUrl));
+            group.Volumes = GetVolumes();
+            group.Containers = GetContainer(videoUrl);
             group.RestartPolicy = "Never";
 
             return group;
@@ -98,7 +98,7 @@ namespace SlalomTracker.SkiJobs
             return credentials;
         }
 
-        private Container GetContainer(string videoUrl)
+        private IList<Container> GetContainer(string videoUrl)
         {
             Container container = new Container();
             container.Image = ContainerImage;
@@ -107,7 +107,10 @@ namespace SlalomTracker.SkiJobs
             container.EnvironmentVariables = GetEnvironmentVariables();
             container.VolumeMounts = GetVolumeMounts();
 
-            return container;
+            var containers = new List<Container>();
+            containers.Add(container);
+
+            return containers;
         }
 
         private ResourceRequirements GetResourceRequirements()
@@ -120,8 +123,8 @@ namespace SlalomTracker.SkiJobs
 
         private IList<string> GetCommandLineArgs(string videoUrl)
         {
-            //string[] commands = { ExePath, "-p", videoUrl };
-            string[] commands = { ExePath, "debug-m" };
+            string[] commands = { ExePath, "-p", videoUrl };
+            // string[] commands = { ExePath, "-x" }; // for debugging
             return commands.ToList();
         }
 
