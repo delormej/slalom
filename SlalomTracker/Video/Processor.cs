@@ -42,11 +42,13 @@ namespace SlalomTracker.Video
                     var uploadThumbnail = UploadThumbnailAsync(createThumbnail, getCreationTime);
                     var trimAndSilence = TrimAndSilenceAsync(pass); 
                     var uploadVideo = UploadVideoAsync(trimAndSilence, getCreationTime);
+                    var uploadHotVideo = UploadGoogleVideoAsync(trimAndSilence, getCreationTime);
 
                     await CreateAndUploadMetadataAsync(
                         pass,
                         uploadThumbnail,
-                        uploadVideo
+                        uploadVideo,
+                        uploadHotVideo
                     );
                 } while ((pass = HasAnotherPass(in pass)) != null);
 
@@ -110,6 +112,7 @@ namespace SlalomTracker.Video
             return thumbnailUrl;
         }
 
+//TODO: Consolidate these two storage upload methods.
         private async Task<string> UploadVideoAsync(Task<string> trimAndSilence, Task getCreationTime)
         {
             await getCreationTime; // Ensure creation time has been generated.
@@ -120,6 +123,18 @@ namespace SlalomTracker.Video
             Logger.Log($"Video uploaded to {videoUrl}");
             return videoUrl;
         }
+
+        private async Task<string> UploadGoogleVideoAsync(Task<string> trimAndSilence, Task getCreationTime)
+        {
+            await getCreationTime; 
+            string processedVideoPath = await trimAndSilence;
+
+            Logger.Log($"Uploading video to Google {processedVideoPath}...");
+            GoogleStorage storage = new GoogleStorage();
+            string videoUrl = await storage.UploadVideoAsync(processedVideoPath, _creationTime);
+            Logger.Log($"Video uploaded to Google: {videoUrl}");
+            return videoUrl;
+        }        
 
         private async Task<CoursePass> CreateCoursePassAsync()
         {
@@ -147,7 +162,8 @@ namespace SlalomTracker.Video
 
         private async Task CreateAndUploadMetadataAsync(CoursePass pass,
                         Task<string> uploadThumbnail,
-                        Task<string> uploadVideo)
+                        Task<string> uploadVideo,
+                        Task<string> uploadHotVideo)
         {
             // Wait until thumbnail is uploaded
             string thumbnailUrl = await uploadThumbnail; 
@@ -158,11 +174,13 @@ namespace SlalomTracker.Video
             
             // Wait until the video has uploaded
             string videoUrl = await uploadVideo;
+            string hotVideoUrl = await uploadHotVideo;
             
             // Create the table entity and wait for predictions to come back
             SkiVideoEntity entity = CreateSkiVideoEntity(pass, thumbnailUrl, videoUrl);
             entity.Skier = await getSkierPrediction;
             entity.RopeLengthM = await getRopePrediction;
+            entity.HotUrl = hotVideoUrl;
 
             Logger.Log($"Creating and uploading metadata for video {_localVideoPath}...");
             _storage.AddMetadata(entity, _json);

@@ -10,4 +10,6 @@ docker build -t skiconsole -f ./SlalomTracker.Console/debug.Dockerfile .
 #
 # Launch debug container
 #
-docker run -it -v$PWD:/data --rm -e SKIBLOBS="$SKIBLOBS" --name ski-dbg skiconsole $PROCESS_ARG
+# Mounting volume is no longer working? -v$PWD:/data 
+docker run -it --rm -e SKIBLOBS="$SKIBLOBS" \
+    -e GOOGLE_APPLICATION_CREDENTIALS="/ski/gcloud.json" --name ski-dbg skiconsole $PROCESS_ARG
