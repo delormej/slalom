@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Azure.Management.ContainerInstance;
 using Microsoft.Azure.Management.ContainerRegistry;
 using Microsoft.Rest;
+using Microsoft.Rest.Azure;
 using SlalomTracker.SkiJobs.Models;
 using System.Text.Json;
 
@@ -91,9 +92,22 @@ namespace SlalomTracker.SkiJobs.Controllers
                 
                 return StatusCode(200, json);
             }
+            catch (CloudException cloudException)
+            {
+                _logger.LogError(cloudException, $"Unable to create ACI instance for {videoUrl}");
+                _logger.LogError(cloudException.Response.Content);
+                foreach (var detail in cloudException.Body.Details)
+                    _logger.LogError(detail.Message + "\n" + detail.Details); 
+
+                return StatusCode(500, cloudException.Message);
+            }
             catch (Exception e)
             {
                 _logger.LogError(e, $"Unable to create ACI instance for {videoUrl}");
+                
+                if (e.InnerException != null)
+                    _logger.LogError(e.InnerException, $"Inner exception: {e.InnerException.Message}");
+
                 return StatusCode(500, e.Message);
             }
 
