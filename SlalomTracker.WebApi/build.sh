@@ -8,7 +8,7 @@ echo "skiblobs::$SKIBLOBS"
 # Build .debug container
 #
 echo "Building DEBUG container."
-docker build -t skiwebapi:v7.0 -f ./SlalomTracker.WebApi/Dockerfile . 
+docker build -t skiwebapi:v7.0 -f ./SlalomTracker.WebApi/debug.Dockerfile . 
 
 #
 # Launch debug container

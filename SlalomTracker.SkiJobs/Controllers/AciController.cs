@@ -88,10 +88,12 @@ namespace SlalomTracker.SkiJobs.Controllers
                 
                 string json = JsonSerializer.Serialize(
                     new {ContainerGroup=containerGroup,VideoUrl=videoUrl});
+                
                 return StatusCode(200, json);
             }
             catch (Exception e)
             {
+                _logger.LogError(e, $"Unable to create ACI instance for {videoUrl}");
                 return StatusCode(500, e.Message);
             }
 

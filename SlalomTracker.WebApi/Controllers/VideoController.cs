@@ -7,12 +7,23 @@ using Newtonsoft.Json;
 using Microsoft.AspNetCore.Mvc;
 using SlalomTracker.Cloud;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 
 namespace SlalomTracker.WebApi.Controllers
 {
     [ApiController]
     public class VideoController : Controller
     {
+        ILogger<VideoController> _logger;
+        private readonly IConfiguration _config;
+
+        public VideoController(ILogger<VideoController> logger, IConfiguration config)
+        {
+            _logger = logger;
+            _config = config;
+        }
+
         [HttpPost]
         [Route("api/video")]
         public IActionResult QueueVideo()
@@ -24,12 +35,12 @@ namespace SlalomTracker.WebApi.Controllers
                 string blobName = GetBlobName(videoUrl);
                 storage.Queue.Add(blobName, videoUrl);
                 
-                Console.WriteLine("Queued video: " + videoUrl);
+                _logger.LogInformation($"Queued video: {videoUrl}");
                 return StatusCode(200);
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine("Unable queue video for procesasing: " + e.Message);
+                _logger.LogError("Unable queue video for processing: " + e.Message);
                 return StatusCode(500);
             }
         }
@@ -44,13 +55,20 @@ namespace SlalomTracker.WebApi.Controllers
                 videoUrl = GetVideoUrlFromRequest();
                 var response = await CreateContainerInstance(videoUrl);
                 if (response.StatusCode != HttpStatusCode.OK)
-                    return StatusCode(500, response);
+                {
+                    string message = ReadResponse(response);
+                    _logger.LogError(message);
+                    return StatusCode(500, message);
+                }
                 else
-                    return StatusCode(200, response);
+                {
+                    string message = ReadResponse(response);
+                    return StatusCode(200, message);
+                }
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error creating container instance for {videoUrl}\nError:{e}");
+                _logger.LogError($"Error creating container instance for {videoUrl}\nError:{e}");
                 return StatusCode(500, e.Message);
             }
         }
@@ -74,7 +92,7 @@ namespace SlalomTracker.WebApi.Controllers
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                _logger.LogError(e.Message);
                 return StatusCode(500, e.Message);                
             }
         }
@@ -110,10 +128,9 @@ namespace SlalomTracker.WebApi.Controllers
 
         private Task<HttpResponseMessage> CreateContainerInstance(string videoUrl)
         {
-            // Construct end point url.
-            string baseUrl = Environment.GetEnvironmentVariable("SKIJOBS_SERVICE");
+            string baseUrl = _config["SKIJOBS_SERVICE"];
             string url = baseUrl + "/aci/create";
-            Console.WriteLine("Calling /aci/create @" + baseUrl);
+            _logger.LogInformation($"Calling {url} for video {videoUrl}");
 
             string content = JsonConvert.SerializeObject(videoUrl);
 
@@ -122,6 +139,13 @@ namespace SlalomTracker.WebApi.Controllers
 
             HttpClient client = new HttpClient();                 
             return client.PostAsync(url, httpContent);
+        }
+
+        private string ReadResponse(HttpResponseMessage response)
+        {
+            var task = response.Content.ReadAsStringAsync();
+            task.Wait();
+            return task.Result;
         }
     }
 }
