@@ -75,7 +75,7 @@ namespace SlalomTracker.SkiJobs.Controllers
                 {
                     ContainerImage = _config["SKICONSOLE_IMAGE"],
                     SkiBlobsConnectionString = _config["SKIBLOBS"],
-                    GoogleSecret = Base64Encode(_config["GOOGLESKIVIDEOS"] ?? "foobar_secret"),
+                    GoogleSecret = Base64Encode(_config["GOOGLESKIVIDEOS"]),
                     RegistryResourceGroup = _config["REGISTRY_RESOURCE_GROUP"],
                     RegistryName = _config["REGISTRY_NAME"],
                     JobResourceGroup = _jobsResourceGroupName,
@@ -94,10 +94,27 @@ namespace SlalomTracker.SkiJobs.Controllers
             }
             catch (CloudException cloudException)
             {
+                //
+                // Write out everything we can find...
+                //
                 _logger.LogError(cloudException, $"Unable to create ACI instance for {videoUrl}");
-                _logger.LogError(cloudException.Response.Content);
+                _logger.LogError("REASON PHRASE: " + cloudException.Response.ReasonPhrase);
+                
+                foreach (var value in cloudException.Data.Values)
+                    _logger.LogError("DATA::VALUES: " + value.ToString());
+                
+                _logger.LogError("CONTENT: " + cloudException.Response.Content);
+                
                 foreach (var detail in cloudException.Body.Details)
-                    _logger.LogError(detail.Message + "\n" + detail.Details); 
+                    _logger.LogError("DETAIL: " + detail.Message + "\n" + detail.Details); 
+
+                _logger.LogError("BODY::Message: " + cloudException.Body.Message);
+
+                foreach (var info in cloudException.Body.AdditionalInfo)
+                    _logger.LogError("BODY::AdditionalInfo: " + info.Info.ToString());
+
+                if (cloudException.InnerException != null)
+                    _logger.LogError(cloudException.InnerException, "INNER EXCEPTION");
 
                 return StatusCode(500, cloudException.Message);
             }
