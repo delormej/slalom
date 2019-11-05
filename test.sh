@@ -46,3 +46,53 @@ curl -X POST -d "{'Url': 'https://skivideostorage.blob.core.windows.net/dev-ski-
 curl -X POST -d "{'Url': 'https://skivideostorage.blob.core.windows.net/dev-ski-ingest/GOPR2181.MP4'}" http://dev-ski-app.azurewebsites.net/api/processvideo
 curl -X POST -d "{'Url': 'https://skivideostorage.blob.core.windows.net/dev-ski-ingest/GOPR1894.MP4'}" http://dev-ski-app.azurewebsites.net/api/processvideo
   
+curl -X POST -d "{'Url': 'https://skivideostorage.blob.core.windows.net/dev-ski-ingest/GOPR2176.MP4'}" http://dev-ski-app.azurewebsites.net/api/processvideo  
+  
+
+# Commands to get sp roles
+
+app=dev-ski-jobs
+sp=$(az webapp identity show -n $app -g ski -o tsv --query principalId)
+az role assignment list --all --assignee $sp -o table --query '[].{role:roleDefinitionName, group:resourceGroup}'
+
+3f319edc-7875-451d-bea8-ddea8297de97
+
+Role         Group
+-----------  --------
+Contributor  ski-jobs
+Reader       shared
+AcrPull      ski
+Reader       ski
+Contributor  ski
+
+
+# Tail the logs
+az webapp log tail -n dev-sk-jobs -g ski
+
+
+SKICONSOLE_IMAGE
+SKIBLOBS=KeyVault
+GOOGLESKIVIDEOS
+REGISTRY_RESOURCE_GROUP
+REGISTRY_NAME
+ACI_RESOURCEGROUP
+SUBSCRIPTIONID
+
+# canary-ski-jobs
+sp=3f319edc-7875-451d-bea8-ddea8297de97
+az role assignment create --role Contributor --assignee $sp --resource-group ski-jobs
+
+
+acr_scope=/subscriptions/40a293b5-bd26-47ef-acc3-c001a5bfce82/resourceGroups/ski/providers/Microsoft.ContainerRegistry/registries/jasondelAcr
+
+az role assignment create --role AcrPull --assignee $sp --scope $acr_scope
+az role assignment create --role Reader --assignee $sp --scope $acr_scope
+
+az webapp config appsettings list -g ski -n dev-ski-jobs > dev-ski-jobs.settings.json
+az webapp config appsettings set -g ski -n canary-ski-jobs --settings @dev-ski-jobs.settings.json
+
+## Error, this doesn't seem to be scriptable?
+az keyvault set-policy --name delormejKV -g ski --secret-permissions get list 
+
+@Microsoft.KeyVault(SecretUri=https://delormejkv.vault.azure.net/secrets/GOOGLESKIVIDEOS/ea1e6c74424d42c7af20bbb622085231)
+@Microsoft.KeyVault(SecretUri=https://delormejkv.vault.azure.net/secrets/SKIBLOBS/7accc8c1812b4f49aa205f362cfa4b64)
