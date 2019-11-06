@@ -117,19 +117,9 @@ namespace SkiConsole
             {
                 Train();
             }
-<<<<<<< HEAD
-            else if (args[0] == "-x")
-            {
-                //PrintCourses(args);
-                if (args.Length < 2)
-                    GetGoogleStorageSizeAsync().Wait();
-                else
-                    UploadLatestToGoogleAsync(args[1]).Wait();
-=======
             else if (args[0] == "-g")
             {
                 GoogleStorageOperations(args);
->>>>>>> feature/skijobService
             }
             else if (args[0] == "-s" && args.Length > 2) 
             {
@@ -340,12 +330,6 @@ namespace SkiConsole
             Console.WriteLine($"Lat: {coords.Latitude}, Lon: {coords.Longitude}");
         }
 
-<<<<<<< HEAD
-        private static async Task UploadLatestToGoogleAsync(string arg)
-        {
-            int count = int.Parse(arg);
-
-=======
         private static void GoogleStorageOperations(string[] args)
         {
             if (args.Length < 2)
@@ -373,7 +357,6 @@ namespace SkiConsole
 
         private static async Task UploadLatestToGoogleAsync(int count)
         {
->>>>>>> feature/skijobService
             var videos = await LoadVideosAsync();
             var sortedVideos = SortVideos(videos);
             Logger.Log($"Found {videos.Count} videos.");
