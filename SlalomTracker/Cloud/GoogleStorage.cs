@@ -39,14 +39,26 @@ namespace SlalomTracker.Cloud
             return $"{BaseUrl}{objectName}";      
         }
 
-        public Task<float> GetBucketSizeAsync(string bucketName = null)
+        public Task<float> GetBucketSizeAsync()
         {
             return Task<float>.Run( () => 
             {
-                var list = _storage.ListObjects(bucketName ?? BucketName);
+                var list = _storage.ListObjects(BucketName);
                 float size = list.Sum(o => (float?)o.Size ?? default(float));
                 return size / (1024F*1024F); // Convert to MB
             });
         }        
+
+        public Task DeleteAsync(string videoUrl)
+        {
+            return Task.Run(() => 
+                _storage.DeleteObject(BucketName, GetObjectName(videoUrl))
+            );
+        }
+
+        private string GetObjectName(string videoUrl)
+        {
+            return videoUrl.Replace(BaseUrl, "");
+        }
     }
 }

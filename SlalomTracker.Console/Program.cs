@@ -117,13 +117,9 @@ namespace SkiConsole
             {
                 Train();
             }
-            else if (args[0] == "-x")
+            else if (args[0] == "-g")
             {
-                //PrintCourses(args);
-                if (args.Length < 2)
-                    GetGoogleStorageSizeAsync().Wait();
-                else
-                    UploadLatestToGoogleAsync(args[1]).Wait();
+                GoogleStorageOperations(args);
             }
             else if (args[0] == "-s" && args.Length > 2) 
             {
@@ -334,10 +330,33 @@ namespace SkiConsole
             Console.WriteLine($"Lat: {coords.Latitude}, Lon: {coords.Longitude}");
         }
 
-        private static async Task UploadLatestToGoogleAsync(string arg)
+        private static void GoogleStorageOperations(string[] args)
         {
-            int count = int.Parse(arg);
+            if (args.Length < 2)
+            {
+                GetGoogleStorageSizeAsync().Wait();
+                PrintGoogleStorageUsage();
+            }
+            else
+            {
+                int count = int.Parse(args[1]);
+                if (count < 0)
+                    DeleteOldestAsync(Math.Abs(count)).Wait();
+                else
+                    UploadLatestToGoogleAsync(count).Wait();
+            }
+        }
 
+        private static void PrintGoogleStorageUsage()
+        {
+            Console.WriteLine("Google Storage Usage:");
+            Console.WriteLine("\t-g\tReturns bucket size in MiB");
+            Console.WriteLine("\t-g 2\tUploads newest 2 to Google and updates metadata.");
+            Console.WriteLine("\t-g -2\tDeletes 2 oldest from Google and updates metadata.");            
+        }
+
+        private static async Task UploadLatestToGoogleAsync(int count)
+        {
             var videos = await LoadVideosAsync();
             var sortedVideos = SortVideos(videos);
             Logger.Log($"Found {videos.Count} videos.");
@@ -369,14 +388,50 @@ namespace SkiConsole
                 return videos.OrderByDescending(v => v.RecordedTime)
                     .Where(v => v.HotUrl == null)
                     .Take(count);
-            }
+            }        
         }
 
         private static async Task GetGoogleStorageSizeAsync()
         {
             GoogleStorage gstore = new GoogleStorage();
             float size = await gstore.GetBucketSizeAsync();
-            Logger.Log($"Total bucket size is {size:0,0.0} MiB");
+            Console.WriteLine($"Total bucket size is {size:0,0.0} MiB");
+        }
+
+        private static async Task<int> DeleteOldestAsync(int count)
+        {
+            GoogleStorage gstore = new GoogleStorage();
+            Storage storage = new Storage();
+            var videos = await LoadVideosAsync();
+            var sortedVideos = SortVideos(videos);
+
+            List<Task> videoTasks = new List<Task>();
+
+            foreach (var video in sortedVideos)
+            {
+                videoTasks.Add(
+                    DeleteGoogleVideoAsync(gstore, storage, video)
+                );
+            }
+
+            Task.WaitAll(videoTasks.ToArray());
+            return videoTasks.Count();
+
+            IEnumerable<SkiVideoEntity> SortVideos(IEnumerable<SkiVideoEntity> videos)
+            {
+                return videos.OrderBy(v => v.RecordedTime)
+                    .Where(v => v.HotUrl != null)
+                    .Take(count);
+            }                    
+        }
+
+        private static async Task DeleteGoogleVideoAsync(GoogleStorage gstore, Storage storage, SkiVideoEntity video)
+        {
+            Logger.Log($"Deleting {video.HotUrl} recorded @ {video.RecordedTime}.");
+            await gstore.DeleteAsync(video.HotUrl);
+            video.HotUrl = "";
+            storage.UpdateMetadata(video);
+            Logger.Log($"Metadata updated for video recorded @ {video.RecordedTime}.");
         }
     }
 }
