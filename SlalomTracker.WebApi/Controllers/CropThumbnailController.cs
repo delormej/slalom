@@ -12,11 +12,11 @@ namespace SlalomTracker.WebApi.Controllers
     public class CropThumbnailController : Controller
     {
         [HttpGet]
-        public IActionResult Get(string thumbnailUrl, int width = 600, int height = 1200)
+        public IActionResult Get(string thumbnailUrl, int width = 600, int height = 1200, int heightOffset = 0)
         {
             try
             {
-                Bitmap image = CropImage(thumbnailUrl, width, height);
+                Bitmap image = CropImage(thumbnailUrl, width, height, heightOffset);
                 using (var ms = new MemoryStream())
                 {
                     image.Save(ms, ImageFormat.Png);
@@ -29,12 +29,13 @@ namespace SlalomTracker.WebApi.Controllers
                 return StatusCode(500);
             }
         }
-        private Bitmap CropImage(string url, int cropWidth, int cropHeight)
+
+        private Bitmap CropImage(string url, int cropWidth, int cropHeight, int heightOffset)
         {   
             string filename = DownloadImage(url);
             Bitmap src = Image.FromFile(filename) as Bitmap;
             int x = (src.Width / 2) - (cropWidth / 2);
-            int y = (src.Height - cropHeight);
+            int y = (src.Height - cropHeight) - heightOffset;
             Rectangle cropRect = new Rectangle(x, y, cropWidth, cropHeight);
             Bitmap target = new Bitmap(cropWidth, cropHeight);
             
