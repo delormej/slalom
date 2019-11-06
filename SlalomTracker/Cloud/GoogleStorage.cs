@@ -43,7 +43,7 @@ namespace SlalomTracker.Cloud
         {
             return Task<float>.Run( () => 
             {
-                var list = _storage.ListObjects(bucketName ??= BucketName);
+                var list = _storage.ListObjects(bucketName ?? BucketName);
                 float size = list.Sum(o => (float?)o.Size ?? default(float));
                 return size / (1024F*1024F); // Convert to MB
             });
