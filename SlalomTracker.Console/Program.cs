@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using SlalomTracker;
 using SlalomTracker.Cloud;
 using SlalomTracker.Video;
@@ -118,7 +119,11 @@ namespace SkiConsole
             }
             else if (args[0] == "-x")
             {
-                PrintCourses(args);
+                //PrintCourses(args);
+                if (args.Length < 2)
+                    throw new ArgumentException("Must pass a count.");
+                int count = int.Parse(args[1]);
+                UploadLatestToGoogleAsync(count).Wait();
             }
             else if (args[0] == "-s" && args.Length > 2) 
             {
@@ -186,10 +191,11 @@ namespace SkiConsole
             youTube.Upload(localPath);
         }
 
-        private static void DownloadVideo(string url)
+        private static string DownloadVideo(string url)
         {
             string localPath = Storage.DownloadVideo(url);
             Console.WriteLine("Downloaded to:\n\t" + localPath);
+            return localPath;
         }
 
         private static void ExtractMetadataAsJson(string videoLocalPath, string jsonPath)
@@ -326,6 +332,42 @@ namespace SkiConsole
             KnownCourses courses = new KnownCourses();
             var coords = courses.GetNewCoordinates(courseName, meters, heading);
             Console.WriteLine($"Lat: {coords.Latitude}, Lon: {coords.Longitude}");
+        }
+
+        private static async Task UploadLatestToGoogleAsync(int count)
+        {
+            var videos = await LoadVideosAsync();
+            var sortedVideos = SortVideos(videos);
+            Logger.Log($"Found {videos.Count} videos.");
+
+            GoogleStorage gStore = new GoogleStorage();
+            Storage storage = new Storage();
+            List<Task<string>> uploadTasks = new List<Task<string>>();
+
+            foreach (var e in sortedVideos)
+            {
+                Console.WriteLine("\t{0}\t{1}", e.RecordedTime, e.Url);
+                uploadTasks.Add(UploadToGoogle(e));
+            }
+
+            Task.WaitAll(uploadTasks.ToArray());
+            Logger.Log("Upload complete.");
+            
+            async Task<string> UploadToGoogle(SkiVideoEntity e)
+            {   
+                string localPath = await Task<string>.Run(() => DownloadVideo(e.Url));
+                e.HotUrl = await gStore.UploadVideoAsync(localPath, e.RecordedTime);
+                storage.UpdateMetadata(e);
+                Logger.Log($"Google HotUrl updated {e.HotUrl}");
+                return e.HotUrl;
+            }
+
+            IEnumerable<SkiVideoEntity> SortVideos(IEnumerable<SkiVideoEntity> videos)
+            {
+                return videos.OrderByDescending(v => v.RecordedTime)
+                    .Take(count)
+                    .Where(v => v.HotUrl == null);                
+            }
         }
     }
 }
