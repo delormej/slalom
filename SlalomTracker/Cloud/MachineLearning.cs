@@ -82,27 +82,31 @@ namespace SlalomTracker.Cloud
             }
             catch (TrainingModels.CustomVisionErrorException e)
             {
-                System.Console.WriteLine("Unable to train model:\n" + 
-                    e.Response.Content);
-                if (e.InnerException != null)
-                    System.Console.WriteLine("\n"+e.InnerException.Message);
+                Logger.Log("Unable to train model:\n" + e.Response.Content, e);
             }            
         }
 
         public virtual string Predict(string thumbnailUrl)
         {
-            Console.WriteLine($"Making a prediction of {CustomVisionModelName} for: " + thumbnailUrl);
+            Logger.Log($"Making a prediction of {CustomVisionModelName} for: " + thumbnailUrl);
 
             PredictionModels.ImageUrl thumbnail = new PredictionModels.ImageUrl(CropThumbnailUrl + thumbnailUrl);
             var result = predictionApi.ClassifyImageUrl(ProjectId, CustomVisionModelName, thumbnail);
 
-            // Loop over each prediction and write out the results
-            foreach (var c in result.Predictions)
-            {
-                Console.WriteLine($"\t{c.TagName}: {c.Probability:P1}");
-            }
+            LogPredicitions(result.Predictions);
 
             return GetHighestRankedPrediction(result.Predictions);
+        }
+
+        private void LogPredicitions(IList<PredictionModels.PredictionModel> predictions)
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            sb.AppendLine();
+
+            foreach (var c in predictions)
+                sb.Append($"\t{c.TagName}: {c.Probability:P1}\n");
+
+            Logger.Log(sb.ToString());
         }
 
         private string GetHighestRankedPrediction(IList<PredictionModels.PredictionModel> predictions)
@@ -172,13 +176,13 @@ namespace SlalomTracker.Cloud
         {
             try
             {
-                Console.WriteLine($"Sending batch of {entries.Count} urls to train.");
+                Logger.Log($"Sending batch of {entries.Count} urls to train.");
                 var batch = new TrainingModels.ImageUrlCreateBatch(entries);
                 trainingApi.CreateImagesFromUrls(ProjectId, batch);        
             }
             catch (Exception e)
             {
-                Console.WriteLine("Error writing ML training batch." + e);
+                Logger.Log("Error writing ML training batch.", e);
             }
         }
 

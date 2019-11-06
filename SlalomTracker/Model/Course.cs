@@ -38,13 +38,6 @@ namespace SlalomTracker
         {
             Course55EntryCL = entry;
             Course55ExitCL = exit;
-            double length = Course55EntryCL.GetDistanceTo(Course55ExitCL);
-            Console.WriteLine("Course length: " + length);
-            // 3 meter tolerance?
-            //if (length > (LengthM + 3) ||
-            //        length < (LengthM - 3))
-            //    throw new ApplicationException(string.Format(@"Course length: {0} is not within tolerance.", length));
-
             GenerateCourseFeatures();
             GeneratePolygons();
         }
@@ -122,7 +115,7 @@ namespace SlalomTracker
             poly.Add(Util.MoveTo(this.Course55EntryCL, halfWidth, right));
             poly.Add(Util.MoveTo(this.Course55ExitCL, halfWidth, right));
             poly.Add(Util.MoveTo(this.Course55ExitCL, halfWidth, left));
-            Console.WriteLine($"CourseGeo, TopLeft:{poly[0]}, TopRight:{poly[1]}, BottomRight:{poly[2]}, BottomLeft:{poly[3]}");
+
             return poly;
         }
 

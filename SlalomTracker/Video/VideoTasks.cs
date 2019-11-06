@@ -37,15 +37,15 @@ namespace SlalomTracker
             if (duration > 0.0d)
             {
                 duration += 5.0; /* pad 5 seconds more */
-                Console.WriteLine(
+                Logger.Log(
                     $"Trimming {_localVideoPath} from {start} seconds for {duration} seconds.");     
                 
                 var trimTask = TrimAsync(_localVideoPath, start, duration);
                 trimTask.Wait();
                 string trimmedPath = trimTask.Result;
                 
-                Console.WriteLine($"Trimmed: {trimmedPath}");
-                Console.WriteLine($"Removing audio from {_localVideoPath}.");
+                Logger.Log($"Trimmed: {trimmedPath}");
+                Logger.Log($"Removing audio from {_localVideoPath}.");
                 
                 var silenceTask = RemoveAudioAsync(trimmedPath);
                 silenceTask.Wait();
@@ -88,7 +88,7 @@ namespace SlalomTracker
             string outputFile = AppendToFileName(inputFile, "s");
             string parameters = $"-i {inputFile} -c copy -an {outputFile}";
             await _ffmpeg.ExecuteAsync(parameters);
-            Console.WriteLine($"Removed Audio: {outputFile}");
+            Logger.Log($"Removed Audio: {outputFile}");
             
             return outputFile;
         }
@@ -122,7 +122,7 @@ namespace SlalomTracker
             var outputFile = new MediaFile(thumbnailPath);
             var options = new ConversionOptions { Seek = TimeSpan.FromSeconds(atSeconds) };
 
-            Console.WriteLine($"Generating thumbnail: {thumbnailPath} for video: {_localVideoPath} at {atSeconds} seconds.");
+            Logger.Log($"Generating thumbnail: {thumbnailPath} for video: {_localVideoPath} at {atSeconds} seconds.");
             await _ffmpeg.GetThumbnailAsync(inputFile, outputFile, options);
 
             return thumbnailPath;
@@ -130,8 +130,9 @@ namespace SlalomTracker
 
         private void OnError(object sender, ConversionErrorEventArgs e)
         {
-            Console.WriteLine("FFMPEG error: [{0} => {1}]: Error: {2}\n\t{3}", 
-                e.Input.FileInfo.Name, e.Output.FileInfo.Name, e.Exception.ExitCode, e.Exception.Message);
+            Logger.Log(string.Format("FFMPEG error: [{0} => {1}]: Error: {2}\n\t{3}",
+                e.Input.FileInfo.Name, e.Output.FileInfo.Name, e.Exception.ExitCode, e.Exception.Message),
+                e.Exception);
         }    
 
         private string AppendToFileName(string inputFile, string suffix, bool appendFileIndex = false)

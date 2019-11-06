@@ -6,12 +6,24 @@ using System.Net.Http;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Mvc;
 using SlalomTracker.Cloud;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 
 namespace SlalomTracker.WebApi.Controllers
 {
     [ApiController]
     public class VideoController : Controller
     {
+        ILogger<VideoController> _logger;
+        private readonly IConfiguration _config;
+
+        public VideoController(ILogger<VideoController> logger, IConfiguration config)
+        {
+            _logger = logger;
+            _config = config;
+        }
+
         [HttpPost]
         [Route("api/video")]
         public IActionResult QueueVideo()
@@ -23,49 +35,41 @@ namespace SlalomTracker.WebApi.Controllers
                 string blobName = GetBlobName(videoUrl);
                 storage.Queue.Add(blobName, videoUrl);
                 
-                Console.WriteLine("Queued video: " + videoUrl);
+                _logger.LogInformation($"Queued video: {videoUrl}");
                 return StatusCode(200);
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine("Unable queue video for procesasing: " + e.Message);
+                _logger.LogError("Unable queue video for processing: " + e.Message);
                 return StatusCode(500);
             }
         }
        
         [HttpPost]
         [Route("api/processvideo")]
-        public IActionResult StartProcessVideo()
+        public async Task<IActionResult> StartProcessVideo()
         {
             string videoUrl = ""; 
             try
             {
                 videoUrl = GetVideoUrlFromRequest();
-                string containerGroup = ContainerInstance.Create(videoUrl);
-                return Json(new {ContainerGroup=containerGroup,VideoUrl=videoUrl});
+                var response = await CreateContainerInstance(videoUrl);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    string message = ReadResponse(response);
+                    _logger.LogError(message);
+                    return StatusCode(500, message);
+                }
+                else
+                {
+                    string message = ReadResponse(response);
+                    return StatusCode(200, message);
+                }
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error creating container instance for {videoUrl}\nError:{e}");
+                _logger.LogError($"Error creating container instance for {videoUrl}\nError:{e}");
                 return StatusCode(500, e.Message);
-            }
-        }
-
-        [HttpPost]
-        [Route("api/acicleanup")]
-        public IActionResult DeleteAllContainerGroups()
-        {
-            try 
-            {
-                int count = ContainerInstance.DeleteAllContainerGroups();
-                var result = new {deletedCount=count};
-                return Json(result);
-            }
-            catch (Exception e)
-            {
-                string message = $"Error deleting ACI container groups: \n{e.Message}";
-                Console.WriteLine(message);
-                return StatusCode(500, message);
             }
         }
 
@@ -88,7 +92,7 @@ namespace SlalomTracker.WebApi.Controllers
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                _logger.LogError(e.Message);
                 return StatusCode(500, e.Message);                
             }
         }
@@ -121,5 +125,27 @@ namespace SlalomTracker.WebApi.Controllers
             Uri uri = new Uri(videoUrl);
             return uri.LocalPath;
         }        
+
+        private Task<HttpResponseMessage> CreateContainerInstance(string videoUrl)
+        {
+            string baseUrl = _config["SKIJOBS_SERVICE"];
+            string url = baseUrl + "/aci/create";
+            _logger.LogInformation($"Calling {url} for video {videoUrl}");
+
+            string content = JsonConvert.SerializeObject(videoUrl);
+
+            // Encode parameters.
+            var httpContent = new StringContent(content, Encoding.UTF8, "application/json");
+
+            HttpClient client = new HttpClient();                 
+            return client.PostAsync(url, httpContent);
+        }
+
+        private string ReadResponse(HttpResponseMessage response)
+        {
+            var task = response.Content.ReadAsStringAsync();
+            task.Wait();
+            return task.Result;
+        }
     }
 }

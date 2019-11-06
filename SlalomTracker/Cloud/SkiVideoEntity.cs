@@ -23,6 +23,12 @@ namespace SlalomTracker.Cloud
 
         public string Url { get; set; }
         
+        /// <summary>
+        /// Url for hot storage (currently Google storage).  Only most recent 
+        /// videos stored here.
+        /// </summary>
+        public string HotUrl { get; set; }
+
         public string ThumbnailUrl { get; set; }
         
         public string JsonUrl { get; set; }

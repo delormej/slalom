@@ -47,7 +47,7 @@ namespace SlalomTracker.Cloud
             string jsonUrl = UploadMeasurements(blobName, json);
             entity.JsonUrl = jsonUrl; 
             AddTableEntity(entity);
-            Console.WriteLine("Uploaded metadata for video:" + entity.Url);            
+            Logger.Log("Uploaded metadata for video:" + entity.Url);            
         }
 
         public void UpdateMetadata(SkiVideoEntity entity)
@@ -77,15 +77,15 @@ namespace SlalomTracker.Cloud
             existsTask.Wait();
             if (existsTask.Result)
             {
-                Console.WriteLine($"Cloud Blob {blobName} already exists. Overwriting by default.");
+                Logger.Log($"Cloud Blob {blobName} already exists. Overwriting by default.");
             }
 
-            Console.WriteLine($"Uploading file: {localFile}");
+            Logger.Log($"Uploading file: {localFile}");
             var task = blob.UploadFromFileAsync(localFile);
             task.Wait();
 
             string uri = blob.SnapshotQualifiedUri.AbsoluteUri;
-            Console.WriteLine($"Uploaded file to {uri}");
+            Logger.Log($"Uploaded file to {uri}");
             return uri; // URL to the uploaded file.
         }
 
@@ -109,11 +109,11 @@ namespace SlalomTracker.Cloud
             string path = GetLocalPath(videoUrl);
             if (File.Exists(path)) 
             {
-                Console.WriteLine("File already exists.");
+                Logger.Log("File already exists.");
             }
             else 
             {
-                Console.Write("Requesting video: " + videoUrl + " ...");
+                Logger.Log("Requesting video: " + videoUrl + " ...");
 
                 string directory = Path.GetDirectoryName(path);
                 if (directory != String.Empty && !Directory.Exists(directory))
@@ -132,7 +132,7 @@ namespace SlalomTracker.Cloud
                 client.DownloadFile(videoUrl, path);
             }
 
-            Console.WriteLine("File is here: " + path);
+            Logger.Log("File is here: " + path);
             return path;
         }       
 
@@ -219,12 +219,12 @@ namespace SlalomTracker.Cloud
                 if (blob == null)
                     throw new ApplicationException($"Error deleting. {blobName} did not exist.");
                 blob.DeleteAsync().Wait();
-                Console.WriteLine($"Deleted {blobName}");
+                Logger.Log($"Deleted {blobName}");
             }
             catch (Exception e)
             {
                 // Warning, not an error.
-                Console.WriteLine($"Unable to delete blob {blobName} from ingest container {INGEST_SKICONTAINER}.\n\tError: {e.Message}");
+                Logger.Log($"Unable to delete blob {blobName} from ingest container {INGEST_SKICONTAINER}.\n\tError: {e.Message}");
             }
         }
 
@@ -258,7 +258,6 @@ namespace SlalomTracker.Cloud
         private static string GetConnectionString()
         {
             return Environment.GetEnvironmentVariable(ENV_SKIBLOBS);
-            //ENV SKIBLOBS = "DefaultEndpointsProtocol=https;AccountName=skivideostorage;AccountKey=74gV///fVtd/ZL+PzXZU6nsOVzIvt6XC59T9elFnY91vCVqmitlHxNA9QLbQsedTmnCzSR0BhtL0J8dwOVSWvA==;EndpointSuffix=core.windows.net"
         }
 
         private void ConnectToQueue()
@@ -352,7 +351,8 @@ namespace SlalomTracker.Cloud
             createTask.Wait();
             Task insertTask = table.ExecuteAsync(insert);
             insertTask.Wait();
-            System.Console.WriteLine($"Inserted course: {entity.RowKey}");
+            
+            Logger.Log($"Inserted course: {entity.RowKey}");
         }    
 
         private string UploadMeasurements(string blobName, string json)
