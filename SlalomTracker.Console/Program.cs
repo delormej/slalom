@@ -121,9 +121,9 @@ namespace SkiConsole
             {
                 //PrintCourses(args);
                 if (args.Length < 2)
-                    throw new ArgumentException("Must pass a count.");
-                int count = int.Parse(args[1]);
-                UploadLatestToGoogleAsync(count).Wait();
+                    GetGoogleStorageSizeAsync().Wait();
+                else
+                    UploadLatestToGoogleAsync(args[1]).Wait();
             }
             else if (args[0] == "-s" && args.Length > 2) 
             {
@@ -334,8 +334,10 @@ namespace SkiConsole
             Console.WriteLine($"Lat: {coords.Latitude}, Lon: {coords.Longitude}");
         }
 
-        private static async Task UploadLatestToGoogleAsync(int count)
+        private static async Task UploadLatestToGoogleAsync(string arg)
         {
+            int count = int.Parse(arg);
+
             var videos = await LoadVideosAsync();
             var sortedVideos = SortVideos(videos);
             Logger.Log($"Found {videos.Count} videos.");
@@ -365,9 +367,16 @@ namespace SkiConsole
             IEnumerable<SkiVideoEntity> SortVideos(IEnumerable<SkiVideoEntity> videos)
             {
                 return videos.OrderByDescending(v => v.RecordedTime)
-                    .Take(count)
-                    .Where(v => v.HotUrl == null);                
+                    .Where(v => v.HotUrl == null)
+                    .Take(count);
             }
+        }
+
+        private static async Task GetGoogleStorageSizeAsync()
+        {
+            GoogleStorage gstore = new GoogleStorage();
+            float size = await gstore.GetBucketSizeAsync();
+            Logger.Log($"Total bucket size is {size:0,0.0} MiB");
         }
     }
 }
