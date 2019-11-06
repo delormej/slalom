@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Google.Cloud.Storage.V1;
+using System.Linq;
 
 namespace SlalomTracker.Cloud
 {
@@ -10,10 +11,13 @@ namespace SlalomTracker.Cloud
         public string BucketName;
         public string BaseUrl;
 
+        StorageClient _storage;
+
         public GoogleStorage()
         {
             BucketName = "skivideo";
             BaseUrl = $"https://storage.googleapis.com/{BucketName}/";
+            _storage = StorageClient.Create();
         }
 
         public async Task<string> UploadVideoAsync(string localFile, DateTime creationTime)
@@ -25,9 +29,8 @@ namespace SlalomTracker.Cloud
             
             using (var f = File.OpenRead(localFile))
             {
-                StorageClient storage = StorageClient.Create();
                 string contentType = localFile.ToUpper().EndsWith("MP4") ? "video/mp4" : null;
-                storageObject = await storage.UploadObjectAsync(BucketName, objectName, contentType, f);
+                storageObject = await _storage.UploadObjectAsync(BucketName, objectName, contentType, f);
             }
 
             if (storageObject == null)
@@ -36,13 +39,26 @@ namespace SlalomTracker.Cloud
             return $"{BaseUrl}{objectName}";      
         }
 
-        private void ListBlobs(string bucketName)
+        public Task<float> GetBucketSizeAsync()
         {
-            // var list = storage.ListObjects(bucketName);
-            // foreach (var o in list)
-            // {
-            //     System.Console.WriteLine(o.Id);
-            // }            
+            return Task<float>.Run( () => 
+            {
+                var list = _storage.ListObjects(BucketName);
+                float size = list.Sum(o => (float?)o.Size ?? default(float));
+                return size / (1024F*1024F); // Convert to MB
+            });
         }        
+
+        public Task DeleteAsync(string videoUrl)
+        {
+            return Task.Run(() => 
+                _storage.DeleteObject(BucketName, GetObjectName(videoUrl))
+            );
+        }
+
+        private string GetObjectName(string videoUrl)
+        {
+            return videoUrl.Replace(BaseUrl, "");
+        }
     }
 }
