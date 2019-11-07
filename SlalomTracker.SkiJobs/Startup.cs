@@ -11,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Rest;
 using Microsoft.Azure.Services.AppAuthentication;
+using Microsoft.OpenApi.Models;
 
 namespace SlalomTracker.SkiJobs
 {
@@ -31,6 +32,11 @@ namespace SlalomTracker.SkiJobs
             // Use Dependency Injection to add Azure Credentials to all controllers.
             services.AddSingleton<ServiceClientCredentials>(sp => 
                 GetAzureCredentials() );
+
+            services.AddSwaggerGen(c =>
+                {
+                    c.SwaggerDoc("v1", new OpenApiInfo { Title = "SkiJobs API", Version = "v1" });
+                });                
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -53,6 +59,8 @@ namespace SlalomTracker.SkiJobs
             {
                 endpoints.MapControllers();
             });
+
+            app.UseSwagger();
         }
 
         private ServiceClientCredentials GetAzureCredentials()
