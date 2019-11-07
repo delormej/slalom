@@ -28,7 +28,7 @@ namespace SlalomTracker.SkiJobs
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            
+            services.AddCors();                  
             // Use Dependency Injection to add Azure Credentials to all controllers.
             services.AddSingleton<ServiceClientCredentials>(sp => 
                 GetAzureCredentials() );
@@ -46,6 +46,10 @@ namespace SlalomTracker.SkiJobs
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseCors(
+                options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()
+            );
 
             app.UseRouting();
 
