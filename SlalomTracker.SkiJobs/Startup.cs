@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Rest;
 using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.OpenApi.Models;
+using SlalomTracker.SkiJobs.FacebookSecurity;
 
 namespace SlalomTracker.SkiJobs
 {
@@ -34,9 +35,18 @@ namespace SlalomTracker.SkiJobs
                 GetAzureCredentials() );
 
             services.AddSwaggerGen(c =>
-                {
-                    c.SwaggerDoc("v1", new OpenApiInfo { Title = "SkiJobs API", Version = "v1" });
-                });                
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "SkiJobs API", Version = "v1" });
+            });                
+
+            services.AddAuthentication(options => {
+                options.AddScheme<FacebookAuthenticationHandler>("facebook", "Facebook Authentication");
+                options.DefaultScheme = "facebook";
+            });
+            
+            services.AddAuthorization(options => {
+                options.AddPolicy("admin", policy => policy.RequireRole("admin"));
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -52,6 +62,8 @@ namespace SlalomTracker.SkiJobs
             );
 
             app.UseRouting();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

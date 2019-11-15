@@ -10,10 +10,12 @@ using Microsoft.Rest;
 using Microsoft.Rest.Azure;
 using SlalomTracker.SkiJobs.Models;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SlalomTracker.SkiJobs.Controllers
 {
     [ApiController]
+    [Authorize(Roles = "admin")]
     [Route("[controller]")]
     public class AciController : ControllerBase
     {
