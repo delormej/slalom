@@ -12,5 +12,4 @@ docker build -t skijobsapi -f ./Dockerfile .
 #
 # Launch debug container
 #
-docker run --entrypoint /bin/bash --rm --name ski-dbg -p 80:80 -it -v --env-file=dev.env \
-    skijobsapi
+docker run --rm --name ski-dbg -p 80:80 -it -v --env-file=dev.env skijobsapi
