@@ -67,6 +67,7 @@ namespace SlalomTracker.SkiJobs.Controllers
             return responseBody;
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [Route("create")]
         public IActionResult Create([FromBody]string videoUrl)
