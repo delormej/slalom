@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: skijobs-service
+spec:
+  selector:
+    app: skijobs
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: skijobs
+  labels:
+    app: skijobs
+    aadpodidbinding: skijobs-podid        # why do I need this in both places?
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: skijobs
+  template:
+    metadata:
+      labels:
+        app: skijobs
+        aadpodidbinding: skijobs-podid        # why do I need this in both places?
+    spec:
+      containers:
+      - name: skijobsapi
+        image: jasondelacr.azurecr.io/skijobsapi:v20191125.1
+        ports:
+        - containerPort: 80
+        env:
+        - name: SKICONSOLE_IMAGE
+          value: "jasondelacr.azurecr.io/skiconsole:v20191125.1"
+        - name: SUBSCRIPTIONID
+          value: "40a293b5-bd26-47ef-acc3-c001a5bfce82"
+        - name: REGISTRY_NAME
+          value: "jasondelAcr"
+        - name: REGISTRY_RESOURCE_GROUP
+          value: "ski"
+        - name: FacebookUserIds
+          value: "10157971048572662"
+        - name: FacebookAppId
+          value: "414107292826370"          
+        - name: ACI_CPU
+          value: "2.0"      
+        - name: ACI_MEMORY
+          value: "3.0"      
+        - name: ACI_RESOURCEGROUP
+          value: "ski-jobs"
+        - name: SKIBLOBS
+          value: "XXX"
+        - name: GOOGLESKIVIDEOS
+          value: "XXX"
+        - name: FacebookSecret
+          value: "XXX"
+
