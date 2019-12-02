@@ -1,16 +1,3 @@
-apiVersion: v1
-kind: Service
-metadata:
-  name: skijobs-service
-spec:
-  selector:
-    app: skijobs
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 80
-  type: LoadBalancer
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
