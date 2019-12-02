@@ -158,6 +158,16 @@ namespace SlalomTracker.SkiJobs.Controllers
             }            
         }
 
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("version")]
+        public string GetVersion()
+        {
+            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            return $"ACIController.Version: {version}";
+        }
+                
+
         private ContainerInstanceManagementClient GetClient(ServiceClientCredentials azureCredentials)
         {
             ContainerInstanceManagementClient aciClient = 

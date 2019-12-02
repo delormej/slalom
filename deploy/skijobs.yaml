@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: skijobs-service
+spec:
+  selector:
+    app: skijobs
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: skijobs
+  labels:
+    app: skijobs
+    aadpodidbinding: skijobs-podid        # why do I need this in both places?
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: skijobs
+  template:
+    metadata:
+      labels:
+        app: skijobs
+        aadpodidbinding: skijobs-podid        # why do I need this in both places?
+    spec:
+      containers:
+      - name: skijobsapi
+        image: jasondelacr.azurecr.io/skijobsapi:v20191125.1
+        ports:
+        - containerPort: 80
+        env:
+        - name: SKICONSOLE_IMAGE
+          value: "jasondelacr.azurecr.io/skiconsole:v20191125.1"
+        - name: SUBSCRIPTIONID
+          value: "40a293b5-bd26-47ef-acc3-c001a5bfce82"
+        - name: REGISTRY_NAME
+          value: "jasondelAcr"
+        - name: REGISTRY_RESOURCE_GROUP
+          value: "ski"
+        - name: FacebookUserIds
+          value: "10157971048572662"
+        - name: FacebookAppId
+          value: "414107292826370"          
+        - name: ACI_CPU
+          value: "2.0"      
+        - name: ACI_MEMORY
+          value: "3.0"      
+        - name: ACI_RESOURCEGROUP
+          value: "ski-jobs"
+        - name: SKIBLOBS
+          value: "DefaultEndpointsProtocol=https;AccountName=skivideostorage;AccountKey=74gV///fVtd/ZL+PzXZU6nsOVzIvt6XC59T9elFnY91vCVqmitlHxNA9QLbQsedTmnCzSR0BhtL0J8dwOVSWvA==;EndpointSuffix=core.windows.net"
+        - name: GOOGLESKIVIDEOS
+          value: "{   \"type\": \"service_account\",   \"project_id\": \"fluted-quasar-240821\",   \"private_key_id\": \"3b3a85b8fa9451bca3a55e0189b2c4ebc6255c68\",   \"private_key\": \"-----BEGIN PRIVATE KEY-----\\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCjPF2yzgjPtx0n\\nzfVabYJ/lDP40//rW33j00HvBa/MJQLYGCvpSi9b1wBvKRovF+sk2qny5XjgEF8v\\nXpT3I6jvAIbhRW0ALXPDXHbK2kfzc/bjIcbKcxpe0p2pgcnar7uOgNd28olphZMC\\n7pEZ4tl5mn99YDGD2MRbCFagA4RKXyZYmzpC17dzPlTko94r2Hiafu7VcrNed01H\\nFs6t2fFKbHFdFCLv1LkJewPQujKx51ZIqNaPBnq9Jmzk86NZiRBjbr4mpc6yJZT8\\n81tfSbZmVTdM7hXY27A0rGqULR3HPwTgqEfhExpT2IE0kqYkcyDClekuMfj7T65j\\n/WPn87y7AgMBAAECggEAFEG9Vkns3FYFfLc5hN9vy9mTj4PuJNdllScAw3g0W4RA\\n85nK9+LjDfsYNzM7EsVdmA+4pQdmtiuMnF9uOLMeAjbRsNVBlGg6OZquX+MG/cZn\\nc21GyEB7cRv4QRz1nzlNRam7KKwqyEOxaDI8eHa8dTOVMZ+v1VmfmF+9sZLDe8pb\\nRZRLMFtdn6pHtiQCyX6zEFOaIoeVi14mbuzTuY012FZM8S+WXRCSXy1+7AMe31d+\\n31hyHu9V2+oV3dr/fWO/tiNF1jPnqpgZjo55Rac+EZSlh9TTojTdEG/ZjJ8ZS427\\neU1uMtbO9ocyy/LUmAl2OoLIMyDSY8eUOa8CbMXoGQKBgQDO4L8Gq6spWDqL8Wyu\\n4Q4X3noOhoQocoku8et1oFn587MPWFnHaim+EoUXd9Ocyz+ecidXkZDOeLXcBSNo\\nVKBmBUd6ejPMpSJ97RQef78BEa5CBA95Si2cA4FYfEcfAlbBHXiKpW3h2+x8Qqjc\\nojnIB8xeOW/LWfDrt2YvG5VEAwKBgQDJ/svV2fulKWXQhdncp0gqLEMU9z1RUHfJ\\nIbNveUJk/RUkG7NDV76WZFfksVnJKGT9acCJJoiiTrFM/BhFdRuKSmrmQ+7V5gzs\\nCGUrNd40mrl2nCnCcySFBLWOQbNvSQ8N7gpoMu5iqenToDcMBO07NGpX6xwqiYGN\\nob/zQ5ry6QKBgGCzeVd64xT+Ys+LWEwecuIBYnhrtFbbwvgoqPFgtO47VdW0bLLk\\nEwL/0Sp5HndKIkDEB1PNfSymDAv+cuCPvjIyAYlkmdXs0sSeDyt6dyPeyd+d2kXN\\nwKgOk2VzIiOCil7WkcPtNAHBNTeYSSpowi2YR5U7r+AT+KOWJLOcZxdVAoGAX2L3\\nFtGNR/04mzPaIZzNMz0boHbwecmqB0zm0ylL9SyeIyMBkDeLRLG138TwRVHR/ulF\\nhn6v3xWSHGyfeY1HqBJkUMCbtF6ik4OTYshZWjYGhsBP6Ac/o6EJq1fTSCYT+dwD\\nBhmnAOiEBu+Njxt0e5TQ8xuPfXbZuuw7HME8FqECgYEAgvUSt2r5uhJQjiQiSreb\\nq7wKV7NDsmIbWSeMAAX9c5Fb5YrluP1nkCOgGCg/IEdwjQ5oXSNl/8vsk3TLIrB7\\nCq0mrU/bSLpZfaY27Dl5IKO6a99fGB6twGDSg4soi+hLytPoEFHxTxbYJa1kXre4\\ngx9NbDRXOdXpO60OnDU2ZU8=\\n-----END PRIVATE KEY-----\\n\",   \"client_email\": \"skivideos@fluted-quasar-240821.iam.gserviceaccount.com\",   \"client_id\": \"115962172763403460852\",   \"auth_uri\": \"https://accounts.google.com/o/oauth2/auth\",   \"token_uri\": \"https://oauth2.googleapis.com/token\",   \"auth_provider_x509_cert_url\": \"https://www.googleapis.com/oauth2/v1/certs\",   \"client_x509_cert_url\": \"https://www.googleapis.com/robot/v1/metadata/x509/skivideos%40fluted-quasar-240821.iam.gserviceaccount.com\" }"
+        - name: FacebookSecret
+          value: "29a029595d5bd100acd77f46f55a861a"
+
