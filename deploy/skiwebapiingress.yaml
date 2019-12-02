@@ -1,0 +1,13 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: skiwebapi-ingress
+spec:
+  rules:
+  - host: skiwebapi.40.71.233.111.nip.io
+    http:
+      paths:
+      - backend:
+          serviceName: skiwebapi-service
+          servicePort: 80
+        path: /
