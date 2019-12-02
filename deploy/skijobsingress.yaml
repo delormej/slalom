@@ -1,0 +1,13 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: skijobs-ingress
+spec:
+  rules:
+  - host: skijobs.40.71.233.111.nip.io
+    http:
+      paths:
+      - backend:
+          serviceName: skijobs-service
+          servicePort: 80
+        path: /

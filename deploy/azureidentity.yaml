@@ -1,0 +1,8 @@
+apiVersion: "aadpodidentity.k8s.io/v1"
+kind: AzureIdentity
+metadata:
+ name: skijobs-podid
+spec:
+ type: 0
+ ResourceID: /subscriptions/40a293b5-bd26-47ef-acc3-c001a5bfce82/resourcegroups/MC_ski-aks_ski-aks_eastus/providers/Microsoft.ManagedIdentity/userAssignedIdentities/skijobs-podid
+ ClientID: c9655bd2-7e28-4175-bf04-e85be89d10e5 
