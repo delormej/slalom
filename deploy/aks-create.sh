@@ -1,3 +1,4 @@
+#!/bin/bash
 export rg=ski-aks
 export aks_name=ski-aks
 export location=eastus
@@ -37,4 +38,7 @@ az aks create \
 
 # Grab the credentials.
 az aks get-credentials --overwrite-existing -g $rg -n $aks_name
+
+# Create a public IP address for ingress.
+export PUBLICIP=$(az network public-ip create --name ski-ingress-publicIp -g $rg --allocation-method Static --query publicIp.ipAddress)
 

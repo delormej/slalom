@@ -18,32 +18,31 @@ spec:
     spec:
       containers:
       - name: skijobsapi
-        image: jasondelacr.azurecr.io/skijobsapi:v20191125.1
+        image: {{ printf "%s%s%s" .Values.registry "/skijobsapi:v" .Values.buildNumber }}
         ports:
         - containerPort: 80
         env:
         - name: SKICONSOLE_IMAGE
-          value: "jasondelacr.azurecr.io/skiconsole:v20191125.1"
+          value: {{ printf "%s%s%s" .Values.registry "/skiconsole:v" .Values.buildNumber | quote }}
         - name: SUBSCRIPTIONID
-          value: "40a293b5-bd26-47ef-acc3-c001a5bfce82"
+          value: {{ .Values.azureSubscriptionId | quote }}
         - name: REGISTRY_NAME
-          value: "jasondelAcr"
+          value: {{ .Values.registryName | quote }}
         - name: REGISTRY_RESOURCE_GROUP
-          value: "ski"
+          value: {{ .Values.registryResourceGroup | quote }}
         - name: FacebookUserIds
-          value: "10157971048572662"
+          value: {{ .Values.facebookUserIds | quote }}
         - name: FacebookAppId
-          value: "414107292826370"          
+          value: {{ .Values.facebookAppId | quote }}
         - name: ACI_CPU
-          value: "2.0"      
+          value: {{ .Values.aciCpu | quote }}
         - name: ACI_MEMORY
-          value: "3.0"      
+          value: {{ .Values.aciMemoryGb | quote }}
         - name: ACI_RESOURCEGROUP
-          value: "ski-jobs"
+          value: {{ .Values.aciResourceGroup | quote }}
         - name: SKIBLOBS
-          value: "XXX"
+          value: {{ .Values.skiBlobsConnection | quote }}
         - name: GOOGLESKIVIDEOS
-          value: "XXX"
+          value: {{ .Values.googleSkiVideosConnection | quote }}
         - name: FacebookSecret
-          value: "XXX"
-
+          value: {{ .Values.facebookSecret | quote }}

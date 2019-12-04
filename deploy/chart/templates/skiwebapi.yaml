@@ -16,13 +16,13 @@ spec:
     spec:
       containers:
       - name: skiwebapi
-        image: jasondelacr.azurecr.io/skiwebapi:v20191202.1
+        image: {{ printf "%s%s%s" .Values.registry "/skiwebapi:v" .Values.buildNumber }}
         ports:
         - containerPort: 80
         env:
         - name: SUBSCRIPTIONID
-          value: "40a293b5-bd26-47ef-acc3-c001a5bfce82"
+          value: {{ .Values.azureSubscriptionId | quote }}
         - name: SKIJOBS_SERVICE
           value: "http://skijobs-service"
         - name: SKIBLOBS
-          value: "XXX"
+          value: {{ .Values.skiBlobsConnection | quote }}

@@ -1,13 +1,13 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: skiwebapi-ingress
+  name: skijobs-ingress
 spec:
   rules:
-  - host: skiwebapi.40.71.233.111.nip.io
+  - host: {{ printf "%s%s%s" "skijobs." .Values.publicIp ".nip.io" | quote }}
     http:
       paths:
       - backend:
-          serviceName: skiwebapi-service
+          serviceName: skijobs-service
           servicePort: 80
         path: /
