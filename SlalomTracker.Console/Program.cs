@@ -8,6 +8,7 @@ using System.Drawing.Imaging;
 using System.Drawing;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Logger = jasondel.Tools.Logger;
 
 namespace SkiConsole
 {
