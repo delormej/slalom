@@ -2,9 +2,9 @@ using System;
 using System.IO;
 using FFmpeg.NET;
 using FFmpeg.NET.Events;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using Logger = jasondel.Tools.Logger;
 
 namespace SlalomTracker
 {

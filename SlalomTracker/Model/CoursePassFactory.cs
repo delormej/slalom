@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using GeoCoordinatePortable;
 using Newtonsoft.Json;
 using System.Linq;
+using Logger = jasondel.Tools.Logger;
 
 namespace SlalomTracker
 {

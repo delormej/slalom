@@ -4,6 +4,7 @@ using System.Drawing;
 using GeoCoordinatePortable;
 using System.Reflection;
 using System.Linq;
+using Logger = jasondel.Tools.Logger;
 
 namespace SlalomTracker
 {

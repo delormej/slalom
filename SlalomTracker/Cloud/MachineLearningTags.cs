@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Training;
 using TrainingModels = Microsoft.Azure.CognitiveServices.Vision.CustomVision.Training.Models;
+using Logger = jasondel.Tools.Logger;
 
 namespace SlalomTracker.Cloud
 {

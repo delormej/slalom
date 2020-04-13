@@ -9,6 +9,7 @@ using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Table;
 using Microsoft.WindowsAzure.Storage.Queue;
 using System.Text.RegularExpressions;
+using Logger = jasondel.Tools.Logger;
 
 namespace SlalomTracker.Cloud
 {

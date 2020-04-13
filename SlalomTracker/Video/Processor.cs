@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
-using SlalomTracker;
 using SlalomTracker.Cloud;
+using Logger = jasondel.Tools.Logger;
 
 namespace SlalomTracker.Video 
 {

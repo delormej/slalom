@@ -5,6 +5,7 @@ using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction;
 using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Training;
 using PredictionModels = Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
 using TrainingModels = Microsoft.Azure.CognitiveServices.Vision.CustomVision.Training.Models;
+using Logger = jasondel.Tools.Logger;
 
 namespace SlalomTracker.Cloud
 {
