@@ -1,4 +1,6 @@
-FROM microsoft/dotnet:2.1-sdk as build
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1 as build
+
+ARG GITHUB_TOKEN
 
 # Workaround, dependencies for graphics libraries, per this issue: https://github.com/dotnet/corefx/issues/25102
 RUN apt-get update \
@@ -13,12 +15,13 @@ COPY ./ /ski
 WORKDIR /ski
 
 # Publish application
-RUN dotnet publish ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj -c Debug -o /ski/build/
+RUN dotnet restore ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj --configfile ./NuGet.Config && \
+    dotnet publish ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj -c Debug -o /ski/build/
 
 # Environment Variables
 ENV ASPNETCORE_URLS=http://0.0.0.0:80
 
-ENTRYPOINT ["dotnet", "/ski/build/SlalomTracker.WebApi.dll"]
+#ENTRYPOINT ["dotnet", "/ski/build/SlalomTracker.WebApi.dll"]
 
 # # NOTE: Build this docker file with relative path, e.g.:
 # #   ./SlalomTracker.WebApi/ $ docker build -f Dockerfile ../
