@@ -57,6 +57,8 @@ namespace SlalomTracker.Cloud
 
         public bool MarkedForDelete { get; set; } = false;
 
+        public bool Starred { get; set; } = false;
+
         private string GetFilenameFromUrl(string videoUrl)
         {
             Uri uri = new Uri(videoUrl);
