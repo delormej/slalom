@@ -67,7 +67,7 @@ namespace SlalomTracker.WebApi.Controllers
         private Course GetCourseFromMetadata(Storage storage, string jsonUrl)
         {
             string date = ParseDate(jsonUrl);
-            string filename = ParseMP4File(jsonUrl);
+            string filename = GetMP4FromJsonUrl(jsonUrl);
             SkiVideoEntity entity = storage.GetSkiVideoEntity(date, filename);
             
             // Should probably throw an exception here? 
@@ -99,10 +99,11 @@ namespace SlalomTracker.WebApi.Controllers
             return date;
         }
 
-        private string ParseMP4File(string jsonUrl)
+        private string GetMP4FromJsonUrl(string jsonUrl)
         {
             // GOPR01444.MP4
-            return Path.GetFileName(jsonUrl);
+            string file = Path.GetFileNameWithoutExtension(jsonUrl);
+            return file + ".MP4";
         }
     }
 }

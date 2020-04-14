@@ -21,7 +21,7 @@ RUN dotnet restore ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj --configfi
 # Environment Variables
 ENV ASPNETCORE_URLS=http://0.0.0.0:80
 
-#ENTRYPOINT ["dotnet", "/ski/build/SlalomTracker.WebApi.dll"]
+ENTRYPOINT ["dotnet", "/ski/build/SlalomTracker.WebApi.dll"]
 
 # # NOTE: Build this docker file with relative path, e.g.:
 # #   ./SlalomTracker.WebApi/ $ docker build -f Dockerfile ../

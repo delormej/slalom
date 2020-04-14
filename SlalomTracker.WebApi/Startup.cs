@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace SlalomTracker.WebApi
 {
@@ -27,8 +28,12 @@ namespace SlalomTracker.WebApi
         {
             services.AddControllers();
             services.AddApplicationInsightsTelemetry();      
-            services.AddCors();      
-             }
+            services.AddCors();
+            services.Configure<KestrelServerOptions>(options =>
+            {
+                options.AllowSynchronousIO = true;
+            });            
+        }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
