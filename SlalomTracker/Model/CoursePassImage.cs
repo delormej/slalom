@@ -173,6 +173,13 @@ namespace SlalomTracker
                 /* In between 55s and Gates */
                 m => m.HandlePosition.Y > _pass.Course.PreGates[0].Y &&
                 m.HandlePosition.Y < _pass.Course.Gates[0].Y);
+
+            if (range?.Count() == 0)
+            {
+                Logger.Log("Cannot draw pullout angle, no measurments between 55s and gates.");
+                return;
+            }
+
             double maxRopeAngle = range.Min(m => m.RopeAngleDegrees); // always pulls to the left which is a negative #.
             Measurement maxPullout = range.Where(m => m.RopeAngleDegrees == maxRopeAngle).Last();
 
