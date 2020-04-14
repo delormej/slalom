@@ -290,13 +290,22 @@ namespace SlalomTracker.Cloud
         {
             // ParitionKey format YYYY-MM-DD
             // RowKey format e.g. GOPR01444.MP4
+            SkiVideoEntity entity = null;
 
-            CloudTableClient client = _account.CreateCloudTableClient();
-            CloudTable table = client.GetTableReference(SKITABLE);
-            TableOperation retrieve = TableOperation.Retrieve(recordedDate, mp4Filename);
-            Task<TableResult> retrieveTask = table.ExecuteAsync(retrieve);
-            retrieveTask.Wait();
-            SkiVideoEntity entity = retrieveTask.Result.Result as SkiVideoEntity;
+            try
+            {
+                CloudTableClient client = _account.CreateCloudTableClient();
+                CloudTable table = client.GetTableReference(SKITABLE);
+                TableOperation retrieve = TableOperation.Retrieve<SkiVideoEntity>(recordedDate, mp4Filename);
+                Task<TableResult> retrieveTask = table.ExecuteAsync(retrieve);
+                retrieveTask.Wait();
+                entity = (SkiVideoEntity)retrieveTask.Result.Result;
+            }
+            catch (Exception e)
+            {
+                Logger.Log($"Unable to retrieve SkiVideoEntity; ParitionKey {recordedDate}, RowKey {mp4Filename}", e);
+            }
+
             return entity;
         }
 
