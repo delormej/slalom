@@ -6,12 +6,17 @@ ARG GITHUB_TOKEN
 RUN apt-get update \
     &&  apt-get install -y libgdiplus \
     &&  apt-get install -y --no-install-recommends libc6-dev 
+    # Additional Debug tools.
+    # && apt install -y curl \
+    # && apt install -y procps \
+    # && apt install unzip \
+    # && curl -sSL https://aka.ms/getvsdbgsh | /bin/sh /dev/stdin -v latest -l /vsdbg
 
-COPY ./ /ski
 WORKDIR /ski
+COPY ./ .
 
 # Publish application
-RUN dotnet clean && \
+RUN dotnet clean ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj && \
     dotnet restore ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj --configfile ./NuGet.Config && \
     dotnet publish ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj -c Release -o /ski/build/
 
@@ -24,7 +29,7 @@ RUN dotnet clean && \
 #   ./SlalomTracker.WebApi/ $ docker build -f Dockerfile ../
 # this will allow dotnet build to pull in required relative pathed projects.
 
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.1.3-alpine as runtime
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.1.3-buster-slim as runtime
 
 # Environment Variables
 #ENV ASPNETCORE_URLS=http://0.0.0.0:80
