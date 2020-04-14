@@ -11,11 +11,12 @@ COPY ./ /ski
 WORKDIR /ski
 
 # Publish application
-RUN dotnet restore ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj --configfile ./NuGet.Config && \
-    dotnet publish ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj -c Debug -o /ski/build/
+RUN dotnet clean && \
+    dotnet restore ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj --configfile ./NuGet.Config && \
+    dotnet publish ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj -c Release -o /ski/build/
 
 # Environment Variables
-ENV ASPNETCORE_URLS=http://0.0.0.0:80
+#ENV ASPNETCORE_URLS=http://0.0.0.0:80
 
 #ENTRYPOINT ["dotnet", "/ski/build/SlalomTracker.WebApi.dll"]
 
@@ -23,10 +24,10 @@ ENV ASPNETCORE_URLS=http://0.0.0.0:80
 #   ./SlalomTracker.WebApi/ $ docker build -f Dockerfile ../
 # this will allow dotnet build to pull in required relative pathed projects.
 
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.1.3-buster-slim as runtime
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.1.3-alpine as runtime
 
 # Environment Variables
-ENV ASPNETCORE_URLS=http://0.0.0.0:80
+#ENV ASPNETCORE_URLS=http://0.0.0.0:80
 
 # Workaround, dependencies for graphics libraries, per this issue: https://github.com/dotnet/corefx/issues/25102
 RUN apt-get update \
