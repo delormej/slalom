@@ -20,11 +20,6 @@ RUN dotnet clean ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj && \
     dotnet restore ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj --configfile ./NuGet.Config && \
     dotnet publish ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj -c Release -o /ski/build/
 
-# Environment Variables
-#ENV ASPNETCORE_URLS=http://0.0.0.0:80
-
-#ENTRYPOINT ["dotnet", "/ski/build/SlalomTracker.WebApi.dll"]
-
 # NOTE: Build this docker file with relative path, e.g.:
 #   ./SlalomTracker.WebApi/ $ docker build -f Dockerfile ../
 # this will allow dotnet build to pull in required relative pathed projects.

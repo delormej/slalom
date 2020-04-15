@@ -1,3 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: skiwebapi-deployment
+  labels:
+    app: skiwebapi
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: skiwebapi
+  template:
+    metadata:
+      labels:
+        app: skiwebapi
+    spec:
+      containers:
+      - name: skiwebapi
+        image: wthacr.azurecr.io/skiwebapi:v2.1.2
+        env:
+        - name: PORT
+          value: "8080"
+        - name: SKIBLOBS
+          valueFrom:
+            secretKeyRef:
+              name: skiblob-secret
+              key: connectionstring
+        - name: SKIJOBS_SERVICE
+          value: "http://dev-ski-jobs.azurewebsites.net"
+        ports:
+        - containerPort: 8080
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -6,26 +38,8 @@ metadata:
     app: skiwebapi
 spec:
   ports:
-  - port: 80
+  - port: 8080
   selector:
     app: skiwebapi
-  type: LoadBalancer    
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: skiwebapi-deploy
-spec:
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        app: skiwebapi
-    spec:
-      containers:
-      - name: skiwebapi-cntr
-        image: jjdelorme/skiwebapi:v5
-        imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 80
-
+  type: ClusterIP
+  
