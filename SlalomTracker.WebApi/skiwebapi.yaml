@@ -42,4 +42,17 @@ spec:
   selector:
     app: skiwebapi
   type: ClusterIP
-  
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: skiwebapi-ingress
+spec:
+  rules:
+    - host: api.ski.jasondel.com
+      http:
+        paths:
+          - backend:
+              serviceName: skiwebapi-service
+              servicePort: 8080
+            path: /    
