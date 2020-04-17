@@ -27,6 +27,8 @@ spec:
               key: connectionstring
         - name: SKIJOBS_SERVICE
           value: "http://dev-ski-jobs.azurewebsites.net"
+        - name: Logging__LogLevel__Default
+          value: "Information"
         ports:
         - containerPort: 8080
 ---
@@ -48,11 +50,15 @@ kind: Ingress
 metadata:
   name: skiwebapi-ingress
 spec:
+  tls:
+  - hosts:
+    - jasondel.com
+    secretName: jasondel-com-tls
   rules:
-    - host: api.ski.jasondel.com
+    - host: ski.jasondel.com
       http:
         paths:
           - backend:
               serviceName: skiwebapi-service
               servicePort: 8080
-            path: /    
+            path: /api
