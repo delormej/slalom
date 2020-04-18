@@ -29,17 +29,17 @@ RUN dotnet clean /ski/SlalomTracker.Console/SkiConsole.csproj && \
 
 # Alpline looks like smallest, but gpmfdemo needs to be rebuilt for it
 #apk add build-base
-# FROM mcr.microsoft.com/dotnet/core/runtime-deps:3.1 AS runtime
-# # Opt out of globalization: https://github.com/dotnet/core/blob/master/Documentation/self-contained-linux-apps.md
-# #ENV CORECLR_GLOBAL_INVARIANT=1
+FROM mcr.microsoft.com/dotnet/core/runtime-deps:3.1 AS runtime
+# Opt out of globalization: https://github.com/dotnet/core/blob/master/Documentation/self-contained-linux-apps.md
+#ENV CORECLR_GLOBAL_INVARIANT=1
 
-# # Install Video Processing Libraries 
-# RUN apt-get update \
-#     && apt-get install -y --allow-unauthenticated \
-#         libc6-dev \
-#         libgdiplus \
-#         libx11-dev \
-#         ffmpeg \
-#      && rm -rf /var/lib/apt/lists/*
+# Install Video Processing Libraries 
+RUN apt-get update \
+    && apt-get install -y --allow-unauthenticated \
+        libc6-dev \
+        libgdiplus \
+        libx11-dev \
+        ffmpeg \
+     && rm -rf /var/lib/apt/lists/*
 
-# COPY --from=build /ski/bin .
+COPY --from=build /ski/bin .

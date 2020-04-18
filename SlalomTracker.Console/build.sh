@@ -7,6 +7,7 @@ echo "github_token::$GITHUB_TOKEN"
 echo "Building DEBUG container."
 docker build -t skiconsole:debug --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
     -f ./SlalomTracker.Console/Dockerfile .
+# To just use the debug image add --target build to the above and it won't build the release stage.
 
 #
 # Launch debug container
