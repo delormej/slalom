@@ -7,7 +7,11 @@ RUN apt-get update \
         libgdiplus \
         libx11-dev \
         ffmpeg \
-     && rm -rf /var/lib/apt/lists/*
+        curl \
+        procps \
+        unzip \
+     && rm -rf /var/lib/apt/lists/* \
+     && curl -sSL https://aka.ms/getvsdbgsh | /bin/sh /dev/stdin -v latest -l /vsdbg     
 
 COPY ./ /ski
 WORKDIR /ski/bin

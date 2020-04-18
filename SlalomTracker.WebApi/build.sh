@@ -1,5 +1,5 @@
 #!/bin/bash
-source prebuild.sh
+#source prebuild.sh
 
 echo "service::$SKIJOBS_SERVICE"
 echo "skiblobs::$SKIBLOBS"
@@ -12,7 +12,7 @@ container=skiwebapi:debug
 #
 echo "Building DEBUG container."
 docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
-    -f ./SlalomTracker.WebApi/debug.Dockerfile . 
+    -f ./SlalomTracker.WebApi/Dockerfile . 
 
 # Production build:
 #docker build -t skiweb:v<!PUT VERSION HERE!> --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
