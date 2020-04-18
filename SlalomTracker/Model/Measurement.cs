@@ -74,16 +74,21 @@ namespace SlalomTracker
 
         public override GeoCoordinate ReadJson(JsonReader reader, Type objectType, GeoCoordinate existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
+            string value = (string)reader.Value;
+            return FromLatLon(value);
+        }
+
+        public static GeoCoordinate FromLatLon(string latLon)
+        {
             try
             {
-                string value = (string)reader.Value;
-                string[] values = value.Split(",", 2);
+                string[] values = latLon.Split(",", 2);
                 return new GeoCoordinate(double.Parse(values[0]), double.Parse(values[1]));
             }
             catch
             {
-                return null;
+                return GeoCoordinate.Unknown;
             }
-        }
+        }        
     }
 }
