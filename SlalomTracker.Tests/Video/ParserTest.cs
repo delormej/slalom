@@ -41,7 +41,8 @@ namespace SlalomTracker.Tests
             GpmfParser parser = new GpmfParser();
             List<Measurement> list = parser.LoadFromCsv(csv);
             string json = Measurement.ToJson(list);
-            Assert.IsTrue(json.Length == 389790);
+            // File.WriteAllText("565.json", json);
+            Assert.IsTrue(json.Length == 146971);
 
             //File.WriteAllText(@"..\..\..\..\MetadataExtractor\GOPR0565.json", json);
         }

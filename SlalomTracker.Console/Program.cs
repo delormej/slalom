@@ -441,33 +441,6 @@ namespace SkiConsole
 
         private static void Parse()
         {
-            string foo = @"{
-                ""Timestamp"": ""0001-01-01T00:00:53.109"",
-                ""BoatGeoCoordinate"": {
-                    ""VerticalAccuracy"": 1.33,
-                    ""Latitude"": 42.285241,
-                    ""Longitude"": -71.3614531
-                },
-                ""RopeSwingSpeedRadS"": 0.04694347045454546,
-                ""BoatSpeedMps"": 14.553
-            }";
-            var options = new System.Text.Json.JsonSerializerOptions() {
-                IgnoreNullValues = true
-            };
-            Measurement m = System.Text.Json.JsonSerializer.Deserialize<Measurement>(foo);
-            m.BoatGeoCoordinate.VerticalAccuracy = 99.1349;
-            System.Console.WriteLine($"Deserialized: {m.BoatGeoCoordinate.Longitude}, {m.RopeSwingSpeedRadS}");
-            //string json = System.Text.Json.JsonSerializer.Serialize<Measurement>(m, options);
-            List<Measurement> list = new List<Measurement>();
-            list.Add(m);
-            string json = Measurement.ToJson(list);
-            System.Console.WriteLine($"json: {Measurement.ToJson(list)}");
-
-            var measurements = (List<Measurement>)
-                Newtonsoft.Json.JsonConvert.DeserializeObject(json, typeof(List<Measurement>));
-
-            foreach (var d in measurements)
-                System.Console.WriteLine($"[{d.Timestamp}] @ coords: {d.BoatGeoCoordinate.Latitude}, {d.BoatGeoCoordinate.Longitude}");
         }
     }
 }
