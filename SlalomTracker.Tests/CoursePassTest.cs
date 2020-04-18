@@ -53,9 +53,12 @@ namespace SlalomTracker
                     ((metersPerSecond / eventsPerSecond) * i) + ropeM);
                 DateTime time = courseEntryTimestamp.AddSeconds((double)(1.0 / eventsPerSecond) * i);
 
-                pass.Track(time, 
-                    (ropeSpeed * ropeDirection), 
-                    CourseTest.latitude, longitude);
+                string latLon = $"{CourseTest.latitude}, {longitude}";
+                Measurement m = new Measurement() {
+                    Timestamp = time,
+                    RopeSwingSpeedRadS = (ropeSpeed * ropeDirection),
+                    BoatGeoCoordinate = GeoCoordinateConverter.FromLatLon(latLon)
+                };
             }
 
             Trace.WriteLine(string.Format("X: Apex:{0}", rope.GetHandleApexDeg()));
@@ -92,7 +95,8 @@ namespace SlalomTracker
 
             //42.2867806,"Longitude":-71.3594418 == Chet @ 15 seconds into the GOPR0565.mp4
             // .\slalom\SlalomTracker\Video\MetadataExtractor\GOPR0565.json
-            CoursePass pass = CoursePassFactory.FromFile("./Video/GOPR0565.json");
+            CoursePassFactory factory = new CoursePassFactory();
+            CoursePass pass = factory.FromFile("./Video/GOPR0565.json");
             CoursePosition position = pass.CoursePositionFromGeo(42.2867806, -71.3594418);
 
             Assert.IsTrue((int)position.X == 0, "Incorrect course X position.");
@@ -112,8 +116,10 @@ namespace SlalomTracker
         [TestMethod]
         public void GetBestFitTest()
         {
-            CoursePass pass = CoursePassFactory.FromFile("./Video/GOPR0565.json");
-            CoursePass best = CoursePassFactory.FitPass(pass.Measurements, pass.Course, pass.Rope);
+            CoursePassFactory factory = new CoursePassFactory();
+            factory.RopeLengthOff = 22;
+            CoursePass pass = factory.FromFile("./Video/GOPR0565.json");
+            CoursePass best = factory.FitPass(pass.Measurements);
             double precision = best.GetGatePrecision();
 
             //Assert.IsTrue(precision == 1.0F);

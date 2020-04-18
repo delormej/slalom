@@ -32,7 +32,8 @@ namespace SlalomTracker
         /// <returns></returns>
         public static CoursePass CreateTestCoursePass()
         {
-            return CoursePassFactory.FromFile("./Video/GOPR0194.json");
+            CoursePassFactory factory = new CoursePassFactory();
+            return factory.FromFile("./Video/GOPR0194.json");
         }
 
         public static Course CreateTestCourse()
@@ -77,12 +78,13 @@ namespace SlalomTracker
         [TestMethod]
         public void TestByName()
         {
-            Course cove = Course.ByName("cove");
+            KnownCourses courses = new KnownCourses();
+            Course cove = courses.ByName("cove");
             Assert.IsTrue(cove.Course55EntryCL.Latitude == 42.28958);
             double coveHeading = cove.GetCourseHeadingDeg();
             var poly = cove.Polygon;
 
-            Course outside = Course.ByName("outside");
+            Course outside = courses.ByName("outside");
             Assert.IsTrue(outside.Course55ExitCL.Longitude == -71.361781);
             double outsideHeading = outside.GetCourseHeadingDeg();
         }
@@ -90,10 +92,10 @@ namespace SlalomTracker
         [TestMethod]
         public void TestFindCourse()
         {
-            CoursePass pass = CoursePassFactory.FromFile("./Video/GOPR0565.json");
+            CoursePassFactory factory = new CoursePassFactory();
+            CoursePass pass = factory.FromFile("./Video/GOPR0565.json");
             List<Measurement> measurements = pass.Measurements;
-            Course course = Course.FindCourse(measurements);
-            Assert.IsNotNull(course);
+            Assert.IsNotNull(pass.Course);
         }
     }
 }
