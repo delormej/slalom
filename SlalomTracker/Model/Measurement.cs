@@ -20,6 +20,7 @@ namespace SlalomTracker
         /// <summary>
         /// Lat/Lon, heading and speed of boat.
         /// </summary>
+        [JsonConverter(typeof(GeoCoordinateConverter))]
         public GeoCoordinate BoatGeoCoordinate { get; set; }
 
         /// <summary>
@@ -54,8 +55,35 @@ namespace SlalomTracker
 
         public static string ToJson(List<Measurement> measurements)
         {
-            string json = JsonConvert.SerializeObject(measurements);
+            var settings = new JsonSerializerSettings() {
+                NullValueHandling = NullValueHandling.Ignore,
+                DefaultValueHandling = DefaultValueHandling.Ignore,
+                MaxDepth = 2
+            };
+            string json = JsonConvert.SerializeObject(measurements, settings);
             return json;
+        }
+    }
+
+    public class GeoCoordinateConverter : JsonConverter<GeoCoordinate>
+    {
+        public override void WriteJson(JsonWriter writer, GeoCoordinate value, JsonSerializer serializer)
+        {
+            writer.WriteValue(value.ToString());
+        }
+
+        public override GeoCoordinate ReadJson(JsonReader reader, Type objectType, GeoCoordinate existingValue, bool hasExistingValue, JsonSerializer serializer)
+        {
+            try
+            {
+                string value = (string)reader.Value;
+                string[] values = value.Split(",", 2);
+                return new GeoCoordinate(double.Parse(values[0]), double.Parse(values[1]));
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }
