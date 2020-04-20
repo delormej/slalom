@@ -126,13 +126,22 @@ namespace SlalomTracker.Video
 
         private async Task<string> UploadGoogleVideoAsync(Task<string> trimAndSilence, Task getCreationTime)
         {
-            await getCreationTime; 
-            string processedVideoPath = await trimAndSilence;
+            string videoUrl = "";
+            try 
+            {
+                await getCreationTime; 
+                string processedVideoPath = await trimAndSilence;
 
-            Logger.Log($"Uploading video to Google {processedVideoPath}...");
-            GoogleStorage storage = new GoogleStorage();
-            string videoUrl = await storage.UploadVideoAsync(processedVideoPath, _creationTime);
-            Logger.Log($"Video uploaded to Google: {videoUrl}");
+                Logger.Log($"Uploading video to Google {processedVideoPath}...");
+                GoogleStorage storage = new GoogleStorage();
+                videoUrl = await storage.UploadVideoAsync(processedVideoPath, _creationTime);
+                Logger.Log($"Video uploaded to Google: {videoUrl}");
+            }
+            catch (Exception e)
+            {
+                Logger.Log($"Failed to upload to google, but ignoring.", e);
+            }
+            
             return videoUrl;
         }        
 
@@ -180,7 +189,8 @@ namespace SlalomTracker.Video
             SkiVideoEntity entity = CreateSkiVideoEntity(pass, thumbnailUrl, videoUrl);
             entity.Skier = await getSkierPrediction;
             entity.RopeLengthM = await getRopePrediction;
-            entity.HotUrl = hotVideoUrl;
+            if (!string.IsNullOrWhiteSpace(hotVideoUrl)) 
+                entity.HotUrl = hotVideoUrl;
 
             Logger.Log($"Creating and uploading metadata for video {_localVideoPath}...");
             _storage.AddMetadata(entity, _json);
