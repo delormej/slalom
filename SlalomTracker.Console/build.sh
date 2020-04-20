@@ -1,12 +1,15 @@
 #!/bin/bash
-source prebuild.sh
+# For some reason, I just can't get these following variables to populate calling ./prebuild.
+#source ./prebuild.sh
 echo "github_token::$GITHUB_TOKEN"
-
+echo "skiblobs::$SKIBLOBS"
+echo "skisb::$SKISB"
+exit
 VERSION=v5.0.0
 #
-# Build .debug container
+# Build container
 #
-echo "Building DEBUG container."
+echo "Building container."
 docker build -t skiconsole:$VERSION --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
     -f ./SlalomTracker.Console/Dockerfile .
 #
@@ -19,7 +22,8 @@ docker build -t skiconsole:$VERSION --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
 # env variable skiblobs still not working...
 docker run -it --rm \
     -v $PWD:/shared \
-    -e SKIBLOBS="$SKIBLOBS" \
+    -e SKIBLOBS='$SKIBLOBS' \
+    -e SKISB='$SKISB' \
     -e GOOGLE_APPLICATION_CREDENTIALS="/ski/gcloud.json" \
     --name ski-dbg \
     skiconsole:$VERSION 

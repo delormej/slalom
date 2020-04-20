@@ -1,6 +1,7 @@
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1 as build
 
 ARG GITHUB_TOKEN
+ARG VERSION
 
 # Workaround, dependencies for graphics libraries, per this issue: https://github.com/dotnet/corefx/issues/25102
 RUN apt-get update \
@@ -18,7 +19,7 @@ COPY ./ .
 # Publish application
 RUN dotnet clean ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj && \
     dotnet restore ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj --configfile ./NuGet.Config && \
-    dotnet publish ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj -c Release -o /ski/build/
+    dotnet publish ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj -p:Version=$VERSION -c Release -o /ski/build/
 
 # NOTE: Build this docker file with relative path, e.g.:
 #   ./SlalomTracker.WebApi/ $ docker build -f Dockerfile ../
