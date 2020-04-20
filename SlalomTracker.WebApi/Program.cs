@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using SlalomTracker.Cloud;
 
 namespace SlalomTracker.WebApi
 {
@@ -14,7 +13,11 @@ namespace SlalomTracker.WebApi
     {
         public static void Main(string[] args)
         {
-            CreateWebHostBuilder(args).Build().Run();
+            
+            var host = CreateWebHostBuilder(args).Build();
+            var logger = host.Services.GetRequiredService<ILogger<Program>>();
+            logger.LogInformation($"Starting with Version: {GetVersion()}");            
+            host.Run();
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
@@ -28,6 +31,13 @@ namespace SlalomTracker.WebApi
             string protocol = (port == "443" ? "https" : "http");
             string url = string.Format("{0}://*:{1}", protocol, port);
             return url;
+        }
+
+        private static string GetVersion()
+        {
+            SkiVideoEntity video = new SkiVideoEntity("http://test/video.MP4", DateTime.Now);
+            string version = video.SlalomTrackerVersion;
+            return version;
         }
     }
 }
