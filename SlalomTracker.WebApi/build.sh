@@ -1,21 +1,21 @@
 #!/bin/bash
 #source prebuild.sh
 
-echo "service::$SKIJOBS_SERVICE"
-echo "skiblobs::$SKIBLOBS"
-echo "github_token::$GITHUB_TOKEN"
-
 # CI/CD could override this version.
 if [ -z "$VERSION" ]
 then 
-    VERSION=2.1.2.1 
+    VERSION=2.1.3
 fi
 container=skiwebapi:v$VERSION
+
+echo "service::$SKIJOBS_SERVICE"
+echo "skiblobs::$SKIBLOBS"
+echo "github_token::$GITHUB_TOKEN"
+echo "Building container::$container"
 
 #
 # Build .debug container
 #
-echo "Building container."
 docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
     --build-arg VERSION=$VERSION \
     -f ./SlalomTracker.WebApi/Dockerfile . 
