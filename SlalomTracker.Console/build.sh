@@ -2,7 +2,7 @@
 source prebuild.sh
 echo "github_token::$GITHUB_TOKEN"
 
-VERSION=v4.15.1
+VERSION=v5.0.0
 #
 # Build .debug container
 #

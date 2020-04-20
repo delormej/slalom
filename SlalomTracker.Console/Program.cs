@@ -7,6 +7,7 @@ using MetadataExtractor;
 using System.Drawing.Imaging;
 using System.Drawing;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Logger = jasondel.Tools.Logger;
 
@@ -128,7 +129,7 @@ namespace SkiConsole
             }
             else if (args[0] == "-l") 
             {
-                Parse();
+                Listen();
             }
             else
                 ShowUsage();
@@ -439,8 +440,20 @@ namespace SkiConsole
             Logger.Log($"Metadata updated for video recorded @ {video.RecordedTime}.");
         }
 
-        private static void Parse()
+        private static void Listen()
         {
+            VideoUploadListener listener = new VideoUploadListener();
+            AppDomain.CurrentDomain.ProcessExit += (o, e) => {
+                listener.Stop();
+            };
+            
+            listener.Start();
+            
+            Logger.Log("Press any key to cancel.");
+            Console.ReadKey();
+            
+            listener.Stop();
+            Logger.Log("Done listening for events.");
         }
     }
 }
