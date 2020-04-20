@@ -66,7 +66,9 @@ namespace SkiConsole
                 "Output handle speed.\n\t\t" +
                 "ski -s\n\t\t" +
                 "Train the model with all the data we have.\n\t\t" +
-                "ski -t\n\t\t"                                       
+                "ski -t\n\t\t" +
+                "Listen to service bus queue for new videos uploaded.\n\t\t" +
+                "ski -l [optional]queueName\n\t\t"                       
             );
         }
 
@@ -129,7 +131,8 @@ namespace SkiConsole
             }
             else if (args[0] == "-l") 
             {
-                Listen();
+                string queue = args.Length > 1 ? args[1] : null;
+                Listen(queue);
             }
             else
                 ShowUsage();
@@ -440,9 +443,12 @@ namespace SkiConsole
             Logger.Log($"Metadata updated for video recorded @ {video.RecordedTime}.");
         }
 
-        private static void Listen()
+        /// <summary>
+        /// Listens to service bus queue and processes videos as they arrive.
+        /// </summary>
+        private static void Listen(string queueName)
         {
-            VideoUploadListener listener = new VideoUploadListener();
+            VideoUploadListener listener = new VideoUploadListener(queueName);
             AppDomain.CurrentDomain.ProcessExit += (o, e) => {
                 listener.Stop();
             };

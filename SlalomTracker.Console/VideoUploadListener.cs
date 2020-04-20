@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Logger = jasondel.Tools.Logger;
 using Microsoft.Azure.ServiceBus;
+using SlalomTracker.Video;
 using SlalomTracker.Cloud;
 
 namespace SkiConsole
@@ -16,13 +17,14 @@ namespace SkiConsole
         const string DefaultQueueName = "video-uploaded";
         private IQueueClient _queueClient;        
                 
-        public VideoUploadListener()
+        public VideoUploadListener(string queueName = null)
         {
             string serviceBusConnectionString = Environment.GetEnvironmentVariable(ENV_SERVICEBUS);
             if (serviceBusConnectionString == null)
                 throw new ApplicationException($"Missing service bus connection string in env variable: {ENV_SERVICEBUS}");
 
-            string queueName = Environment.GetEnvironmentVariable(ENV_VIDEOQUEUE) ?? DefaultQueueName;
+            if (queueName == null)
+                queueName = Environment.GetEnvironmentVariable(ENV_VIDEOQUEUE) ?? DefaultQueueName;
             _queueClient = new QueueClient(serviceBusConnectionString, queueName);
             
             Logger.Log($"Connected to queue {queueName}");
@@ -64,18 +66,14 @@ namespace SkiConsole
             Logger.Log($"Received message: SequenceNumber:{message.SystemProperties.SequenceNumber} Body:{Encoding.UTF8.GetString(message.Body)}");
 
             string json = Encoding.UTF8.GetString(message.Body);
-            string url = QueueMessageParser.GetUrl(json);
-            System.Console.WriteLine($"Got this: {url}");
+            string videoUrl = QueueMessageParser.GetUrl(json);
+            Logger.Log($"Received this videoUrl: {videoUrl}");
 
-            if (url.EndsWith("test.MP4"))
-                throw new ApplicationException("Something broke!");
-
-            // Wait 2 minutes.
-            Task.Delay(60*1000*2).Wait();
-            System.Console.WriteLine("Ok we're done now.");
-            
-            // Complete the message so that it is not received again.
-            // This can be done only if the queue Client is created in ReceiveMode.PeekLock mode (which is the default).
+            if (videoUrl.EndsWith("test.MP4"))
+                throw new ApplicationException("Something broke, fail safe for testing exceptions!");
+           
+            SkiVideoProcessor processor = new SkiVideoProcessor(videoUrl);
+            await processor.ProcessAsync();
             await _queueClient.CompleteAsync(message.SystemProperties.LockToken);
 
             // Note: Use the cancellationToken passed as necessary to determine if the queueClient has already been closed.
@@ -92,6 +90,7 @@ namespace SkiConsole
             Logger.Log($"- Endpoint: {context.Endpoint}");
             Logger.Log($"- Entity Path: {context.EntityPath}");
             Logger.Log($"- Executing Action: {context.Action}");
+
             return Task.CompletedTask;
         }        
     }
