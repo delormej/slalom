@@ -448,15 +448,27 @@ namespace SkiConsole
         /// </summary>
         private static void Listen(string queueName)
         {
+            EventWaitHandle ewh = new EventWaitHandle(false, EventResetMode.ManualReset);
             VideoUploadListener listener = new VideoUploadListener(queueName);
             AppDomain.CurrentDomain.ProcessExit += (o, e) => {
-                listener.Stop();
+                ewh.Set();
             };
             
             listener.Start();
             
-            Logger.Log("Press any key to cancel.");
-            Console.ReadKey();
+            if (Console.WindowHeight > 0)
+            {
+                Logger.Log("Press any key to cancel.");
+                Console.ReadKey();
+                ewh.Set();
+            }
+            else
+            {
+                Logger.Log("Waiting until signaled to close.");
+            }
+
+            // Wait until signalled.
+            ewh.WaitOne();
             
             listener.Stop();
             Logger.Log("Done listening for events.");
