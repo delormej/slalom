@@ -1,0 +1,73 @@
+#
+# Pre-requisites (secrets), ensure a secret is exists in a local file called gcloud.json
+# Some instructions here: https://cloud.google.com/kubernetes-engine/docs/tutorials/authenticating-to-cloud-platform
+#
+# kubectl create secret generic gcloud-key -n ski --from-file=key.json=gcloud.json 
+# kubectl create secret generic skisb-secret -n ski --from-literal=connectionstring=$SKISB
+# kubectl create secret generic skiblobs-secret -n ski --from-literal=connectionstring=$SKIBLOBS
+#
+# Required for using ACI, make sure you have done an az acr login.
+# NOTE: you cannot use AAD credentials, you need to get the username/password from acr.
+# and set ACRSECRET=$()
+# kubectl create secret docker-registry acr-secret -n ski --docker-server=wthacr.azurecr.io --docker-username=wthacr --docker-password=$ACRSECRET --docker-email=wthacr@azurecr.io
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: skiprocessor
+  labels:
+    app: skiprocessor
+spec:
+  replicas: 0 # This is going to be scaled by KEDA, so defaulting to 0.
+  selector:
+    matchLabels:
+      app: skiprocessor
+  template:
+    metadata:
+      labels:
+        app: skiprocessor
+    spec:
+      volumes:
+      - name: google-cloud-key
+        secret:
+          secretName: gcloud-key
+      containers:
+      - name: skiprocessor
+        image: wthacr.azurecr.io/skiconsole:v5.0.2
+        # Interestingly requests have to equal limits with virtualnode: https://github.com/virtual-kubelet/azure-aci/issues/17
+        resources:
+          requests:
+            cpu: "2000m"
+            memory: "2.0Gi"
+          limits:
+            cpu: "2000m"
+            memory: "2.0Gi"
+        command: ["./ski"]
+        args: ["-l", "video-uploaded"]
+        volumeMounts:
+        - name: google-cloud-key
+          mountPath: /var/secrets/google        
+        env:
+        - name: SKIBLOBS
+          valueFrom:
+            secretKeyRef:
+              name: skiblob-secret
+              key: connectionstring
+        - name: SKISB
+          valueFrom:
+            secretKeyRef:
+              name: skisb-secret
+              key: connectionstring
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /var/secrets/google/key.json              
+      imagePullSecrets:
+        - name: acr-secret
+      nodeSelector:
+        kubernetes.io/role: agent
+        beta.kubernetes.io/os: linux
+        type: virtual-kubelet
+      tolerations:
+      - key: virtual-kubelet.io/provider
+        operator: Exists
+      - key: azure
+        effect: NoSchedule        

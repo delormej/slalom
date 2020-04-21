@@ -1,0 +1,17 @@
+kapiVersion: keda.k8s.io/v1alpha1
+kind: ScaledObject
+metadata:
+  name: skiprocessor-scaledobject
+  namespace: ski
+spec:
+  scaleTargetRef:
+    deploymentName: skiprocessor
+  pollingInterval: 15 # seconds
+  minReplicaCount: 0
+  maxReplicaCount: 20
+  triggers:
+  - type: azure-servicebus
+    metadata:
+      queueName: video-uploaded
+      connection: SKISB # This is the ENV variable in the skiprocessor deployment which has the connection string.
+      queueLength: "1" 
