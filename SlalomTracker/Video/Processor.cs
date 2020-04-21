@@ -1,6 +1,8 @@
 using System;
 using System.Threading.Tasks;
 using SlalomTracker.Cloud;
+using MetadataExtractor;
+using System.Collections.Generic;
 using Logger = jasondel.Tools.Logger;
 
 namespace SlalomTracker.Video 
@@ -154,8 +156,12 @@ namespace SlalomTracker.Video
         private Task ExtractMetadataAsync()
         {
             Logger.Log($"Extracting metadata from video {_sourceVideoUrl}...");
-            return Task.Run(() => {              
-                _json = MetadataExtractor.Extract.ExtractMetadata(_localVideoPath);
+            return Task.Run(() => {               
+                // Not using MetadataExtractor.Extract.ExtractMetadata method because it may 
+                // be hanging on to memory as it's a static method???
+                GpmfParser gpmf = new GpmfParser();
+                List<Measurement> measurements = gpmf.LoadFromMp4(_localVideoPath);
+                _json = Measurement.ToJson(measurements);
                 Logger.Log("Extracted metadata.");
             });
         }     

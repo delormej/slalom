@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using SlalomTracker;
 using GeoCoordinatePortable;
-using Newtonsoft.Json;
+using Logger = jasondel.Tools.Logger;
 
 namespace MetadataExtractor
 {
@@ -145,22 +145,34 @@ namespace MetadataExtractor
             if (!File.Exists(exePath + GPMFEXE))
                 throw new FileNotFoundException("gpmfdemo doesn't exist at: " + exePath + GPMFEXE);
 
-            var process = new Process()
-            {
-                StartInfo = new ProcessStartInfo
+            try
+            {                
+                var process = new Process()
                 {
-                    FileName = exePath + GPMFEXE,
-                    Arguments = mp4Path,
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true /*,
-                    WorkingDirectory = */
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = exePath + GPMFEXE,
+                        Arguments = mp4Path,
+                        RedirectStandardOutput = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true /*,
+                        WorkingDirectory = */
+                    }
+                };
+                // Wrap so that Dispose() is called in case this is hanging on to memory.
+                using (process) 
+                {
+                    process.Start();
+                    string result = process.StandardOutput.ReadToEnd();
+                    process.WaitForExit();               
+                    return result;
                 }
-            };
-            process.Start();
-            string result = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
-            return result;
+            }
+            catch (Exception e)
+            {
+                Logger.Log("Error running GPMF.", e);
+                throw e;
+            }
         }
 
         private string GetColumn(string[] row, Column column)

@@ -93,6 +93,14 @@ namespace SlalomTracker
         }
 
         /// <summary>
+        /// Creates a pass from a List<Measurment> collection.
+        /// <summary>
+        public CoursePass FromMeasurements(List<Measurement> measurements)
+        {
+            return CreatePass(measurements);
+        }
+
+        /// <summary>
         /// Returns another coures pass if one exists after the exit measurment in 
         /// this collection of measurements of pass.  Returns null if there isn't another
         /// course pass found.
