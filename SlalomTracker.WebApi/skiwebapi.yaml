@@ -49,6 +49,8 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: skiwebapi-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/enable-cors: "true"
 spec:
   tls:
   - hosts:
