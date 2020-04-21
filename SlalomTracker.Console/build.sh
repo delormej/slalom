@@ -4,7 +4,7 @@
 # CI/CD could override this version.
 if [ -z "$VERSION" ]
 then 
-    VERSION=5.0.2
+    VERSION=5.0.3
 fi
 container=skiconsole:v$VERSION
 

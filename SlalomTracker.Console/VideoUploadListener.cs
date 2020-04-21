@@ -16,8 +16,10 @@ namespace SkiConsole
 
         const string DefaultQueueName = "video-uploaded";
         private IQueueClient _queueClient;        
-                
-        public VideoUploadListener(string queueName = null)
+        
+        private bool _deadLetterMode = false;
+
+        public VideoUploadListener(string queueName = null, bool readDeadLetter = false)
         {
             string serviceBusConnectionString = Environment.GetEnvironmentVariable(ENV_SERVICEBUS);
             if (serviceBusConnectionString == null)
@@ -25,6 +27,11 @@ namespace SkiConsole
 
             if (queueName == null)
                 queueName = Environment.GetEnvironmentVariable(ENV_VIDEOQUEUE) ?? DefaultQueueName;
+            
+            _deadLetterMode = readDeadLetter;
+            if (_deadLetterMode)
+                queueName += "/$DeadLetterQueue";
+
             _queueClient = new QueueClient(serviceBusConnectionString, queueName);
             
             Logger.Log($"Connected to queue {queueName}");
@@ -32,8 +39,16 @@ namespace SkiConsole
 
         public void Start()
         {
-            RegisterOnMessageHandlerAndReceiveMessages();
-            Logger.Log($"Listening for messages...");
+            if (_deadLetterMode)
+            {
+                Logger.Log($"Reading dead letter messages...");
+                ReadDeadLetter();
+            }
+            else 
+            {
+                RegisterOnMessageHandlerAndReceiveMessages();
+                Logger.Log($"Listening for messages...");
+            }
         }
 
         public void Stop()
@@ -92,7 +107,18 @@ namespace SkiConsole
             Logger.Log($"- Executing Action: {context.Action}");
 
             return Task.CompletedTask;
-        }        
+        }      
+
+        /// <summary>
+        /// This is just a way to review and drain the deadletter queue.
+        /// </summary>
+        void ReadDeadLetter()
+        {
+            _queueClient.RegisterMessageHandler( (message, cancel) => {
+                Logger.Log($"Dead letter message: {Encoding.UTF8.GetString(message.Body)}");
+                return Task.CompletedTask;
+            }, new MessageHandlerOptions(ExceptionReceivedHandler) { AutoComplete = true });
+        }  
     }
 }
 

@@ -132,7 +132,7 @@ namespace SkiConsole
             else if (args[0] == "-l") 
             {
                 string queue = args.Length > 1 ? args[1] : null;
-                Listen(queue);
+                Listen(queue, args.Length > 2);
             }
             else
                 ShowUsage();
@@ -446,10 +446,10 @@ namespace SkiConsole
         /// <summary>
         /// Listens to service bus queue and processes videos as they arrive.
         /// </summary>
-        private static void Listen(string queueName)
+        private static void Listen(string queueName, bool openDeadLetter)
         {
             EventWaitHandle ewh = new EventWaitHandle(false, EventResetMode.ManualReset);
-            VideoUploadListener listener = new VideoUploadListener(queueName);
+            VideoUploadListener listener = new VideoUploadListener(queueName, openDeadLetter);
             AppDomain.CurrentDomain.ProcessExit += (o, e) => {
                 ewh.Set();
             };
