@@ -92,7 +92,7 @@ namespace SlalomTracker.Video
 
             return Task.Run(() => 
             {
-                double start = pass.GetSecondsAtEntry();
+                double start = pass.GetSecondsAtEntry()-2;
                 double duration = pass.GetDurationSeconds();
                 double total = pass.GetTotalSeconds();                           
                 
