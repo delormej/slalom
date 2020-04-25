@@ -4,7 +4,7 @@
 # CI/CD could override this version.
 if [ -z "$VERSION" ]
 then 
-    VERSION=2.1.4
+    VERSION=2.1.5
 fi
 container=skiwebapi:v$VERSION
 
@@ -32,5 +32,5 @@ docker run --rm --name ski-dbg -p 80:80 -it \
 #
 # Tag and push the container.
 #
-docker tag $container wthacr.azurecr.io/$container
-docker push wthacr.azurecr.io/$container
+#docker tag $container wthacr.azurecr.io/$container
+#docker push wthacr.azurecr.io/$container
