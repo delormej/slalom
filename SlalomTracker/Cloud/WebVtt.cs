@@ -12,7 +12,7 @@ namespace SlalomTracker.Cloud
     {
         const string Prefix = "[@";
         const string Suffix = "seconds]";
-        const double Duration = 2.0;
+        const double Duration = 1.5;
 
         const string Header = "WEBVTT\n\n";
 
@@ -46,6 +46,7 @@ namespace SlalomTracker.Cloud
             double startSeconds;
             if (!ParseSeconds(line, out startSeconds))
                 return null;            
+            
             string time = GetTime(startSeconds, startSeconds + Duration);
             string text = GetText(line);
 
@@ -77,7 +78,8 @@ namespace SlalomTracker.Cloud
 
         private string GetTime(double start, double end)
         {
-            return $"00:{start.ToString("00.000")} --> 00:{end.ToString("00.000")}";
+            const string style = "line: 0";
+            return $"00:{start.ToString("00.000")} --> 00:{end.ToString("00.000")} {style}";
         }
 
         private string GetText(string line)
