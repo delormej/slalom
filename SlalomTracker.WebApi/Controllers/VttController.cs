@@ -19,7 +19,7 @@ namespace SlalomTracker.WebApi.Controllers
         }
 
         [HttpGet]
-        [Route("api/vtt")]
+        [Route("api/vtt/{recordedDate}/{mp4Filename}")]
         public IActionResult Get(string recordedDate, string mp4Filename)
         {
             string vttContent;
