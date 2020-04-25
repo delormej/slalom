@@ -14,7 +14,7 @@ namespace SlalomTracker.Cloud
         const string Suffix = "seconds]";
         const double Duration = 2.0;
 
-        const string Header = "WEBVTT\r\n";
+        const string Header = "WEBVTT\n\n";
 
         private SkiVideoEntity _skiVideo;
 
@@ -24,11 +24,8 @@ namespace SlalomTracker.Cloud
         }
 
         public string Create() 
-        {
-            if (string.IsNullOrWhiteSpace(_skiVideo.Notes))
-                return null;
-                
-            StringBuilder builder = new StringBuilder();
+        {               
+            StringBuilder builder = new StringBuilder(Header);
             StringReader reader = new StringReader(_skiVideo.Notes);
             while(true)
             {
@@ -55,7 +52,7 @@ namespace SlalomTracker.Cloud
             if (time == null || text == null)
                 return null;
 
-            return time + "\n" + text + "\n";
+            return time + "\n" + text + "\n\n";
         }
 
         private bool ParseSeconds(string line, out double seconds)

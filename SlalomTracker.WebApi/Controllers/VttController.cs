@@ -34,7 +34,7 @@ namespace SlalomTracker.WebApi.Controllers
                 
                 _logger.LogInformation($"Created WebVtt for {recordedDate}, {mp4Filename}");
 
-                return Content(vttContent);
+                return Content(vttContent, new Microsoft.Net.Http.Headers.MediaTypeHeaderValue("text/vtt"));
             }
             catch (Exception e)
             {
