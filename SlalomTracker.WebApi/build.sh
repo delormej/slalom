@@ -4,7 +4,7 @@
 # CI/CD could override this version.
 if [ -z "$VERSION" ]
 then 
-    VERSION=2.1.5
+    VERSION=2.1.6
 fi
 container=skiwebapi:v$VERSION
 

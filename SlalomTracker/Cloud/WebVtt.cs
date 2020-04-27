@@ -26,16 +26,19 @@ namespace SlalomTracker.Cloud
         public string Create() 
         {               
             StringBuilder builder = new StringBuilder(Header);
-            StringReader reader = new StringReader(_skiVideo.Notes);
-            while(true)
+            if (!string.IsNullOrWhiteSpace(_skiVideo.Notes))
             {
-                string line = reader.ReadLine();
-                if (line == null)
-                    break;
-                
-                string formattedLine = FormatLine(line);
-                if (formattedLine != null)
-                    builder.Append(formattedLine);
+                StringReader reader = new StringReader(_skiVideo.Notes);
+                while(true)
+                {
+                    string line = reader.ReadLine();
+                    if (line == null)
+                        break;
+                    
+                    string formattedLine = FormatLine(line);
+                    if (formattedLine != null)
+                        builder.Append(formattedLine);
+                }
             }
             
             return builder.ToString();
