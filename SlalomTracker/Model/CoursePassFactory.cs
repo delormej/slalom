@@ -137,23 +137,17 @@ namespace SlalomTracker
         /// <summary>
         /// Does a linear regression to fit the best centerline offset based on entry/exit gates.
         /// </summary>
-        /// <param name="measurements"></param>
-        /// <param name="course"></param>
-        /// <returns></returns>
-        public CoursePass FitPass(List<Measurement> measurements)
+        public static double FitPass(string jsonUrl)
         {
-
-// TODO: I think this should be static and remove reference to CenterLineDegreeOffset, rather RETURN a CL offset.
-
             const int MAX = 45;
             const int MIN = -45;
+            CoursePassFactory factory = new CoursePassFactory();
             CoursePass bestPass = null;
             double bestPrecision = 0;
 
             for (int i = MIN; i <= MAX; i++)
             {
-                CenterLineDegreeOffset = i;
-                CoursePass pass = CreatePass(measurements);
+                CoursePass pass = factory.FromUrl(jsonUrl);
                 if (bestPass == null)
                 {
                     bestPass = pass;
@@ -169,7 +163,7 @@ namespace SlalomTracker
                     }
                 }
             }
-            return bestPass;
+            return bestPass.CenterLineDegreeOffset;
         }
 
         private void FindCourse(List<Measurement> measurements)
