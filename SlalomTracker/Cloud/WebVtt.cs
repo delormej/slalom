@@ -12,9 +12,9 @@ namespace SlalomTracker.Cloud
     {
         const string Prefix = "[@";
         const string Suffix = "seconds]";
-        const double Duration = 2.0;
+        const double Duration = 1.5;
 
-        const string Header = "WEBVTT\r\n";
+        const string Header = "WEBVTT\n\n";
 
         private SkiVideoEntity _skiVideo;
 
@@ -24,21 +24,21 @@ namespace SlalomTracker.Cloud
         }
 
         public string Create() 
-        {
-            if (string.IsNullOrWhiteSpace(_skiVideo.Notes))
-                return null;
-                
-            StringBuilder builder = new StringBuilder();
-            StringReader reader = new StringReader(_skiVideo.Notes);
-            while(true)
+        {               
+            StringBuilder builder = new StringBuilder(Header);
+            if (!string.IsNullOrWhiteSpace(_skiVideo.Notes))
             {
-                string line = reader.ReadLine();
-                if (line == null)
-                    break;
-                
-                string formattedLine = FormatLine(line);
-                if (formattedLine != null)
-                    builder.Append(formattedLine);
+                StringReader reader = new StringReader(_skiVideo.Notes);
+                while(true)
+                {
+                    string line = reader.ReadLine();
+                    if (line == null)
+                        break;
+                    
+                    string formattedLine = FormatLine(line);
+                    if (formattedLine != null)
+                        builder.Append(formattedLine);
+                }
             }
             
             return builder.ToString();
@@ -49,13 +49,14 @@ namespace SlalomTracker.Cloud
             double startSeconds;
             if (!ParseSeconds(line, out startSeconds))
                 return null;            
+            
             string time = GetTime(startSeconds, startSeconds + Duration);
             string text = GetText(line);
 
             if (time == null || text == null)
                 return null;
 
-            return time + "\n" + text + "\n";
+            return time + "\n" + text + "\n\n";
         }
 
         private bool ParseSeconds(string line, out double seconds)
@@ -80,7 +81,8 @@ namespace SlalomTracker.Cloud
 
         private string GetTime(double start, double end)
         {
-            return $"00:{start.ToString("00.000")} --> 00:{end.ToString("00.000")}";
+            const string style = "line: 0";
+            return $"00:{start.ToString("00.000")} --> 00:{end.ToString("00.000")} {style}";
         }
 
         private string GetText(string line)

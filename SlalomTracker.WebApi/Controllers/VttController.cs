@@ -19,7 +19,7 @@ namespace SlalomTracker.WebApi.Controllers
         }
 
         [HttpGet]
-        [Route("api/vtt")]
+        [Route("api/vtt/{recordedDate}/{mp4Filename}")]
         public IActionResult Get(string recordedDate, string mp4Filename)
         {
             string vttContent;
@@ -34,7 +34,7 @@ namespace SlalomTracker.WebApi.Controllers
                 
                 _logger.LogInformation($"Created WebVtt for {recordedDate}, {mp4Filename}");
 
-                return Content(vttContent);
+                return Content(vttContent, new Microsoft.Net.Http.Headers.MediaTypeHeaderValue("text/vtt"));
             }
             catch (Exception e)
             {

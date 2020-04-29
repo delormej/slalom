@@ -4,7 +4,7 @@
 # CI/CD could override this version.
 if [ -z "$VERSION" ]
 then 
-    VERSION=5.0.3
+    VERSION=5.0.4
 fi
 container=skiconsole:v$VERSION
 
@@ -38,3 +38,8 @@ docker run -it --rm \
 
 docker tag $container wthacr.azurecr.io/$container
 docker push wthacr.azurecr.io/$container
+
+#
+# Script to get message counts from Service Bus
+#
+#az servicebus queue show -g jasondel-aks --namespace-name jasondel-skivideos --name video-uploaded --query "countDetails"
