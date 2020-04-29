@@ -25,7 +25,8 @@ namespace SlalomTracker.WebApi.Controllers
             double centerLineOffset = 0;
             try
             {
-                CoursePassFactory.FitPass(jsonUrl);
+                CoursePassFactory factory = new CoursePassFactory();
+                centerLineOffset = factory.FitPass(jsonUrl);
                 return Content(centerLineOffset.ToString());
             }
             catch (Exception e)

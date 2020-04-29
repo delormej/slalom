@@ -149,8 +149,8 @@ namespace SlalomTracker
                 return double.MaxValue;
 
             // Get the differene between
-            double dEntry = Math.Pow(Math.Abs(entryM.HandlePosition.X - 11.5), 2);
-            double dExit = Math.Pow(Math.Abs(exitM.HandlePosition.X - 11.5), 2);
+            double dEntry = Math.Pow(Math.Abs(entryM.HandlePosition.X), 2);
+            double dExit = Math.Pow(Math.Abs(exitM.HandlePosition.X), 2);
 
             return Math.Sqrt(dEntry + dExit);
         }

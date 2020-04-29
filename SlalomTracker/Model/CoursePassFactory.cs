@@ -137,30 +137,24 @@ namespace SlalomTracker
         /// <summary>
         /// Does a linear regression to fit the best centerline offset based on entry/exit gates.
         /// </summary>
-        public static double FitPass(string jsonUrl)
+        public double FitPass(string jsonUrl)
         {
-            const int MAX = 45;
-            const int MIN = -45;
-            CoursePassFactory factory = new CoursePassFactory();
-            CoursePass bestPass = null;
-            double bestPrecision = 0;
+            const int MAX = 45, MIN = -45;
+            double bestPrecision = double.MaxValue;
+
+            CoursePass bestPass = FromUrl(jsonUrl);
 
             for (int i = MIN; i <= MAX; i++)
             {
-                CoursePass pass = factory.FromUrl(jsonUrl);
-                if (bestPass == null)
+                CenterLineDegreeOffset = i;
+                CoursePass pass = CreatePass(bestPass.Measurements);
+                double precision = pass.GetGatePrecision();
+                
+                if (precision < bestPrecision)
                 {
+                    bestPrecision = precision;
                     bestPass = pass;
-                    bestPrecision = pass.GetGatePrecision();
-                }
-                else
-                {
-                    double p = pass.GetGatePrecision();
-                    if (p < bestPrecision)
-                    {
-                        bestPass = pass;
-                        bestPrecision = p;
-                    }
+                    Logger.Log($"Best Precision: {bestPrecision} = {CenterLineDegreeOffset}");
                 }
             }
             return bestPass.CenterLineDegreeOffset;
