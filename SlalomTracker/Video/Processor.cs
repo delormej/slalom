@@ -43,7 +43,8 @@ namespace SlalomTracker.Video
                     var trimAndSilence = TrimAndSilenceAsync(pass); 
                     var uploadVideo = UploadVideoAsync(trimAndSilence, getCreationTime);
                     var uploadHotVideo = UploadGoogleVideoAsync(trimAndSilence, getCreationTime);
-
+                    
+                    await FitCenterLineAsync(pass);
                     await CreateAndUploadMetadataAsync(
                         pass,
                         uploadThumbnail,
@@ -168,6 +169,17 @@ namespace SlalomTracker.Video
             CoursePass nextPass = _factory.GetNextPass(lastPass.Exit);
             return nextPass;
         }   
+
+        /// <summary>
+        /// Finds the best center line offset to use and updates the pass object.
+        /// </summary>
+        private Task FitCenterLineAsync(CoursePass pass)
+        {
+            return Task.Run( () => {
+                CoursePassFactory factory = new CoursePassFactory();
+                pass.CenterLineDegreeOffset = factory.FitPass(pass);
+            });
+        }
 
         private async Task CreateAndUploadMetadataAsync(CoursePass pass,
                         Task<string> uploadThumbnail,

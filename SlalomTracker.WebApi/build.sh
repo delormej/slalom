@@ -4,7 +4,7 @@
 # CI/CD could override this version.
 if [ -z "$VERSION" ]
 then 
-    VERSION=2.2.0
+    VERSION=2.2.1
 fi
 container=skiwebapi:v$VERSION
 
@@ -18,6 +18,7 @@ echo "Building container::$container"
 #
 docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
     --build-arg VERSION=$VERSION \
+    --target build \
     -f ./SlalomTracker.WebApi/Dockerfile . 
 #
 # To just use the debug image add:

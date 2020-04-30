@@ -19,7 +19,7 @@ namespace SlalomTracker.WebApi.Controllers
         }
 
         [HttpGet]
-        [Route("api/clfit/")]
+        [Route("api/cl/")]
         public IActionResult Get(string jsonUrl)
         {
             double centerLineOffset = 0;
