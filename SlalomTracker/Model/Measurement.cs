@@ -8,6 +8,7 @@ namespace SlalomTracker
     /// <summary>
     /// Object to store measurements calculated from a rope rotation event.
     /// </summary>
+    [JsonObject(ItemNullValueHandling = NullValueHandling.Ignore)]
     public class Measurement
     {
         public DateTime Timestamp { get; set; }
@@ -52,6 +53,12 @@ namespace SlalomTracker
         /// Position of the handle relative to the course in X,Y coordinates.
         /// </summary>
         public CoursePosition HandlePosition { get; set; }
+
+        public override string ToString()
+        {
+            string json = JsonConvert.SerializeObject(this);
+            return json;            
+        }
 
         public static string ToJson(List<Measurement> measurements)
         {

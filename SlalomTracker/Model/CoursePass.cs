@@ -1,6 +1,7 @@
 ﻿using GeoCoordinatePortable;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SlalomTracker
 {
@@ -183,6 +184,21 @@ namespace SlalomTracker
             double duration = this.Measurements[count].Timestamp.Subtract(
                 this.Measurements[0].Timestamp).TotalSeconds;
             return duration;
+        }
+
+        public Measurement FindHandleAtSeconds(double seconds)
+        {
+            const double offset = 0.25;
+            DateTime start = new DateTime().AddSeconds(seconds);
+            DateTime end = new DateTime().AddSeconds(seconds + offset);
+            
+            // try to find an event within 1/4 second:
+            var match = this.Measurements.Where(m => 
+                m.Timestamp >= start
+                && m.Timestamp < end )
+            .FirstOrDefault();
+
+            return match;
         }
     
         private Measurement FindHandleAtY(double y)

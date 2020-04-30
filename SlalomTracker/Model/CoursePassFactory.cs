@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using GeoCoordinatePortable;
 using Newtonsoft.Json;
 using System.Linq;
+using SlalomTracker.Cloud;
 using Logger = jasondel.Tools.Logger;
 
 namespace SlalomTracker
@@ -52,13 +53,21 @@ namespace SlalomTracker
         {
         }
 
+        public CoursePass FromSkiVideo(SkiVideoEntity video)
+        {
+            CenterLineDegreeOffset = video.CenterLineDegreeOffset;
+            RopeLengthOff = video.RopeLengthM;
+            
+            KnownCourses courses = new KnownCourses();
+            Course = courses.ByName(video.CourseName);
+
+            return FromUrl(video.JsonUrl);
+        }
+
         /// <summary>
         /// Loads an object of List<Measurment> from a JSON file.
         /// </summary>
         /// <param name="path"></param>
-        /// <param name="centerLineDegreeOffset"></param>
-        /// <param name="rope"></param>
-        /// <returns></returns>
         public CoursePass FromFile(string path)
         {
             using (var sr = File.OpenText(path))
@@ -83,9 +92,6 @@ namespace SlalomTracker
         /// Loads a List<Measurment> collection serialized as JSON in the string.
         /// </summary>
         /// <param name="json"></param>
-        /// <param name="centerLineDegreeOffset"></param>
-        /// <param name="rope"></param>
-        /// <returns></returns>
         public CoursePass FromJson(string json)
         { 
             _json = json;
@@ -139,21 +145,26 @@ namespace SlalomTracker
         /// </summary>
         public double FitPass(string jsonUrl)
         {
+            CoursePass bestPass = FromUrl(jsonUrl);
+            return FitPass(bestPass);
+        }
+
+        public double FitPass(CoursePass pass)
+        {
             const int MAX = 45, MIN = -45;
             double bestPrecision = double.MaxValue;
-
-            CoursePass bestPass = FromUrl(jsonUrl);
+            CoursePass bestPass = pass;
 
             for (int i = MIN; i <= MAX; i++)
             {
                 CenterLineDegreeOffset = i;
-                CoursePass pass = CreatePass(bestPass.Measurements);
-                double precision = pass.GetGatePrecision();
+                CoursePass nextPass = CreatePass(pass.Measurements);
+                double precision = nextPass.GetGatePrecision();
                 
                 if (precision < bestPrecision)
                 {
                     bestPrecision = precision;
-                    bestPass = pass;
+                    bestPass = nextPass;
                     Logger.Log($"Best Precision: {bestPrecision} = {CenterLineDegreeOffset}");
                 }
             }
