@@ -10,6 +10,8 @@ using System.Drawing.Imaging;
 using System.Drawing;
 using SlalomTracker;
 using SlalomTracker.Cloud;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 
 namespace SlalomTracker.WebApi.Controllers
 {
@@ -18,11 +20,26 @@ namespace SlalomTracker.WebApi.Controllers
     //[Produces("image/png")]
     public class ImageController : Controller
     {
+        ILogger<ImageController> _logger;
+
+        public ImageController(ILogger<ImageController> logger, IConfiguration config)
+        {
+            _logger = logger;
+        }
+
+
         [HttpGet]
         public IActionResult Get(string jsonUrl, double cl = 0, double rope = 15)
         {
             try
             {
+                if (cl == 0) 
+                {
+                    _logger.LogInformation("Attempting CenterLineOffset fit.");
+                    CoursePassFactory factory = new CoursePassFactory();
+                    cl = factory.FitPass(jsonUrl);
+                }
+
                 Bitmap image = GetImage(jsonUrl, cl, rope);
                 using (var ms = new MemoryStream())
                 {
