@@ -2,9 +2,10 @@
 #source prebuild.sh
 
 # CI/CD could override this version.
+# This will get the latest short commit hash: $(git rev-parse --short HEAD)
 if [ -z "$VERSION" ]
 then 
-    VERSION=5.0.4
+    VERSION=$(git describe --abbrev=0 --tag)
 fi
 container=skiconsole:v$VERSION
 
