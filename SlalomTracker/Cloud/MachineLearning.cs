@@ -26,7 +26,9 @@ namespace SlalomTracker.Cloud
 
         public MachineLearning()
         {
-            CropThumbnailUrl = "https://ski-app.azurewebsites.net/api/crop?thumbnailUrl=";
+#warning CropThumbnailUrl is hardcoded and should be moved to a configuration file.
+            CropThumbnailUrl = "https://ski.jasondel.com/api/crop?width=1600&thumbnailUrl=";
+#warning CustomVisionEndPoint is hardcoded and should be moved to a configuration file.
             CustomVisionEndPoint = "https://ropelengthvision.cognitiveservices.azure.com/";     
         }
 
@@ -87,16 +89,27 @@ namespace SlalomTracker.Cloud
             }            
         }
 
+        /// <summary>
+        /// Returns prediction or null if an error occurs.
+        /// </summary>
         public virtual string Predict(string thumbnailUrl)
         {
             Logger.Log($"Making a prediction of {CustomVisionModelName} for: " + thumbnailUrl);
+            try 
+            {
+                PredictionModels.ImageUrl thumbnail = new PredictionModels.ImageUrl(CropThumbnailUrl + thumbnailUrl);
+                var result = predictionApi.ClassifyImageUrl(ProjectId, CustomVisionModelName, thumbnail);
 
-            PredictionModels.ImageUrl thumbnail = new PredictionModels.ImageUrl(CropThumbnailUrl + thumbnailUrl);
-            var result = predictionApi.ClassifyImageUrl(ProjectId, CustomVisionModelName, thumbnail);
+                LogPredicitions(result.Predictions);
 
-            LogPredicitions(result.Predictions);
-
-            return GetHighestRankedPrediction(result.Predictions);
+                return GetHighestRankedPrediction(result.Predictions);
+            }
+            catch (PredictionModels.CustomVisionErrorException e)
+            {
+                Logger.Log($"Error making prediction for {thumbnailUrl}\n\t" + 
+                    e.Response.Content, e);
+                return null;
+            }
         }
 
         private void LogPredicitions(IList<PredictionModels.PredictionModel> predictions)
