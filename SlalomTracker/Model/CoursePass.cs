@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Logger = jasondel.Tools.Logger;
 
 namespace SlalomTracker
 {
@@ -164,8 +165,11 @@ namespace SlalomTracker
         public double GetSecondsAtSkierEntry()
         {
             Measurement measurement = FindHandleAtY(Course.Gates[0].Y);
-            if (measurement == null)
+            if (measurement == null) 
+            {
+                Logger.Log("Didn't find handle at Skier Entry.");
                 return GetSecondsAtEntry();
+            }
             
             return GetSecondsFromStart(measurement);
         }
@@ -205,10 +209,14 @@ namespace SlalomTracker
     
         private Measurement FindHandleAtY(double y)
         {
-            foreach (var m in this.Measurements)
-                if ((int)m.HandlePosition.Y == (int)y)
-                    return m;
-            return null;
+            double start = y;
+            double end = start + 1.5; // tolerance
+            var match = this.Measurements.Where(m => 
+                m.HandlePosition.Y >= start
+                && m.HandlePosition.Y < end )
+            .FirstOrDefault();
+
+            return match;
         }
 
         private double GetSecondsFromStart(Measurement measurement)

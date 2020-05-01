@@ -37,10 +37,10 @@ namespace SlalomTracker
             DrawCourseBounds(_pass.Course.EntryPolygon, Color.Green);
             DrawCourseBounds(_pass.Course.ExitPolygon, Color.Red);
 
-            DrawCourseFeature(Color.Green, _pass.Course.PreGates);
-            DrawCourseFeature(Color.Red, _pass.Course.Gates);
-            DrawCourseFeature(Color.Red, _pass.Course.Balls);
-            DrawCourseFeature(Color.Yellow, _pass.Course.BoatMarkers);
+            DrawCourseFeature(Color.Green, Course.PreGates);
+            DrawCourseFeature(Color.Red, Course.Gates);
+            DrawCourseFeature(Color.Red, Course.Balls);
+            DrawCourseFeature(Color.Yellow, Course.BoatMarkers);
 
             DrawCenterLine();
             DrawCoursePass();
@@ -171,8 +171,8 @@ namespace SlalomTracker
         {
             var range = _pass.Measurements.Where(
                 /* In between 55s and Gates */
-                m => m.HandlePosition.Y > _pass.Course.PreGates[0].Y &&
-                m.HandlePosition.Y < _pass.Course.Gates[0].Y);
+                m => m.HandlePosition.Y > Course.PreGates[0].Y &&
+                m.HandlePosition.Y < Course.Gates[0].Y);
 
             if (range?.Count() == 0)
             {
@@ -222,8 +222,8 @@ namespace SlalomTracker
                 DrawHandleSpeed(m, i);
                 if (m.InCourse)
                 {
-                    if (lastBall < parent._pass.Course.Balls.Length &&
-                        m.HandlePosition.Y >= parent._pass.Course.Balls[lastBall].Y)
+                    if (lastBall < Course.Balls.Length &&
+                        m.HandlePosition.Y >= Course.Balls[lastBall].Y)
                     {
                         parent.DrawAngleAtBall(m);
                         lastBall++;

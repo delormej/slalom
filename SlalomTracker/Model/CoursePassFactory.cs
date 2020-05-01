@@ -240,14 +240,14 @@ namespace SlalomTracker
             }
             
             Measurement previous = measurements[i-1];
-            if (current.BoatPosition.Y >= m_course.Gates[0].Y && 
-                current.BoatPosition.Y <= m_course.Gates[3].Y )
+            if (current.BoatPosition.Y >= Course.Gates[0].Y && 
+                current.BoatPosition.Y <= Course.Gates[3].Y )
             {
                 current.InCourse = true;
                 if (previous.InCourse == false)
                     pass.Entry = current;
             }
-            else if (previous.InCourse && current.BoatPosition.Y >= m_course.Gates[3].Y)
+            else if (previous.InCourse && current.BoatPosition.Y >= Course.Gates[3].Y)
             {
                 current.InCourse = false;
                 pass.Exit = current;

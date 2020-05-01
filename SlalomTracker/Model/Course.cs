@@ -15,7 +15,12 @@ namespace SlalomTracker
         // are slightly off.
         public static readonly double WidthM = 23;
         public static readonly double LengthM = 259 + (55 * 2); // Course + pregates
-
+        public static readonly CoursePosition[] Balls;
+        public static readonly CoursePosition[] BoatMarkers;
+        public static readonly CoursePosition[] Gates;
+        public static readonly CoursePosition[] PreGates;
+        
+        public string Name { get; set; }
         private List<GeoCoordinate> _polygon;
         private List<GeoCoordinate> _entryPolygon;
         private List<GeoCoordinate> _exitPolygon;
@@ -30,6 +35,16 @@ namespace SlalomTracker
         public List<GeoCoordinate> EntryPolygon { get { return _entryPolygon; } }
         public List<GeoCoordinate> ExitPolygon { get { return _exitPolygon; } }
 
+        static Course()
+        {
+            PreGates = new CoursePosition[4];
+            Gates = new CoursePosition[4];
+            BoatMarkers = new CoursePosition[12];
+            Balls = new CoursePosition[6];            
+
+            GenerateCourseFeatures();
+        }
+
         public Course() : this(new GeoCoordinate(), new GeoCoordinate())
         {
         }
@@ -38,18 +53,14 @@ namespace SlalomTracker
         {
             Course55EntryCL = entry;
             Course55ExitCL = exit;
-            GenerateCourseFeatures();
             GeneratePolygons();
         }
 
         /// <summary>
         /// Generates Balls, BoatMarkers, Gates once Course Entry & Exit coordinates are available.
         /// </summary>
-        private void GenerateCourseFeatures()
+        private static void GenerateCourseFeatures()
         {
-            PreGates = new CoursePosition[4];
-            Gates = new CoursePosition[4];
-
             // Pre Gates (55m)
             PreGates[0] = new CoursePosition(-1.25, 0);
             PreGates[1] = new CoursePosition(1.25, 0);
@@ -64,8 +75,6 @@ namespace SlalomTracker
             Gates[2] = new CoursePosition(-1.25, LengthM - 55);
             Gates[3] = new CoursePosition(1.25, LengthM - 55);
 
-            BoatMarkers = new CoursePosition[12];
-            Balls = new CoursePosition[6];
             Balls[0] = new CoursePosition(-11.5, 27 + 55); // Ball 1
             for (int i = 1; i<6; i++)
             {
@@ -245,15 +254,5 @@ namespace SlalomTracker
         // Balls[5] (x,y coordinates)
         // BoatMarkers[10] (x,y coordiantes)
         // BoatGuides[4] -- the course entry / exit guides, what are these called? Green balls..
-
-        public string Name { get; set; }
-
-        public CoursePosition[] Balls { get; private set; }
-
-        public CoursePosition[] BoatMarkers { get; private set; }
-
-        public CoursePosition[] Gates { get; private set; }
-
-        public CoursePosition[] PreGates { get; private set; }
     }
 }
