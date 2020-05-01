@@ -36,6 +36,10 @@ jobs:
         name: wthacr.azurecr.io/skiconsole:${{ steps.get_version.outputs.VERSION }}
         username: ${{ steps.acr_login.outputs.username }}
         password: ${{ steps.acr_login.outputs.password }}
+<<<<<<< HEAD
         registry: wthacr
 
 
+=======
+        registry: wthacr
+>>>>>>> fb93b167ac2621993f56e1008ff1e71c1600bff0
