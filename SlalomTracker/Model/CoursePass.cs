@@ -158,12 +158,16 @@ namespace SlalomTracker
 
         public double GetSecondsAtEntry()
         {
-            double seconds = 0.0d;
-            TimeSpan fromStart = this.Entry.Timestamp.Subtract(
-                this.Measurements[0].Timestamp);
-            if (fromStart != null)
-                seconds = fromStart.TotalSeconds;
-            return seconds;
+            return GetSecondsFromStart(this.Entry);
+        }
+
+        public double GetSecondsAtSkierEntry()
+        {
+            Measurement measurement = FindHandleAtY(Course.Gates[0].Y);
+            if (measurement == null)
+                return GetSecondsAtEntry();
+            
+            return GetSecondsFromStart(measurement);
         }
 
         public double GetDurationSeconds()
@@ -181,9 +185,7 @@ namespace SlalomTracker
         public double GetTotalSeconds()
         {
             int count = Measurements.Count-1;
-            double duration = this.Measurements[count].Timestamp.Subtract(
-                this.Measurements[0].Timestamp).TotalSeconds;
-            return duration;
+            return GetSecondsFromStart(this.Measurements[count]);
         }
 
         public Measurement FindHandleAtSeconds(double seconds)
@@ -207,6 +209,16 @@ namespace SlalomTracker
                 if ((int)m.HandlePosition.Y == (int)y)
                     return m;
             return null;
+        }
+
+        private double GetSecondsFromStart(Measurement measurement)
+        {
+            double seconds = 0.0d;
+            TimeSpan fromStart = measurement.Timestamp.Subtract(
+                this.Measurements[0].Timestamp);
+            if (fromStart != null)
+                seconds = fromStart.TotalSeconds;
+            return seconds;
         }
     }
 }

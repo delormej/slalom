@@ -79,7 +79,7 @@ namespace SlalomTracker.Video
         {  
             Logger.Log($"Creating Thumbnail for video {_sourceVideoUrl}...");
 
-            double thumbnailAtSeconds = pass.GetSecondsAtEntry();
+            double thumbnailAtSeconds = pass.GetSecondsAtSkierEntry();
             string localThumbnailPath = await _videoTasks.GetThumbnailAsync(thumbnailAtSeconds);
 
             Logger.Log($"Thumbnail created at {localThumbnailPath}");
@@ -93,7 +93,7 @@ namespace SlalomTracker.Video
 
             return Task.Run(() => 
             {
-                double start = pass.GetSecondsAtEntry()-2;
+                double start = pass.GetSecondsAtEntry();
                 double duration = pass.GetDurationSeconds();
                 double total = pass.GetTotalSeconds();                           
                 
