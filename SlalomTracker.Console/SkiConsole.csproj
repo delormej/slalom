@@ -14,14 +14,4 @@
     <PackageReference Include="System.Drawing.Common" Version="4.5.0" />
   </ItemGroup>
 
-  <!-- This is a hack workaround, because package restore through nuget doesn't put 
-       gpmfdemo in the right spot. 
-  
-  <Target Name="MoveGPMFBinary" AfterTargets="Publish">
-    <Exec Command="echo 'Copying gpmfdemo to $(PublishDir)'" />
-    <Copy SourceFiles="$(OutDir)/gpmf/build/gpmfdemo"
-            DestinationFiles="$(PublishDir)/gpmfdemo" />
-    <RemoveDir Directories="$(PublishDir)/gpmf" />
-  </Target>
--->
 </Project>

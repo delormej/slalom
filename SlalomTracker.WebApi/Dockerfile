@@ -1,16 +1,7 @@
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1 as build
+FROM wthacr.azurecr.io/skibuild:1.0 AS build
 
 ARG GITHUB_TOKEN
 ARG VERSION
-
-# Workaround, dependencies for graphics libraries, per this issue: https://github.com/dotnet/corefx/issues/25102
-RUN apt-get update \
-    &&  apt-get install -y libgdiplus \
-    &&  apt-get install -y --no-install-recommends libc6-dev \
-    && apt install -y curl \
-    && apt install -y procps \
-    && apt install unzip \
-    && curl -sSL https://aka.ms/getvsdbgsh | /bin/sh /dev/stdin -v latest -l /vsdbg
 
 WORKDIR /ski
 COPY ./ .

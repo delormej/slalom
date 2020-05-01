@@ -6,7 +6,6 @@
     <ApplicationIcon />
     <OutputType>Library</OutputType>
     <StartupObject />
-    <Version>2.4.1</Version>
 
     <!-- Required to publish nuget package. -->
     <PackageId>SlalomTracker</PackageId>
@@ -29,23 +28,19 @@
     <PackageReference Include="xFFmpeg.NET" Version="3.3.3" />
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.40.0.1593" />
   </ItemGroup>
-
-  <ItemGroup Condition="'$(OS)'!='Windows_NT'">
-    <Content Include="gpmf/build/gpmfdemo" Link="%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always">
+ 
+ <ItemGroup Condition="'$(OS)'!='Windows_NT'">
+    <Content Include="$(ProjectDir)gpmf/build/*" Link="%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always">
       <Pack>true</Pack>
       <PackageCopyToOutput>true</PackageCopyToOutput>
       <PackageFlatten>true</PackageFlatten>
     </Content>
   </ItemGroup>
-
-  <Target Name="PrintMe" BeforeTargets="Restore">
+ 
+  <Target Name="SetupGpmfBuildDir" BeforeTargets="Restore">
       <Message Importance="High" Text="OS is: $(OS)" />
+      <MakeDir Directories="$(ProjectDir)gpmf/build/" Condition=" !Exists('$(ProjectDir)gpmf/build/') " />
   </Target>
 
-  <!-- Build dependent submodule. -->
-  <Target Name="BuildGPMF" BeforeTargets="Restore" Condition="'$(OS)'!='Windows_NT'">
-    <Exec Command="echo 'Building gpmfdemo for $(Platform) $(OS) in $(ProjectDir)gpmf'" />
-    <Exec Command="./build.sh" WorkingDirectory="$(ProjectDir)gpmf" />
-  </Target>
 
 </Project>
