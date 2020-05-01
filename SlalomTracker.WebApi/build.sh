@@ -4,7 +4,7 @@
 # CI/CD could override this version.
 if [ -z "$VERSION" ]
 then 
-    VERSION=2.2.1
+    VERSION=$(git describe --abbrev=0 --tag)
 fi
 container=skiwebapi:v$VERSION
 
