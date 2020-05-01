@@ -1,0 +1,41 @@
+name: Create skiconsole container.
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - name: Get the version from tag
+      id: get_version
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+    - name: Microsoft Azure Container Registry Login
+      id: acr_login
+      uses: elgohr/acr-login-action@0.1
+      with:
+        service_principal: ${{ secrets.ACR_APPID }} 
+        service_principal_password: ${{ secrets.ACR_PASSWORD }} 
+        tenant: ${{ secrets.ACR_TENANT }} 
+        registry: wthacr
+        repository: skiconsole
+    - name: Build the Docker image
+      run: docker build . --file ./SlalomTracker.Console/Dockerfile --tag wthacr.azurecr.io/skiconsole:${{ steps.get_version.outputs.VERSION }} --build-arg VERION=${{ steps.get_version.outputs.VERSION }} --build-arg GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} 
+    - name: Publish to Registry
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: wthacr.azurecr.io/skiconsole:${{ steps.get_version.outputs.VERSION }}
+        username: ${{ steps.acr_login.outputs.username }}
+        password: ${{ steps.acr_login.outputs.password }}
+        registry: wthacr.azurecr.io
+
+
