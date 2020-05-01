@@ -38,8 +38,8 @@ docker run -it --rm \
     --name ski-dbg \
     $container
 
-#docker tag $container wthacr.azurecr.io/$container
-#docker push wthacr.azurecr.io/$container
+docker tag $container wthacr.azurecr.io/$container
+docker push wthacr.azurecr.io/$container
 
 #
 # Script to get message counts from Service Bus
