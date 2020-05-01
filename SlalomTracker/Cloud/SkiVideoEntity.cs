@@ -37,6 +37,9 @@ namespace SlalomTracker.Cloud
 
         public double CenterLineDegreeOffset { get; set; }
 
+        /// <summary>
+        /// Rope Length in canonical "Off" format; 15,22,28,32, etc...
+        /// </summary>
         public double RopeLengthM { get; set; }
 
         public double BoatSpeedMph { get; set; }
