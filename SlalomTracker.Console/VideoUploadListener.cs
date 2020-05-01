@@ -100,6 +100,7 @@ namespace SkiConsole
         Task ExceptionReceivedHandler(ExceptionReceivedEventArgs exceptionReceivedEventArgs)
         {
             Logger.Log($"Message handler encountered an exception", exceptionReceivedEventArgs.Exception);
+            Logger.Log($"StackTrace == " + exceptionReceivedEventArgs.Exception.StackTrace);
             var context = exceptionReceivedEventArgs.ExceptionReceivedContext;
             Logger.Log("Exception context for troubleshooting:");
             Logger.Log($"- Endpoint: {context.Endpoint}");
