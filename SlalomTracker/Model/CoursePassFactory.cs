@@ -165,9 +165,9 @@ namespace SlalomTracker
                 {
                     bestPrecision = precision;
                     bestPass = nextPass;
-                    Logger.Log($"Best Precision: {bestPrecision} = {CenterLineDegreeOffset}");
                 }
             }
+            Logger.Log($"Best Precision: {bestPrecision} = {bestPass.CenterLineDegreeOffset}");
             return bestPass.CenterLineDegreeOffset;
         }
 
