@@ -93,8 +93,18 @@ namespace SlalomTracker.Video
 
             return Task.Run(() => 
             {
-                double start = pass.GetSecondsAtEntry();
-                double duration = pass.GetDurationSeconds();
+                double start = 0, duration = 0;
+                VideoTime videoTime = new VideoTime(_sourceVideoUrl);
+                if (videoTime.LoadVideoJson())
+                {
+                    start = videoTime.Start;
+                    duration = videoTime.Duration;
+                }
+                else
+                {
+                    start = pass.GetSecondsAtEntry();
+                    duration = pass.GetDurationSeconds();
+                }
                 double total = pass.GetTotalSeconds();                           
                 
                 return _videoTasks.TrimAndSilenceVideo(start, duration, total); 
