@@ -78,12 +78,13 @@ namespace SlalomTracker.Video
         private async Task<string> CreateThumbnailAsync(CoursePass pass)
         {  
             Logger.Log($"Creating Thumbnail for video {_sourceVideoUrl}...");
-
-            double thumbnailAtSeconds = pass.GetSecondsAtSkierEntry();
+            
+            double thumbnailAtSeconds = 0;
+            if (pass != null)
+                thumbnailAtSeconds = pass.GetSecondsAtSkierEntry();
             string localThumbnailPath = await _videoTasks.GetThumbnailAsync(thumbnailAtSeconds);
 
             Logger.Log($"Thumbnail created at {localThumbnailPath}");
-
             return localThumbnailPath;
         }
 
@@ -93,19 +94,20 @@ namespace SlalomTracker.Video
 
             return Task.Run(() => 
             {
-                double start = 0, duration = 0;
-                VideoTime videoTime = new VideoTime(_sourceVideoUrl);
-                if (videoTime.LoadVideoJson())
+                double start = 0, duration = 0, total = 0;
+                if (pass == null)
                 {
+                    VideoTime videoTime = GetPassOverride();
                     start = videoTime.Start;
                     duration = videoTime.Duration;
+                    total = start + duration;
                 }
                 else
                 {
                     start = pass.GetSecondsAtEntry();
                     duration = pass.GetDurationSeconds();
+                    total = pass.GetTotalSeconds();
                 }
-                double total = pass.GetTotalSeconds();                           
                 
                 return _videoTasks.TrimAndSilenceVideo(start, duration, total); 
             });
@@ -169,11 +171,32 @@ namespace SlalomTracker.Video
                 _json = MetadataExtractor.Extract.ExtractMetadata(_localVideoPath);
                 Logger.Log("Extracted metadata.");
             });
-        }     
+        } 
+
+        /// <summary>
+        /// Download and process JSON CoursePass override if it exists.
+        /// </summary>
+        private VideoTime GetPassOverride()    
+        {
+            VideoTime overrides = null;
+            try 
+            {
+                string jsonOverrideUrl = VideoTime.GetVideoJsonUrl(_sourceVideoUrl);
+                string jsonPath = Cloud.Storage.DownloadVideo(jsonOverrideUrl);
+                if (jsonPath != null)
+                    overrides = VideoTime.FromJsonFile(jsonPath);
+            }
+            catch (System.Net.WebException)
+            {
+                Logger.Log("No json override found for " + _sourceVideoUrl);
+            }
+        
+            return overrides;
+        }
 
         private CoursePass HasAnotherPass(in CoursePass lastPass)
         {
-            if (lastPass.Exit == null)
+            if (lastPass == null || lastPass.Exit == null)
                 return null;
 
             CoursePass nextPass = _factory.GetNextPass(lastPass.Exit);
@@ -185,6 +208,9 @@ namespace SlalomTracker.Video
         /// </summary>
         private Task FitCenterLineAsync(CoursePass pass)
         {
+            if (pass == null)
+                return Task.CompletedTask;
+
             return Task.Run( () => {
                 CoursePassFactory factory = new CoursePassFactory();
                 pass.CenterLineDegreeOffset = factory.FitPass(pass);
@@ -208,9 +234,11 @@ namespace SlalomTracker.Video
             string hotVideoUrl = await uploadHotVideo;
             
             // Create the table entity and wait for predictions to come back
-            SkiVideoEntity entity = CreateSkiVideoEntity(pass, thumbnailUrl, videoUrl);
+            SkiVideoEntity entity = CreateSkiVideoEntity(pass, videoUrl);
             entity.Skier = await getSkierPrediction;
             entity.RopeLengthM = await getRopePrediction;
+            entity.ThumbnailUrl = thumbnailUrl;
+
             if (!string.IsNullOrWhiteSpace(hotVideoUrl)) 
                 entity.HotUrl = hotVideoUrl;
 
@@ -230,15 +258,18 @@ namespace SlalomTracker.Video
             return Task.Run(() => skierMl.Predict(thumbnailUrl));
         }
 
-        private SkiVideoEntity CreateSkiVideoEntity(CoursePass pass, string thumbnailUrl, string videoUrl)
+        private SkiVideoEntity CreateSkiVideoEntity(CoursePass pass, string videoUrl)
         {
             SkiVideoEntity entity = new SkiVideoEntity(videoUrl, _creationTime);
-            entity.BoatSpeedMph = pass.AverageBoatSpeed;
-            entity.CourseName = pass.Course.Name;
-            entity.EntryTime = pass.GetSecondsAtEntry();     
-            entity.RopeLengthM = pass.Rope != null ? pass.Rope.FtOff : 0;
-            entity.CenterLineDegreeOffset = pass.CenterLineDegreeOffset;   
-            entity.ThumbnailUrl = thumbnailUrl;   
+
+            if (pass != null) 
+            {
+                entity.BoatSpeedMph = pass.AverageBoatSpeed;
+                entity.CourseName = pass.Course.Name;
+                entity.EntryTime = pass.GetSecondsAtEntry();     
+                entity.RopeLengthM = pass.Rope != null ? pass.Rope.FtOff : 0;
+                entity.CenterLineDegreeOffset = pass.CenterLineDegreeOffset;   
+            }
             
             return entity;
         }  

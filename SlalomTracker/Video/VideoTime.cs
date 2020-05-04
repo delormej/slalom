@@ -17,18 +17,19 @@ namespace SlalomTracker.Video
 
         public VideoTime(string videoUrl) 
         {
-            GetVideoJsonUrl(videoUrl);
+            _videoJsonUrl = GetVideoJsonUrl(videoUrl);
         }
 
         public bool LoadVideoJson()
         {
             try 
             {
-                Storage storage = new Storage();
                 string localJson = Storage.DownloadVideo(_videoJsonUrl);
             
                 Logger.Log($"Found override json: {_videoJsonUrl}");
-                ParseJson(localJson);
+                VideoTime obj = FromJsonFile(localJson);
+                this.Start = obj.Start;
+                this.Duration = obj.Duration;
             }
             catch (System.Net.WebException)
             {
@@ -39,21 +40,20 @@ namespace SlalomTracker.Video
             return true;
         }
 
-        private void GetVideoJsonUrl(string videoUrl)
+        public static string GetVideoJsonUrl(string videoUrl)
         {
             if (!videoUrl.ToUpper().EndsWith("MP4"))
                 throw new ApplicationException("VideoUrl is not an MP4: " + videoUrl);
             
-            _videoJsonUrl = videoUrl.Substring(0, videoUrl.Length - 3) + "json";
+            return videoUrl.Substring(0, videoUrl.Length - 3) + "json";
         }
 
-        private void ParseJson(string jsonPath)
+        public static VideoTime FromJsonFile(string jsonPath)
         {
             string json = File.ReadAllText(jsonPath);
             VideoTime obj = JsonConvert.DeserializeObject<VideoTime>(json);
 
-            this.Start = obj.Start;
-            this.Duration = obj.Duration;
+            return obj;
         }
     }
 }
