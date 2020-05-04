@@ -3,14 +3,15 @@ FROM wthacr.azurecr.io/skibuild:1.0 AS build
 ARG GITHUB_TOKEN
 ARG VERSION
 
-COPY ./ /ski
+COPY . /ski
 WORKDIR /ski
 
 # Build and publish skiconsole, ensure that the metadata extractor (gpmfdemo) has execute permissions
 # Set to build a self-contained linux binary (no dotnet required).
 # use -r linux-musl-x64 to target alpine
 # if using alpine, we need to recompile gpmfdemo
-RUN mkdir ./SlalomTracker/gpmf/build/ && \
+RUN if [ -d "./SlalomTracker/gpmf/build/" ]; then rm -Rf ./SlalomTracker/gpmf/build/; fi && \
+    mkdir ./SlalomTracker/gpmf/build/ && \
     make --directory ./SlalomTracker/gpmf/demo && \
     cp ./SlalomTracker/gpmf/demo/gpmfdemo ./SlalomTracker/gpmf/build/
 
