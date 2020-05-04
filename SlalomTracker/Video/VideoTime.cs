@@ -1,8 +1,7 @@
 using System;
 using System.IO;
-using System.Text.Json;
-using System.Threading.Tasks;
 using SlalomTracker.Cloud;
+using Newtonsoft.Json;
 using Logger = jasondel.Tools.Logger;
 
 namespace SlalomTracker.Video 
@@ -27,9 +26,11 @@ namespace SlalomTracker.Video
             {
                 Storage storage = new Storage();
                 string localJson = Storage.DownloadVideo(_videoJsonUrl);
+            
+                Logger.Log($"Found override json: {_videoJsonUrl}");
                 ParseJson(localJson);
             }
-            catch (System.Net.WebException e)
+            catch (System.Net.WebException)
             {
                 Logger.Log("No json override found for " + _videoJsonUrl);
                 return false;
@@ -46,9 +47,13 @@ namespace SlalomTracker.Video
             _videoJsonUrl = videoUrl.Substring(0, videoUrl.Length - 3) + "json";
         }
 
-        private void ParseJson(string jsonFile)
+        private void ParseJson(string jsonPath)
         {
-            //JsonSerializer.Deserialize
+            string json = File.ReadAllText(jsonPath);
+            VideoTime obj = JsonConvert.DeserializeObject<VideoTime>(json);
+
+            this.Start = obj.Start;
+            this.Duration = obj.Duration;
         }
     }
 }
