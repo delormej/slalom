@@ -1,16 +1,6 @@
 #!/bin/bash
 #source prebuild.sh
 
-# if [[ $# -gt 0 && $1 == "debug" ]]
-#     then DEBUG=1
-# fi
-
-# if [ -z ${DEBUG} ]
-#     then echo "debug"
-#     else echo "not debug"
-# fi
-# exit
-
 # CI/CD could override this version.
 # This will get the latest short commit hash: $(git rev-parse --short HEAD)
 if [ -z "$VERSION" ]
@@ -30,7 +20,7 @@ echo "Building container::$container"
 echo "Building container."
 docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
     --build-arg VERSION=$VERSION \
-    --force-rm  \
+    --force-rm \
     -f ./SlalomTracker.Console/Dockerfile .
 #
 # To just use the debug image add --target build to the above and it won't build the release stage.
@@ -48,8 +38,8 @@ docker run -it --rm \
     --name ski-dbg \
     $container
 
-# docker tag $container wthacr.azurecr.io/$container
-# docker push wthacr.azurecr.io/$container
+docker tag $container wthacr.azurecr.io/$container
+docker push wthacr.azurecr.io/$container
 
 #
 # Script to get message counts from Service Bus
