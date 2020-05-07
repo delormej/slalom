@@ -134,6 +134,10 @@ namespace SkiConsole
                 string queue = args.Length > 1 ? args[1] : null;
                 Listen(queue, args.Length > 2);
             }
+            else if (args[0] == "-u")
+            {
+                UpdateCreationTimeAsync().Wait();
+            }
             else
                 ShowUsage();
         }
@@ -310,6 +314,29 @@ namespace SkiConsole
             SkiVideoEntity entity = new SkiVideoEntity("http://localhost/TEST.MP4", creation);
             string obj = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
             System.Console.WriteLine("Object:\n" + obj);
+        }
+
+        /// <summary>
+        /// 1-off job to fix timezone issues, video times were stamped as UTC, but they were 
+        /// actually Eastern time zone (Americas/New York).
+        /// </summary>
+        private static async Task UpdateCreationTimeAsync()
+        {
+            TimeZoneInfo videoTimeZone = TimeZoneInfo.FindSystemTimeZoneById(
+                VideoTasks.DefaultVideoRecordingTimeZone);
+            Storage storage = new Storage();
+            List<SkiVideoEntity> entities = await storage.GetAllMetdataAsync();
+            var list = entities.Where(e => e.RecordedTime > DateTime.Today.AddMonths(-3));
+            foreach (SkiVideoEntity entity in list)
+            {
+                if (entity.RecordedTime == DateTime.MinValue)
+                    continue;
+                DateTime toConvertTime = DateTime.SpecifyKind(entity.RecordedTime, DateTimeKind.Unspecified);
+                DateTime utcTime = TimeZoneInfo.ConvertTimeToUtc(toConvertTime, videoTimeZone);
+                entity.RecordedTime = utcTime;
+                storage.UpdateMetadata(entity);
+                System.Console.WriteLine($"Updated {entity.RowKey} to: {entity.RecordedTime}");
+            }
         }
 
         private static void PrintCourses(string[] args)
