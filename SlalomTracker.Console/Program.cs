@@ -306,6 +306,10 @@ namespace SkiConsole
             Console.WriteLine(
                 $"File: {inputFile}, video creationtime " +
                 creation.ToString("MM/dd/yyyy h:mm tt"));
+
+            SkiVideoEntity entity = new SkiVideoEntity("http://localhost/TEST.MP4", creation);
+            string obj = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
+            System.Console.WriteLine("Object:\n" + obj);
         }
 
         private static void PrintCourses(string[] args)

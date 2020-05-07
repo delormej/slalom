@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: skiwebapi
-        image: wthacr.azurecr.io/skiwebapi:v2.3.3
+        image: wthacr.azurecr.io/skiwebapi:v2.4.2
         env:
         - name: PORT
           value: "8080"

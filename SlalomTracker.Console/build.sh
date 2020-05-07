@@ -20,7 +20,7 @@ echo "Building container::$container"
 echo "Building container."
 docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
     --build-arg VERSION=$VERSION \
-    --force-rm \
+    --force-rm --target build \
     -f ./SlalomTracker.Console/Dockerfile .
 #
 # To just use the debug image add --target build to the above and it won't build the release stage.
@@ -38,8 +38,8 @@ docker run -it --rm \
     --name ski-dbg \
     $container
 
-docker tag $container wthacr.azurecr.io/$container
-docker push wthacr.azurecr.io/$container
+# docker tag $container wthacr.azurecr.io/$container
+# docker push wthacr.azurecr.io/$container
 
 #
 # Script to get message counts from Service Bus
