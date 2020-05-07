@@ -10,17 +10,22 @@ namespace SlalomTracker
 {
     public class VideoTasks
     {
+        public const string DefaultVideoRecordingTimeZone = "America/New_York";
+        private readonly TimeZoneInfo _videoTimeZone;
+
         FFmpeg.NET.Engine _ffmpeg;
 
         int _fileOutputIndex = 0;
 
         string _localVideoPath;
 
-        public VideoTasks(string localVideoPath)
+        public VideoTasks(string localVideoPath, 
+            string videoTimeZone = DefaultVideoRecordingTimeZone)
         {
             _ffmpeg = new Engine("ffmpeg");
             _ffmpeg.Error += OnError;
             _localVideoPath = localVideoPath;
+            _videoTimeZone = TimeZoneInfo.FindSystemTimeZoneById(videoTimeZone);
         }
 
         public string TrimAndSilenceVideo(double start, double duration, double total)
@@ -209,7 +214,16 @@ namespace SlalomTracker
 
             string rawDate = line.Substring(start+1).Trim();
             DateTime creationTime = DateTime.Parse(rawDate);
-            return creationTime;
+
+            //
+            // Video creationTime is local to the camera where it was recorded.  This process is likely
+            // to run on a machine/container who's local time is UTC.  Need to force a conversion to UTC
+            // from the timezone where the video was recorded.
+            //           
+            DateTime toConvertTime = DateTime.SpecifyKind(creationTime, DateTimeKind.Unspecified);
+            DateTime utcTime = TimeZoneInfo.ConvertTimeToUtc(toConvertTime, _videoTimeZone);
+
+            return utcTime;
         }
     }
 }
