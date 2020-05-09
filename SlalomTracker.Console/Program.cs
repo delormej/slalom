@@ -502,7 +502,7 @@ namespace SkiConsole
             ewh.WaitOne();
             
             listener.Stop();
-            Logger.Log("Done listening for events.");
+            Logger.Log($"Done listening for events.");
         }
     }
 }

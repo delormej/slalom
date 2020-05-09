@@ -53,7 +53,10 @@ namespace SkiConsole
 
         public void Stop()
         {
-            Logger.Log($"Stopping...");
+            System.Diagnostics.Process process = System.Diagnostics.Process.GetCurrentProcess();
+            long peakMemory = process.PeakWorkingSet64;           
+
+            Logger.Log($"Stopping...  Peak memory was: {peakMemory}");            
             _queueClient.CloseAsync().Wait();
         }
 
@@ -68,7 +71,11 @@ namespace SkiConsole
 
                 // Indicates whether the message pump should automatically complete the messages after returning from user callback.
                 // False below indicates the complete operation is handled by the user callback as in ProcessMessagesAsync().
-                AutoComplete = false
+                AutoComplete = false,
+                
+                // Setting this to the absolute max time it should take to process a video avoids this error: 
+                // The lock supplied is invalid. Either the lock expired, or the message has already been removed from the queue.
+                MaxAutoRenewDuration = TimeSpan.FromMinutes(20)
             };
 
             // Register the function that processes messages.
