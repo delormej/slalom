@@ -22,7 +22,7 @@ namespace SkiConsole
         public VideoUploadListener(string queueName = null, bool readDeadLetter = false)
         {
             string serviceBusConnectionString = Environment.GetEnvironmentVariable(ENV_SERVICEBUS);
-            if (serviceBusConnectionString == null)
+            if (string.IsNullOrWhiteSpace(serviceBusConnectionString))
                 throw new ApplicationException($"Missing service bus connection string in env variable: {ENV_SERVICEBUS}");
 
             if (queueName == null)

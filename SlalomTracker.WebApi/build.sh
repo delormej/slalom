@@ -30,11 +30,12 @@ docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
 #
 docker run --rm --name ski-dbg -p 80:80 -it \
     -e SKIBLOBS='$SKIBLOBS' \
+    -e SKISB='$SKISB' \
     -e SKIJOBS_SERVICE="$SKIJOBS_SERVICE" \
     -e Logging__LogLevel__Default="Debug" \
     $container 
     
-#    dotnet -- run --project SlalomTracker.WebApi/SlalomTracker.WebApi.csproj
+# dotnet run --project SlalomTracker.WebApi/SlalomTracker.WebApi.csproj
 
 #
 # Tag and push the container.

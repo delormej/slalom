@@ -138,6 +138,10 @@ namespace SkiConsole
             {
                 UpdateCreationTimeAsync().Wait();
             }
+            else if (args[0] == "-n")
+            {
+                Notify();
+            }            
             else
                 ShowUsage();
         }
@@ -503,6 +507,12 @@ namespace SkiConsole
             
             listener.Stop();
             Logger.Log($"Done listening for events.");
+        }
+
+        private static void Notify()
+        {
+            VideoProcessedNotifier notifier = new VideoProcessedNotifier();
+            notifier.NotifyAsync("http://me/video.MP4").Wait();
         }
     }
 }

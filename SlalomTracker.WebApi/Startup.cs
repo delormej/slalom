@@ -37,6 +37,7 @@ namespace SlalomTracker.WebApi
             );            
             services.AddControllers();
             services.AddSignalR();
+            services.AddHostedService<Services.VideoProcessedNotificationService>();
             services.AddApplicationInsightsTelemetry();      
             services.Configure<KestrelServerOptions>(options =>
             {

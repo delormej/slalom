@@ -20,6 +20,7 @@ echo "Building container::$container"
 echo "Building container."
 docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
     --build-arg VERSION=$VERSION \
+    --target build \
     --force-rm \
     -f ./SlalomTracker.Console/Dockerfile .
 #
@@ -35,13 +36,13 @@ docker run -it --rm \
     -e SKIBLOBS='$SKIBLOBS' \
     -e SKISB='$SKISB' \
     -e GOOGLE_APPLICATION_CREDENTIALS="/ski/gcloud.json" \
-    --name ski-dbg \
+    --name ski-dbg2 \
     --cpus="2.0" \
     $container
 
-az acr login -n wthacr
-docker tag $container wthacr.azurecr.io/$container
-docker push wthacr.azurecr.io/$container
+# az acr login -n wthacr
+# docker tag $container wthacr.azurecr.io/$container
+# docker push wthacr.azurecr.io/$container
 
 #
 # Script to get message counts from Service Bus
