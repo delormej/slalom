@@ -36,6 +36,7 @@ namespace SlalomTracker.WebApi
                 })
             );            
             services.AddControllers();
+            services.AddSignalR();
             services.AddApplicationInsightsTelemetry();      
             services.Configure<KestrelServerOptions>(options =>
             {
