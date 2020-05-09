@@ -512,7 +512,7 @@ namespace SkiConsole
         private static void Notify()
         {
             VideoProcessedNotifier notifier = new VideoProcessedNotifier();
-            notifier.NotifyAsync("http://me/video.MP4").Wait();
+            notifier.NotifyAsync("Jason", "video.MP4").Wait();
         }
     }
 }

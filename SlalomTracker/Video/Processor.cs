@@ -14,12 +14,14 @@ namespace SlalomTracker.Video
         string _localVideoPath;
         string _json;
         DateTime _creationTime;
+        VideoProcessedNotifier _processedNotifer;
 
         public SkiVideoProcessor(string videoUrl)
         {
             _sourceVideoUrl = videoUrl;
             _storage = new Storage();
             _factory = new CoursePassFactory();
+            _processedNotifer = new VideoProcessedNotifier();
         }
 
         /// <summary>
@@ -247,6 +249,8 @@ namespace SlalomTracker.Video
 
             Logger.Log($"Creating and uploading metadata for video {_localVideoPath}...");
             _storage.AddMetadata(entity, _json);
+            
+            await _processedNotifer.NotifyAsync(entity.Skier, entity.RowKey);
         }   
 
         private Task<double> GetRopePredictionAsync(string thumbnailUrl)
@@ -276,7 +280,7 @@ namespace SlalomTracker.Video
             
             return entity;
         }  
-        
+
         private void DeleteIngestVideo()
         {
             Logger.Log($"Deleting source video at {_sourceVideoUrl}...");

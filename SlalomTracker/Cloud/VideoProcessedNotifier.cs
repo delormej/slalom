@@ -22,10 +22,14 @@ namespace SlalomTracker.Cloud
             Logger.Log($"Connected to queue {queueName}");
         }
 
-        public Task NotifyAsync(string videoUrl)
+        public Task NotifyAsync(string skier, string video)
         {
-            Logger.Log($"Notifying of {videoUrl}");
-            byte[] bytes = Encoding.ASCII.GetBytes(videoUrl);
+            Logger.Log($"Notifying of {video}");
+            string value = Newtonsoft.Json.JsonConvert.SerializeObject(
+                new { Skier = skier, Video = video }
+            );    
+
+            byte[] bytes = Encoding.ASCII.GetBytes(value);
             return _queueClient.SendAsync(new Message(bytes));
         }
     }

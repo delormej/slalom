@@ -18,9 +18,9 @@ namespace SlalomTracker.WebApi.Hubs
             _logger = logger;
         }
 
-        public async Task SendToAll(string name, string message)
-        {
-            await Clients.All.SendAsync("sendToAll", name, message);
-        }
+        // public async Task SendToAll(string name, string message)
+        // {
+        //     await Clients.All.SendAsync("sendToAll", name, message);
+        // }
     }
 }

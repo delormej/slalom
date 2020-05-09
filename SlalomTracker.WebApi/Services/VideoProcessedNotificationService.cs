@@ -18,12 +18,12 @@ namespace SlalomTracker.WebApi.Services
     {
         const string QueueName = "video-processed";
         const string ENV_SERVICEBUS = "SKISB";
-        private readonly Hub _notificationHub;
+        private readonly IHubContext<Hubs.NotificationHub> _notificationHub;
         private readonly ILogger<VideoProcessedNotificationService> _logger;
         private readonly IConfiguration _config;
         private IQueueClient _queueClient;   
 
-        public VideoProcessedNotificationService(Hub notificationHub, ILogger<VideoProcessedNotificationService> logger, IConfiguration config)
+        public VideoProcessedNotificationService(IHubContext<Hubs.NotificationHub> notificationHub, ILogger<VideoProcessedNotificationService> logger, IConfiguration config)
         {
             _config = config;
             _logger = logger;
