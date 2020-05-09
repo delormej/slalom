@@ -184,7 +184,10 @@ namespace SlalomTracker.Video
                 string jsonOverrideUrl = VideoTime.GetVideoJsonUrl(_sourceVideoUrl);
                 string jsonPath = Cloud.Storage.DownloadVideo(jsonOverrideUrl);
                 if (jsonPath != null)
+                {
                     overrides = VideoTime.FromJsonFile(jsonPath);
+                    Logger.Log($"Video overrides found start, duration: {overrides.Start}, {overrides.Duration}");
+                }
             }
             catch (System.Net.WebException)
             {

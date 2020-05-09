@@ -500,9 +500,11 @@ namespace SkiConsole
 
             // Wait until signalled.
             ewh.WaitOne();
+            System.Diagnostics.Process process = System.Diagnostics.Process.GetCurrentProcess();
+            long peakMemory = process.PeakWorkingSet64;           
             
             listener.Stop();
-            Logger.Log("Done listening for events.");
+            Logger.Log($"Done listening for events.  Peak memory was: {peakMemory}");
         }
     }
 }
