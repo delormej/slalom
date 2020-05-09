@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: skiwebapi-preview
+  labels:
+    app: skiwebapi-preview
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: skiwebapi-preview
+  template:
+    metadata:
+      labels:
+        app: skiwebapi-preview
+    spec:
+      containers:
+      - name: skiwebapi-preview
+        image: wthacr.azurecr.io/skiwebapi:v2.4.3
+        imagePullPolicy: Always
+        env:
+        - name: PORT
+          value: "8080"
+        - name: SKIBLOBS
+          valueFrom:
+            secretKeyRef:
+              name: skiblob-secret
+              key: connectionstring
+        - name: Logging__LogLevel__Default
+          value: "Information"
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: skiwebapi-service-preview
+  labels:
+    app: skiwebapi-preview
+spec:
+  ports:
+  - port: 8080
+  selector:
+    app: skiwebapi-preview
+  type: ClusterIP
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: skiwebapi-ingress-preview
+  annotations:
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+spec:
+  tls:
+  - hosts:
+    - jasondel.com
+    secretName: jasondel-com-tls
+  rules:
+    - host: skipreview.jasondel.com
+      http:
+        paths:
+          - backend:
+              serviceName: skiwebapi-service-preview
+              servicePort: 8080
+            path: /api
