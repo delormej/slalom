@@ -75,7 +75,7 @@ namespace SkiConsole
                 
                 // Setting this to the absolute max time it should take to process a video avoids this error: 
                 // The lock supplied is invalid. Either the lock expired, or the message has already been removed from the queue.
-                MaxAutoRenewDuration = TimeSpan.FromMinutes(20)
+                MaxAutoRenewDuration = TimeSpan.FromMinutes(30)
             };
 
             // Register the function that processes messages.
