@@ -51,7 +51,7 @@
             "processId": "${command:pickRemoteProcess}",
             "pipeTransport": {
                 "pipeProgram": "docker",
-                "pipeArgs": [ "exec", "-i", "ski-dbg" ],
+                "pipeArgs": [ "exec", "-i", "ski-dbg2" ],
                 "debuggerPath": "/vsdbg/vsdbg",
                 "pipeCwd": "${workspaceRoot}",
                 "quoteArgs": false

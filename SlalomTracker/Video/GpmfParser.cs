@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using System.Diagnostics;
 using System.Collections.Generic;
 using SlalomTracker;
@@ -157,10 +158,20 @@ namespace MetadataExtractor
                     WorkingDirectory = */
                 }
             };
+            int timeoutMs = (int)TimeSpan.FromMinutes(5).TotalMilliseconds;
+
+            StringBuilder resultBuilder = new StringBuilder();
+            process.OutputDataReceived += (p, e) => {
+                resultBuilder.Append(e.Data);
+            };
+            
             process.Start();
-            string result = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
-            return result;
+            process.BeginOutputReadLine();
+                    
+            if (!process.WaitForExit(timeoutMs))
+                throw new ApplicationException($"Time out reading gmpf from {mp4Path}");
+
+            return resultBuilder.ToString();
         }
 
         private string GetColumn(string[] row, Column column)
