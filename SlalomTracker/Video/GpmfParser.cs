@@ -14,6 +14,7 @@ namespace MetadataExtractor
     /// </summary>
     public class GpmfParser
     {
+        const int TimeoutMs = 5 /*mins*/ * 60 /*seconds*/ * 1000; /*milliseconds*/
         const string GPMFEXE = "gpmfdemo";
         const string GYRO = "GYRO";
         const string GPS = "GPS5";
@@ -158,7 +159,6 @@ namespace MetadataExtractor
                     WorkingDirectory = */
                 }
             };
-            int timeoutMs = (int)TimeSpan.FromMinutes(5).TotalMilliseconds;
 
             StringBuilder resultBuilder = new StringBuilder();
             process.OutputDataReceived += (p, e) => {
@@ -167,11 +167,15 @@ namespace MetadataExtractor
             
             process.Start();
             process.BeginOutputReadLine();
-                    
-            if (!process.WaitForExit(timeoutMs))
+            process.WaitForExit(TimeoutMs);
+
+            if (!process.HasExited)
                 throw new ApplicationException($"Time out reading gmpf from {mp4Path}");
 
-            return resultBuilder.ToString();
+            if (resultBuilder.Length > 0)
+                return resultBuilder.ToString();
+            else
+                throw new ApplicationException($"Nothing returned from GPMF parser for {mp4Path}.");
         }
 
         private string GetColumn(string[] row, Column column)
