@@ -97,20 +97,20 @@ namespace SlalomTracker.Video
             return Task.Run(() => 
             {
                 double start = 0, duration = 0, total = 0;
-                if (pass == null)
+                VideoTime overrides = GetPassOverride();
+                if (overrides != null)
                 {
-                    VideoTime videoTime = GetPassOverride();
-                    if (videoTime == null)
-                        throw new ApplicationException(
-                            "CoursePass was not found and no pass overrides were available for" +
-                            $"{_sourceVideoUrl}");
-
-                    start = videoTime.Start;
-                    duration = videoTime.Duration;
+                    start = overrides.Start;
+                    duration = overrides.Duration;
                     total = start + duration;
                 }
                 else
                 {
+                    if (pass == null)
+                        throw new ApplicationException(
+                            "CoursePass was not found and no pass overrides were available for" +
+                            $"{_sourceVideoUrl}");
+
                     start = pass.GetSecondsAtEntry();
                     duration = pass.GetDurationSeconds();
                     total = pass.GetTotalSeconds();
