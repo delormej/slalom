@@ -6,6 +6,7 @@ using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Azure.SignalR.Management;
 using Microsoft.Extensions.Hosting;
 
 namespace SlalomTracker.WebApi.Services
@@ -17,23 +18,29 @@ namespace SlalomTracker.WebApi.Services
     public class VideoProcessedNotificationService : IHostedService
     {
         const string QueueName = "video-processed";
+        const string HubName = "notification";
+        const string ENV_SIGNALR = "SKISIGNALR";
         const string ENV_SERVICEBUS = "SKISB";
-        private readonly IHubContext<Hubs.NotificationHub> _notificationHub;
+        private IServiceHubContext _notificationHub;
         private readonly ILogger<VideoProcessedNotificationService> _logger;
         private readonly IConfiguration _config;
         private IQueueClient _queueClient;   
 
-        public VideoProcessedNotificationService(IHubContext<Hubs.NotificationHub> notificationHub, ILogger<VideoProcessedNotificationService> logger, IConfiguration config)
+        public VideoProcessedNotificationService(ILogger<VideoProcessedNotificationService> logger, IConfiguration config)
         {
             _config = config;
             _logger = logger;
-            _notificationHub = notificationHub;
         }
 
-        public Task StartAsync(CancellationToken cancellationToken)
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
+            var serviceManager = new ServiceManagerBuilder().WithOptions(option =>
+            {
+                option.ConnectionString = _config[ENV_SIGNALR];
+            }).Build();
+
+            _notificationHub = await serviceManager.CreateHubContextAsync(HubName);            
             ConnectToQueue();
-            return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

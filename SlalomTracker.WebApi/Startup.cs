@@ -36,7 +36,7 @@ namespace SlalomTracker.WebApi
                 })
             );            
             services.AddControllers();
-            services.AddSignalR();
+            // services.AddSignalR().AddAzureSignalR(Configuration[ENV_SIGNALR]);
             services.AddHostedService<Services.VideoProcessedNotificationService>();
             services.AddApplicationInsightsTelemetry();      
             services.Configure<KestrelServerOptions>(options =>
@@ -53,8 +53,11 @@ namespace SlalomTracker.WebApi
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapHub<Hubs.NotificationHub>("notifications");
             });
+            // app.UseAzureSignalR(routes => 
+            // {
+            //     routes.MapHub<Hubs.NotificationHub>("/api/notifications");
+            // });
         }
     }
 }
