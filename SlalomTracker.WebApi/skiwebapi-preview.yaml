@@ -5,7 +5,7 @@ metadata:
   labels:
     app: skiwebapi-preview
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: skiwebapi-preview
@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: skiwebapi-preview
-        image: wthacr.azurecr.io/skiwebapi:v2.4.3
+        image: wthacr.azurecr.io/skiwebapi:v2.5.3
         imagePullPolicy: Always
         env:
         - name: PORT
@@ -25,6 +25,16 @@ spec:
           valueFrom:
             secretKeyRef:
               name: skiblob-secret
+              key: connectionstring
+        - name: SKISB
+          valueFrom:
+            secretKeyRef:
+              name: skisb-secret
+              key: connectionstring
+        - name: SKISIGNALR
+          valueFrom:
+            secretKeyRef:
+              name: skisignalr-secret
               key: connectionstring
         - name: Logging__LogLevel__Default
           value: "Information"
@@ -50,6 +60,8 @@ metadata:
   name: skiwebapi-ingress-preview
   annotations:
     nginx.ingress.kubernetes.io/enable-cors: "true"
+    # Required for debugging.
+    nginx.ingress.kubernetes.io/cors-allow-origin: "http://localhost:3000"
 spec:
   tls:
   - hosts:

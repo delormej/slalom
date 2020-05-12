@@ -28,6 +28,10 @@ namespace SlalomTracker
             _videoTimeZone = TimeZoneInfo.FindSystemTimeZoneById(videoTimeZone);
         }
 
+        // TODO: 
+        //  1) convert this to async/await.
+        //  2) log progress from the trim and silence tasks
+        //  3) Not here... but related fix is to remove multi-line logging on rope & skier predictions
         public string TrimAndSilenceVideo(double start, double duration, double total)
         {
             if (start > 0 && duration == 0.0d)

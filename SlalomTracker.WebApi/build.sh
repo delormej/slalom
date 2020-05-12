@@ -18,7 +18,7 @@ echo "Building container::$container"
 #
 docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
     --build-arg VERSION=$VERSION \
-    --target build \
+    --force-rm \
     -f ./SlalomTracker.WebApi/Dockerfile . 
 #
 # To just use the debug image add:
@@ -28,9 +28,10 @@ docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
 #
 # Launch debug container... not logging level overridden below to "Info"
 #
-docker run --rm --name ski-dbg -p 80:80 -it \
+docker run --rm --name ski-web -p 80:80 -it \
     -e SKIBLOBS='$SKIBLOBS' \
     -e SKISB='$SKISB' \
+    -e SKISIGNALR='$SKISIGNALR' \
     -e SKIJOBS_SERVICE="$SKIJOBS_SERVICE" \
     -e Logging__LogLevel__Default="Debug" \
     $container 
@@ -40,5 +41,5 @@ docker run --rm --name ski-dbg -p 80:80 -it \
 #
 # Tag and push the container.
 #
-# docker tag $container wthacr.azurecr.io/$container
-# docker push wthacr.azurecr.io/$container
+docker tag $container wthacr.azurecr.io/$container
+docker push wthacr.azurecr.io/$container
