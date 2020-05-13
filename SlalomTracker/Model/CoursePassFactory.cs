@@ -151,7 +151,7 @@ namespace SlalomTracker
 
         public double FitPass(CoursePass pass)
         {
-            const int MAX = 45, MIN = -45;
+            const int MAX = 90, MIN = -90;
             double bestPrecision = double.MaxValue;
             CoursePass bestPass = pass;
 
