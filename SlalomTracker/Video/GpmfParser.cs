@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using System.Diagnostics;
 using System.Collections.Generic;
 using SlalomTracker;
@@ -13,6 +14,7 @@ namespace MetadataExtractor
     /// </summary>
     public class GpmfParser
     {
+        const int TimeoutMs = 5 /*mins*/ * 60 /*seconds*/ * 1000; /*milliseconds*/
         const string GPMFEXE = "gpmfdemo";
         const string GYRO = "GYRO";
         const string GPS = "GPS5";
@@ -157,10 +159,23 @@ namespace MetadataExtractor
                     WorkingDirectory = */
                 }
             };
+
+            StringBuilder resultBuilder = new StringBuilder();
+            process.OutputDataReceived += (p, e) => {
+                resultBuilder.Append(e.Data);
+            };
+            
             process.Start();
-            string result = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
-            return result;
+            process.BeginOutputReadLine();
+            process.WaitForExit(TimeoutMs);
+
+            if (!process.HasExited)
+                throw new ApplicationException($"Time out reading gmpf from {mp4Path}");
+
+            if (resultBuilder.Length > 0)
+                return resultBuilder.ToString();
+            else
+                throw new ApplicationException($"Nothing returned from GPMF parser for {mp4Path}.");
         }
 
         private string GetColumn(string[] row, Column column)

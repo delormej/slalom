@@ -1,22 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: skiwebapi
+  name: skiwebapi-preview
   labels:
-    app: skiwebapi
+    app: skiwebapi-preview
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: skiwebapi
+      app: skiwebapi-preview
   template:
     metadata:
       labels:
-        app: skiwebapi
+        app: skiwebapi-preview
     spec:
       containers:
-      - name: skiwebapi
+      - name: skiwebapi-preview
         image: wthacr.azurecr.io/skiwebapi:v2.5.3
+        imagePullPolicy: Always
         env:
         - name: PORT
           value: "8080"
@@ -24,6 +25,16 @@ spec:
           valueFrom:
             secretKeyRef:
               name: skiblob-secret
+              key: connectionstring
+        - name: SKISB
+          valueFrom:
+            secretKeyRef:
+              name: skisb-secret
+              key: connectionstring
+        - name: SKISIGNALR
+          valueFrom:
+            secretKeyRef:
+              name: skisignalr-secret
               key: connectionstring
         - name: Logging__LogLevel__Default
           value: "Information"
@@ -33,32 +44,34 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: skiwebapi-service
+  name: skiwebapi-service-preview
   labels:
-    app: skiwebapi
+    app: skiwebapi-preview
 spec:
   ports:
   - port: 8080
   selector:
-    app: skiwebapi
+    app: skiwebapi-preview
   type: ClusterIP
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: skiwebapi-ingress
+  name: skiwebapi-ingress-preview
   annotations:
     nginx.ingress.kubernetes.io/enable-cors: "true"
+    # Required for debugging.
+    nginx.ingress.kubernetes.io/cors-allow-origin: "http://localhost:3000"
 spec:
   tls:
   - hosts:
     - jasondel.com
     secretName: jasondel-com-tls
   rules:
-    - host: ski.jasondel.com
+    - host: skipreview.jasondel.com
       http:
         paths:
           - backend:
-              serviceName: skiwebapi-service
+              serviceName: skiwebapi-service-preview
               servicePort: 8080
             path: /api

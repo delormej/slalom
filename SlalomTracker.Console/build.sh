@@ -35,11 +35,11 @@ docker run -it --rm \
     -e SKIBLOBS='$SKIBLOBS' \
     -e SKISB='$SKISB' \
     -e GOOGLE_APPLICATION_CREDENTIALS="/ski/gcloud.json" \
-    --name ski-dbg \
+    --name ski-console \
     --cpus="2.0" \
     $container
 
-az acr login -n wthacr
+# az acr login -n wthacr
 docker tag $container wthacr.azurecr.io/$container
 docker push wthacr.azurecr.io/$container
 

@@ -4,54 +4,32 @@
    // For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
    "version": "0.2.0",
    "configurations": [
-       {
-           "name": ".NET Core Launch (web)",
-           "type": "coreclr",
-           "request": "launch",
-           //"preLaunchTask": "build",
-           "requireExactSource": false,
-           "program": "${workspaceFolder}/SlalomTracker.WebApi/bin/Debug/netcoreapp2.1/SlalomTracker.WebApi.dll",
-           "args": [],
-           "cwd": "${workspaceFolder}/SlalomTracker.WebApi",
-           "stopAtEntry": false,
-           "launchBrowser": {
-               "enabled": false
-           },
-           "env": {
-               "ASPNETCORE_ENVIRONMENT": "Development"
-           },
-           "sourceFileMap": {
-               "/Views": "${workspaceFolder}/SlalomTracker.WebApi/Views"
-           }
-       },
         {
-            "name": ".NET Core Launch (console)",
+            "name": "skiwebapi Launch",
             "type": "coreclr",
             "request": "launch",
-            //"preLaunchTask": "build",
-            // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/SkiConsole/bin/Debug/netcoreapp2.1/ski.dll",
-            "args": ["-e", "${workspaceFolder}/SkiConsole/2018-06-20/GOPR0253.MP4", "253.json"],
-            "cwd": "${workspaceFolder}/SkiConsole",
-            // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
-            "console": "internalConsole",
+        //    "preLaunchTask": "dotenv",
+            "requireExactSource": false,
+            "program": "${workspaceFolder}/SlalomTracker.WebApi/bin/Debug/netcoreapp3.1/SlalomTracker.WebApi.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/SlalomTracker.WebApi",
             "stopAtEntry": false,
-            "internalConsoleOptions": "openOnSessionStart"
+            "launchBrowser": {
+                "enabled": false
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "envFile": "${workspaceFolder}/.env"           
         },
         {
-            "name": ".NET Core Attach",
-            "type": "coreclr",
-            "request": "attach",
-            "processId": "${command:pickProcess}"
-        },
-        {
-            "name": ".NET Core Docker Attach",
+            "name": "skiconsole Attach",
             "type": "coreclr",
             "request": "attach",
             "processId": "${command:pickRemoteProcess}",
             "pipeTransport": {
                 "pipeProgram": "docker",
-                "pipeArgs": [ "exec", "-i", "ski-dbg" ],
+                "pipeArgs": [ "exec", "-i", "ski-console" ],
                 "debuggerPath": "/vsdbg/vsdbg",
                 "pipeCwd": "${workspaceRoot}",
                 "quoteArgs": false
@@ -59,6 +37,6 @@
             "sourceFileMap": {
                 "/ski": "${workspaceRoot}/"
             }
-        }        
+        }
     ,]
 }

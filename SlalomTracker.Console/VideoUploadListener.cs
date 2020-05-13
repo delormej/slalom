@@ -22,7 +22,7 @@ namespace SkiConsole
         public VideoUploadListener(string queueName = null, bool readDeadLetter = false)
         {
             string serviceBusConnectionString = Environment.GetEnvironmentVariable(ENV_SERVICEBUS);
-            if (serviceBusConnectionString == null)
+            if (string.IsNullOrWhiteSpace(serviceBusConnectionString))
                 throw new ApplicationException($"Missing service bus connection string in env variable: {ENV_SERVICEBUS}");
 
             if (queueName == null)
@@ -75,7 +75,7 @@ namespace SkiConsole
                 
                 // Setting this to the absolute max time it should take to process a video avoids this error: 
                 // The lock supplied is invalid. Either the lock expired, or the message has already been removed from the queue.
-                MaxAutoRenewDuration = TimeSpan.FromMinutes(20)
+                MaxAutoRenewDuration = TimeSpan.FromMinutes(60)
             };
 
             // Register the function that processes messages.
