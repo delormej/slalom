@@ -22,7 +22,6 @@ namespace SlalomTracker.WebApi.Controllers
         [Route("api/handle/{seconds}/{recordedDate}/{mp4Filename}")]
         public IActionResult Get(double seconds, string recordedDate, string mp4Filename)
         {
-            
             try
             {
                 Storage storage = new Storage();
