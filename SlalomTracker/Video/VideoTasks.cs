@@ -23,6 +23,7 @@ namespace SlalomTracker
             string videoTimeZone = DefaultVideoRecordingTimeZone)
         {
             _ffmpeg = new Engine("ffmpeg");
+            _ffmpeg.Progress += OnProgress;
             _ffmpeg.Error += OnError;
             _localVideoPath = localVideoPath;
             _videoTimeZone = TimeZoneInfo.FindSystemTimeZoneById(videoTimeZone);
@@ -32,7 +33,7 @@ namespace SlalomTracker
         //  1) convert this to async/await.
         //  2) log progress from the trim and silence tasks
         //  3) Not here... but related fix is to remove multi-line logging on rope & skier predictions
-        public string TrimAndSilenceVideo(double start, double duration, double total)
+        public async Task<string> TrimAndSilenceVideoAsync(double start, double duration, double total)
         {
             if (start > 0 && duration == 0.0d)
             {
@@ -48,17 +49,13 @@ namespace SlalomTracker
                 duration += 5.0; /* pad 5 seconds more */
                 Logger.Log(
                     $"Trimming {_localVideoPath} from {start} seconds for {duration} seconds.");     
-                
-                var trimTask = TrimAsync(_localVideoPath, start, duration);
-                trimTask.Wait();
-                string trimmedPath = trimTask.Result;
+
+                string trimmedPath = await TrimAsync(_localVideoPath, start, duration);
                 
                 Logger.Log($"Trimmed: {trimmedPath}");
-                Logger.Log($"Removing audio from {_localVideoPath}.");
-                
-                var silenceTask = RemoveAudioAsync(trimmedPath);
-                silenceTask.Wait();
-                string silencedPath = silenceTask.Result;
+                Logger.Log($"Removing audio from {_localVideoPath}.");               
+
+                string silencedPath = await RemoveAudioAsync(trimmedPath);
 
                 // Increments the sequence # to output files.
                 _fileOutputIndex++;            
@@ -143,6 +140,11 @@ namespace SlalomTracker
                 e.Input.FileInfo.Name, e.Output.FileInfo.Name, e.Exception.ExitCode, e.Exception.Message),
                 e.Exception);
         }    
+
+        private void OnProgress(object sender, ConversionProgressEventArgs e)
+        {
+            Logger.Log($"{_localVideoPath} -- Processed {e.ProcessedDuration.ToString("hh:mm:ss")}");
+        }
 
         private string AppendToFileName(string inputFile, string suffix, bool appendFileIndex = false)
         {

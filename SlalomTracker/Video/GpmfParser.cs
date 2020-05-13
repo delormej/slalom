@@ -170,7 +170,10 @@ namespace MetadataExtractor
             process.WaitForExit(TimeoutMs);
 
             if (!process.HasExited)
+            {
+                process.Kill();
                 throw new ApplicationException($"Time out reading gmpf from {mp4Path}");
+            }
 
             if (resultBuilder.Length > 0)
                 return resultBuilder.ToString();

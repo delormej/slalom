@@ -23,6 +23,22 @@
             "envFile": "${workspaceFolder}/.env"           
         },
         {
+            "name": "skiwebapi Attach",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:pickRemoteProcess}",
+            "pipeTransport": {
+                "pipeProgram": "docker",
+                "pipeArgs": [ "exec", "-i", "ski-web" ],
+                "debuggerPath": "/vsdbg/vsdbg",
+                "pipeCwd": "${workspaceRoot}",
+                "quoteArgs": false
+            },
+            "sourceFileMap": {
+                "/ski": "${workspaceRoot}/"
+            }
+        },        
+        {
             "name": "skiconsole Attach",
             "type": "coreclr",
             "request": "attach",

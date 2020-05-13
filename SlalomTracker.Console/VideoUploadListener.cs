@@ -18,6 +18,7 @@ namespace SkiConsole
         private IQueueClient _queueClient;        
         
         private bool _deadLetterMode = false;
+        public event EventHandler Stopped;
 
         public VideoUploadListener(string queueName = null, bool readDeadLetter = false)
         {
@@ -56,8 +57,11 @@ namespace SkiConsole
             System.Diagnostics.Process process = System.Diagnostics.Process.GetCurrentProcess();
             long peakMemory = process.PeakWorkingSet64;           
 
-            Logger.Log($"Stopping...  Peak memory was: {peakMemory}");            
+            Logger.Log($"Stopping...  Peak memory was: {(peakMemory/1024/1024).ToString("F1")}mb");            
             _queueClient.CloseAsync().Wait();
+
+            if (Stopped != null)
+                Stopped(this, null);
         }
 
         void RegisterOnMessageHandlerAndReceiveMessages()
@@ -84,22 +88,27 @@ namespace SkiConsole
 
         async Task ProcessMessagesAsync(Message message, CancellationToken token)
         {
-            // Process the message.
-            Logger.Log($"Received message: SequenceNumber:{message.SystemProperties.SequenceNumber} Body:{Encoding.UTF8.GetString(message.Body)}");
+            try
+            {
+                // Process the message.
+                Logger.Log($"Received message: SequenceNumber:{message.SystemProperties.SequenceNumber} Body:{Encoding.UTF8.GetString(message.Body)}");
 
-            string json = Encoding.UTF8.GetString(message.Body);
-            string videoUrl = QueueMessageParser.GetUrl(json);
-            Logger.Log($"Received this videoUrl: {videoUrl}");
+                string json = Encoding.UTF8.GetString(message.Body);
+                string videoUrl = QueueMessageParser.GetUrl(json);
+                Logger.Log($"Received this videoUrl: {videoUrl}");
 
-            if (videoUrl.EndsWith("test.MP4"))
-                throw new ApplicationException("Something broke, fail safe for testing exceptions!");
-           
-            SkiVideoProcessor processor = new SkiVideoProcessor(videoUrl);
-            await processor.ProcessAsync();
-            await _queueClient.CompleteAsync(message.SystemProperties.LockToken);
-
-            // Force to only listen for 1 message.
-            Stop();
+                if (videoUrl.EndsWith("test.MP4"))
+                    throw new ApplicationException("Something broke, fail safe for testing exceptions!");
+            
+                SkiVideoProcessor processor = new SkiVideoProcessor(videoUrl);
+                await processor.ProcessAsync();
+                await _queueClient.CompleteAsync(message.SystemProperties.LockToken);
+            }
+            finally
+            {
+                // Force to only listen for 1 message.
+                Stop();
+            }
         }        
 
         // Use this handler to examine the exceptions received on the message pump.

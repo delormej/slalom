@@ -94,30 +94,27 @@ namespace SlalomTracker.Video
         {
             Logger.Log($"Trimming and silencing video {_sourceVideoUrl}...");
 
-            return Task.Run(() => 
+            double start = 0, duration = 0, total = 0;
+            VideoTime overrides = GetPassOverride();
+            if (overrides != null)
             {
-                double start = 0, duration = 0, total = 0;
-                VideoTime overrides = GetPassOverride();
-                if (overrides != null)
-                {
-                    start = overrides.Start;
-                    duration = overrides.Duration;
-                    total = start + duration;
-                }
-                else
-                {
-                    if (pass == null)
-                        throw new ApplicationException(
-                            "CoursePass was not found and no pass overrides were available for" +
-                            $"{_sourceVideoUrl}");
+                start = overrides.Start;
+                duration = overrides.Duration;
+                total = start + duration;
+            }
+            else
+            {
+                if (pass == null)
+                    throw new ApplicationException(
+                        "CoursePass was not found and no pass overrides were available for" +
+                        $"{_sourceVideoUrl}");
 
-                    start = pass.GetSecondsAtEntry();
-                    duration = pass.GetDurationSeconds();
-                    total = pass.GetTotalSeconds();
-                }
-                
-                return _videoTasks.TrimAndSilenceVideo(start, duration, total); 
-            });
+                start = pass.GetSecondsAtEntry();
+                duration = pass.GetDurationSeconds();
+                total = pass.GetTotalSeconds();
+            }
+            
+            return _videoTasks.TrimAndSilenceVideoAsync(start, duration, total); 
         }
 
         private async Task<string> UploadThumbnailAsync(Task<string> createThumbnail, Task getCreationTime)
@@ -174,7 +171,6 @@ namespace SlalomTracker.Video
         private Task ExtractMetadataAsync()
         {
             Logger.Log($"Extracting metadata from video {_sourceVideoUrl}...");
-            // TODO: why Task.Run??? make method async?
             return Task.Run(() => {              
                 _json = MetadataExtractor.Extract.ExtractMetadata(_localVideoPath);
                 Logger.Log("Extracted metadata.");

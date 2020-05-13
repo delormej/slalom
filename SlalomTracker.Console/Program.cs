@@ -484,11 +484,11 @@ namespace SkiConsole
         private static void Listen(string queueName, bool openDeadLetter)
         {
             EventWaitHandle ewh = new EventWaitHandle(false, EventResetMode.ManualReset);
+            EventHandler Reset = (o, e) => {ewh.Set();};
+            AppDomain.CurrentDomain.ProcessExit += Reset;
+
             VideoUploadListener listener = new VideoUploadListener(queueName, openDeadLetter);
-            AppDomain.CurrentDomain.ProcessExit += (o, e) => {
-                ewh.Set();
-            };
-            
+            listener.Stopped += Reset;
             listener.Start();
             
             if (Console.WindowHeight > 0)
