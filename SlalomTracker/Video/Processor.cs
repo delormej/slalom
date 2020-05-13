@@ -174,6 +174,7 @@ namespace SlalomTracker.Video
         private Task ExtractMetadataAsync()
         {
             Logger.Log($"Extracting metadata from video {_sourceVideoUrl}...");
+            // TODO: why Task.Run??? make method async?
             return Task.Run(() => {              
                 _json = MetadataExtractor.Extract.ExtractMetadata(_localVideoPath);
                 Logger.Log("Extracted metadata.");

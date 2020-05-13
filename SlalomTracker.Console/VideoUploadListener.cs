@@ -79,7 +79,7 @@ namespace SkiConsole
             };
 
             // Register the function that processes messages.
-            _queueClient.RegisterMessageHandler(ProcessMessagesAsync, messageHandlerOptions);
+            _queueClient.RegisterMessageHandler(ProcessMessagesAsync, messageHandlerOptions);            
         }         
 
         async Task ProcessMessagesAsync(Message message, CancellationToken token)
@@ -98,9 +98,8 @@ namespace SkiConsole
             await processor.ProcessAsync();
             await _queueClient.CompleteAsync(message.SystemProperties.LockToken);
 
-            // Note: Use the cancellationToken passed as necessary to determine if the queueClient has already been closed.
-            // If queueClient has already been closed, you can choose to not call CompleteAsync() or AbandonAsync() etc.
-            // to avoid unnecessary exceptions.
+            // Force to only listen for 1 message.
+            Stop();
         }        
 
         // Use this handler to examine the exceptions received on the message pump.
