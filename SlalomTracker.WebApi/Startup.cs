@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -36,7 +32,6 @@ namespace SlalomTracker.WebApi
                 })
             );            
             services.AddControllers();
-            // services.AddSignalR().AddAzureSignalR(Configuration[ENV_SIGNALR]);
             services.AddHostedService<Services.VideoProcessedNotificationService>();
             services.AddApplicationInsightsTelemetry();      
             services.Configure<KestrelServerOptions>(options =>
@@ -54,10 +49,6 @@ namespace SlalomTracker.WebApi
             {
                 endpoints.MapControllers();
             });
-            // app.UseAzureSignalR(routes => 
-            // {
-            //     routes.MapHub<Hubs.NotificationHub>("/api/notifications");
-            // });
         }
     }
 }
