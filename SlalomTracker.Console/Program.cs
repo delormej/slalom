@@ -483,12 +483,14 @@ namespace SkiConsole
         /// </summary>
         private static void Listen(string queueName, bool openDeadLetter)
         {
-            EventWaitHandle ewh = new EventWaitHandle(false, EventResetMode.ManualReset);
-            EventHandler Reset = (o, e) => {ewh.Set();};
-            AppDomain.CurrentDomain.ProcessExit += Reset;
-
             VideoUploadListener listener = new VideoUploadListener(queueName, openDeadLetter);
-            listener.Stopped += Reset;
+            EventWaitHandle ewh = new EventWaitHandle(false, EventResetMode.ManualReset);
+            EventHandler Reset = (o, e) => {
+                listener.Stop();
+                ewh.Set();
+            };
+            AppDomain.CurrentDomain.ProcessExit += Reset;           
+            listener.Completed += Reset;  // Force to only listen for 1 message, then exit.
             listener.Start();
             
             if (Console.WindowHeight > 0)
@@ -505,8 +507,8 @@ namespace SkiConsole
             // Wait until signalled.
             ewh.WaitOne();
             
-            listener.Stop();
             Logger.Log($"Done listening for events.");
+            AppDomain.CurrentDomain.ProcessExit -= Reset;
         }
 
         private static void Notify()

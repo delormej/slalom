@@ -18,7 +18,7 @@ namespace SkiConsole
         private IQueueClient _queueClient;        
         
         private bool _deadLetterMode = false;
-        public event EventHandler Stopped;
+        public event EventHandler Completed;
 
         public VideoUploadListener(string queueName = null, bool readDeadLetter = false)
         {
@@ -54,14 +54,23 @@ namespace SkiConsole
 
         public void Stop()
         {
-            System.Diagnostics.Process process = System.Diagnostics.Process.GetCurrentProcess();
-            long peakMemory = process.PeakWorkingSet64;           
+            lock(_queueClient)
+            {
+                if (!_queueClient.IsClosedOrClosing)
+                {
+                    var task = _queueClient.CloseAsync();
 
-            Logger.Log($"Stopping...  Peak memory was: {(peakMemory/1024/1024).ToString("F1")}mb");            
-            _queueClient.CloseAsync().Wait();
+                    System.Diagnostics.Process process = System.Diagnostics.Process.GetCurrentProcess();
+                    long peakMemory = process.PeakWorkingSet64;           
+                    Logger.Log($"Stopping...  Peak memory was: {(peakMemory/1024/1024).ToString("F1")} mb");            
 
-            if (Stopped != null)
-                Stopped(this, null);
+                    task.Wait();
+                }
+                else
+                {
+                    Logger.Log("Queue already closing.");
+                }
+            }
         }
 
         void RegisterOnMessageHandlerAndReceiveMessages()
@@ -88,13 +97,22 @@ namespace SkiConsole
 
         async Task ProcessMessagesAsync(Message message, CancellationToken token)
         {
+            if (_queueClient.IsClosedOrClosing)
+            {
+                Logger.Log("Queue is closing, abandoning message.");
+                await _queueClient.AbandonAsync(message.SystemProperties.LockToken);
+                
+                return;
+            }
+
+            string videoUrl = "";
             try
             {
                 // Process the message.
                 Logger.Log($"Received message: SequenceNumber:{message.SystemProperties.SequenceNumber} Body:{Encoding.UTF8.GetString(message.Body)}");
 
                 string json = Encoding.UTF8.GetString(message.Body);
-                string videoUrl = QueueMessageParser.GetUrl(json);
+                videoUrl = QueueMessageParser.GetUrl(json);
                 Logger.Log($"Received this videoUrl: {videoUrl}");
 
                 if (videoUrl.EndsWith("test.MP4"))
@@ -104,10 +122,16 @@ namespace SkiConsole
                 await processor.ProcessAsync();
                 await _queueClient.CompleteAsync(message.SystemProperties.LockToken);
             }
+            catch (Exception e)
+            {
+                await _queueClient.AbandonAsync(message.SystemProperties.LockToken);
+                Logger.Log($"Abandoned message.", e);
+            }
             finally
             {
-                // Force to only listen for 1 message.
-                Stop();
+                Logger.Log($"Message handler completed for {videoUrl}.");
+                if (Completed != null)
+                    Completed(this, null);
             }
         }        
 
@@ -115,13 +139,6 @@ namespace SkiConsole
         Task ExceptionReceivedHandler(ExceptionReceivedEventArgs exceptionReceivedEventArgs)
         {
             Logger.Log($"Message handler encountered an exception", exceptionReceivedEventArgs.Exception);
-            Logger.Log($"StackTrace == " + exceptionReceivedEventArgs.Exception.StackTrace);
-            var context = exceptionReceivedEventArgs.ExceptionReceivedContext;
-            Logger.Log("Exception context for troubleshooting:");
-            Logger.Log($"- Endpoint: {context.Endpoint}");
-            Logger.Log($"- Entity Path: {context.EntityPath}");
-            Logger.Log($"- Executing Action: {context.Action}");
-
             return Task.CompletedTask;
         }      
 

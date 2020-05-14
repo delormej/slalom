@@ -143,7 +143,7 @@ namespace SlalomTracker
 
         private void OnProgress(object sender, ConversionProgressEventArgs e)
         {
-            Logger.Log($"{_localVideoPath} -- Processed {e.ProcessedDuration.ToString("hh:mm:ss")}");
+            Logger.Log($"{_localVideoPath} -- Processed {e.ProcessedDuration}");
         }
 
         private string AppendToFileName(string inputFile, string suffix, bool appendFileIndex = false)
