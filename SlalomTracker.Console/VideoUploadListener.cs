@@ -18,6 +18,7 @@ namespace SkiConsole
         private IQueueClient _queueClient;        
         
         private bool _deadLetterMode = false;
+        public event EventHandler Completed;
 
         public VideoUploadListener(string queueName = null, bool readDeadLetter = false)
         {
@@ -53,11 +54,23 @@ namespace SkiConsole
 
         public void Stop()
         {
-            System.Diagnostics.Process process = System.Diagnostics.Process.GetCurrentProcess();
-            long peakMemory = process.PeakWorkingSet64;           
+            lock(_queueClient)
+            {
+                if (!_queueClient.IsClosedOrClosing)
+                {
+                    var task = _queueClient.CloseAsync();
 
-            Logger.Log($"Stopping...  Peak memory was: {peakMemory}");            
-            _queueClient.CloseAsync().Wait();
+                    System.Diagnostics.Process process = System.Diagnostics.Process.GetCurrentProcess();
+                    long peakMemory = process.PeakWorkingSet64;           
+                    Logger.Log($"Stopping...  Peak memory was: {(peakMemory/1024/1024).ToString("F1")} mb");            
+
+                    task.Wait();
+                }
+                else
+                {
+                    Logger.Log("Queue already closing.");
+                }
+            }
         }
 
         void RegisterOnMessageHandlerAndReceiveMessages()
@@ -79,41 +92,53 @@ namespace SkiConsole
             };
 
             // Register the function that processes messages.
-            _queueClient.RegisterMessageHandler(ProcessMessagesAsync, messageHandlerOptions);
+            _queueClient.RegisterMessageHandler(ProcessMessagesAsync, messageHandlerOptions);            
         }         
 
         async Task ProcessMessagesAsync(Message message, CancellationToken token)
         {
-            // Process the message.
-            Logger.Log($"Received message: SequenceNumber:{message.SystemProperties.SequenceNumber} Body:{Encoding.UTF8.GetString(message.Body)}");
+            if (_queueClient.IsClosedOrClosing)
+            {
+                Logger.Log("Queue is closing, abandoning message.");
+                await _queueClient.AbandonAsync(message.SystemProperties.LockToken);
+                
+                return;
+            }
 
-            string json = Encoding.UTF8.GetString(message.Body);
-            string videoUrl = QueueMessageParser.GetUrl(json);
-            Logger.Log($"Received this videoUrl: {videoUrl}");
+            string videoUrl = "";
+            try
+            {
+                // Process the message.
+                Logger.Log($"Received message: SequenceNumber:{message.SystemProperties.SequenceNumber} Body:{Encoding.UTF8.GetString(message.Body)}");
 
-            if (videoUrl.EndsWith("test.MP4"))
-                throw new ApplicationException("Something broke, fail safe for testing exceptions!");
-           
-            SkiVideoProcessor processor = new SkiVideoProcessor(videoUrl);
-            await processor.ProcessAsync();
-            await _queueClient.CompleteAsync(message.SystemProperties.LockToken);
+                string json = Encoding.UTF8.GetString(message.Body);
+                videoUrl = QueueMessageParser.GetUrl(json);
+                Logger.Log($"Received this videoUrl: {videoUrl}");
 
-            // Note: Use the cancellationToken passed as necessary to determine if the queueClient has already been closed.
-            // If queueClient has already been closed, you can choose to not call CompleteAsync() or AbandonAsync() etc.
-            // to avoid unnecessary exceptions.
+                if (videoUrl.EndsWith("test.MP4"))
+                    throw new ApplicationException("Something broke, fail safe for testing exceptions!");
+            
+                SkiVideoProcessor processor = new SkiVideoProcessor(videoUrl);
+                await processor.ProcessAsync();
+                await _queueClient.CompleteAsync(message.SystemProperties.LockToken);
+            }
+            catch (Exception e)
+            {
+                await _queueClient.AbandonAsync(message.SystemProperties.LockToken);
+                Logger.Log($"Abandoned message.", e);
+            }
+            finally
+            {
+                Logger.Log($"Message handler completed for {videoUrl}.");
+                if (Completed != null)
+                    Completed(this, null);
+            }
         }        
 
         // Use this handler to examine the exceptions received on the message pump.
         Task ExceptionReceivedHandler(ExceptionReceivedEventArgs exceptionReceivedEventArgs)
         {
             Logger.Log($"Message handler encountered an exception", exceptionReceivedEventArgs.Exception);
-            Logger.Log($"StackTrace == " + exceptionReceivedEventArgs.Exception.StackTrace);
-            var context = exceptionReceivedEventArgs.ExceptionReceivedContext;
-            Logger.Log("Exception context for troubleshooting:");
-            Logger.Log($"- Endpoint: {context.Endpoint}");
-            Logger.Log($"- Entity Path: {context.EntityPath}");
-            Logger.Log($"- Executing Action: {context.Action}");
-
             return Task.CompletedTask;
         }      
 

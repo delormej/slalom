@@ -7,7 +7,7 @@ spec:
   scaleTargetRef:
     deploymentName: skiprocessor
   pollingInterval: 15 # seconds
-  cooldownPeriod:  45 # Optional. Default: 5 minutes
+  cooldownPeriod:  5 # seconds
   minReplicaCount: 0
   maxReplicaCount: 50
   triggers:

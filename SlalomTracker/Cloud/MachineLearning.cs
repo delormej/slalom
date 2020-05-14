@@ -100,7 +100,7 @@ namespace SlalomTracker.Cloud
                 PredictionModels.ImageUrl thumbnail = new PredictionModels.ImageUrl(CropThumbnailUrl + thumbnailUrl);
                 var result = predictionApi.ClassifyImageUrl(ProjectId, CustomVisionModelName, thumbnail);
 
-                LogPredicitions(result.Predictions);
+                //LogPredicitions(result.Predictions);
 
                 return GetHighestRankedPrediction(result.Predictions);
             }

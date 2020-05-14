@@ -14,7 +14,7 @@ namespace MetadataExtractor
     /// </summary>
     public class GpmfParser
     {
-        const int TimeoutMs = 5 /*mins*/ * 60 /*seconds*/ * 1000; /*milliseconds*/
+        const int TimeoutMs = 1 /*mins*/ * 30 /*seconds*/ * 1000; /*milliseconds*/
         const string GPMFEXE = "gpmfdemo";
         const string GYRO = "GYRO";
         const string GPS = "GPS5";
@@ -170,7 +170,11 @@ namespace MetadataExtractor
             process.WaitForExit(TimeoutMs);
 
             if (!process.HasExited)
-                throw new ApplicationException($"Time out reading gmpf from {mp4Path}");
+            {
+                process.Kill();
+                throw new ApplicationException(
+                    $"Timeout ({TimeoutMs / 1000} seconds) exceeded while reading gmpf from {mp4Path}");
+            }
 
             if (resultBuilder.Length > 0)
                 return resultBuilder.ToString();

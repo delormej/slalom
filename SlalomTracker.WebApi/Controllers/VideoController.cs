@@ -9,6 +9,7 @@ using SlalomTracker.Cloud;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
+using SlalomTracker.WebApi.Services;
 
 namespace SlalomTracker.WebApi.Controllers
 {
@@ -95,6 +96,24 @@ namespace SlalomTracker.WebApi.Controllers
                 _logger.LogError(e.Message);
                 return StatusCode(500, e.Message);                
             }
+        }
+
+        [HttpGet]
+        [Route("api/uploaded")]
+        public async Task<IActionResult> GetUploadedQueueAsync()
+        {
+            const string ENV_SERVICEBUS = "SKISB";
+            const string QueueName = "video-uploaded";            
+            Microsoft.Azure.ServiceBus.Core.MessageReceiver mr = new Microsoft.Azure.ServiceBus.Core.MessageReceiver(_config[ENV_SERVICEBUS], QueueName);
+            var messages = await mr.PeekAsync(int.MaxValue);
+            StringBuilder sb = new StringBuilder();
+            if (messages.Count > 0)
+            {
+                foreach (var message in messages)
+                    sb.Append(Encoding.UTF8.GetString(message.Body));
+            }
+
+            return Content(sb.ToString());
         }
 
         private string GetVideoUrlFromRequest()
