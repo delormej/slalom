@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: skiwebapi-preview
-        image: wthacr.azurecr.io/skiwebapi:v2.5.4
+        image: wthacr.azurecr.io/skiwebapi:v2.5.3
         imagePullPolicy: Always
         env:
         - name: PORT
