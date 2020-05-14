@@ -27,11 +27,11 @@ docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
 #
 
 #
-# Launch container
 #
+# Launch container
 # env variable skiblobs still not working...
 docker run -it --rm \
-    -v $PWD:/shared \
+    -v "$PWD":/shared \
     -e SKIBLOBS='$SKIBLOBS' \
     -e SKISB='$SKISB' \
     -e GOOGLE_APPLICATION_CREDENTIALS="/ski/gcloud.json" \

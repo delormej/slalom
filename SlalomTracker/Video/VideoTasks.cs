@@ -139,7 +139,9 @@ namespace SlalomTracker
 
         private void OnProgress(object sender, ConversionProgressEventArgs e)
         {
-            Logger.Log($"{_localVideoPath} -- Processed {e.ProcessedDuration}");
+            // Grab every 10th progress update.
+            if (e.Frame % 10 == 0)
+                Logger.Log($"{_localVideoPath} -- Processed frame {e.Frame} @{e.ProcessedDuration}");
         }
 
         private string AppendToFileName(string inputFile, string suffix, bool appendFileIndex = false)

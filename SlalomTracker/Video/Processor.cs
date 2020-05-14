@@ -15,6 +15,7 @@ namespace SlalomTracker.Video
         string _json;
         DateTime _creationTime;
         VideoProcessedNotifier _processedNotifer;
+        VideoTime _timeOverrides = null;
 
         public SkiVideoProcessor(string videoUrl)
         {
@@ -33,7 +34,13 @@ namespace SlalomTracker.Video
         {
             try
             {
-                _localVideoPath = DownloadVideo();
+                var download = DownloadVideoAsync();
+                var timeOverride = GetPassOverrideAsync();
+                
+                await Task.WhenAll(download, timeOverride);
+                _localVideoPath = download.Result;
+                _timeOverrides = timeOverride.Result;
+                
                 _videoTasks = new VideoTasks(_localVideoPath);
 
                 var getCreationTime = GetCreationTimeAsync(); 
@@ -64,10 +71,14 @@ namespace SlalomTracker.Video
             }
         }
 
-        private string DownloadVideo()
+        private async Task<string> DownloadVideoAsync()
         {
-            Logger.Log($"Downloading video {_sourceVideoUrl}...");
-            return Cloud.Storage.DownloadVideo(_sourceVideoUrl);
+            string localPath = null;
+            await Task.Run( () => {
+                Logger.Log($"Downloading video {_sourceVideoUrl}...");
+                localPath = Cloud.Storage.DownloadVideo(_sourceVideoUrl);
+            });
+            return localPath;
         }
 
         private async Task GetCreationTimeAsync()
@@ -82,11 +93,14 @@ namespace SlalomTracker.Video
             Logger.Log($"Creating Thumbnail for video {_sourceVideoUrl}...");
             
             double thumbnailAtSeconds = 0;
-            if (pass != null)
+            if (_timeOverrides != null)
+                thumbnailAtSeconds = _timeOverrides.Start;
+            else if (pass != null)
                 thumbnailAtSeconds = pass.GetSecondsAtSkierEntry();
+            
             string localThumbnailPath = await _videoTasks.GetThumbnailAsync(thumbnailAtSeconds);
-
             Logger.Log($"Thumbnail created at {localThumbnailPath}");
+            
             return localThumbnailPath;
         }
 
@@ -95,11 +109,10 @@ namespace SlalomTracker.Video
             Logger.Log($"Trimming and silencing video {_sourceVideoUrl}...");
 
             double start = 0, duration = 0, total = 0;
-            VideoTime overrides = GetPassOverride();
-            if (overrides != null)
+            if (_timeOverrides != null)
             {
-                start = overrides.Start;
-                duration = overrides.Duration;
+                start = _timeOverrides.Start;
+                duration = _timeOverrides.Duration;
                 total = start + duration;
             }
             else
@@ -168,30 +181,32 @@ namespace SlalomTracker.Video
             return _factory.FromJson(_json);
         }
 
-        private Task ExtractMetadataAsync()
+        private async Task ExtractMetadataAsync()
         {
             Logger.Log($"Extracting metadata from video {_sourceVideoUrl}...");
-            return Task.Run(() => {              
+            await Task.Run(() => {              
                 _json = MetadataExtractor.Extract.ExtractMetadata(_localVideoPath);
-                Logger.Log("Extracted metadata.");
             });
+            Logger.Log("Extracted metadata.");
         } 
 
         /// <summary>
         /// Download and process JSON CoursePass override if it exists.
         /// </summary>
-        private VideoTime GetPassOverride()    
+        private async Task<VideoTime> GetPassOverrideAsync()    
         {
             VideoTime overrides = null;
             try 
             {
-                string jsonOverrideUrl = VideoTime.GetVideoJsonUrl(_sourceVideoUrl);
-                string jsonPath = Cloud.Storage.DownloadVideo(jsonOverrideUrl);
-                if (jsonPath != null)
-                {
-                    overrides = VideoTime.FromJsonFile(jsonPath);
-                    Logger.Log($"Video overrides found start, duration: {overrides.Start}, {overrides.Duration}");
-                }
+                await Task.Run( () => {
+                    string jsonOverrideUrl = VideoTime.GetVideoJsonUrl(_sourceVideoUrl);
+                    string jsonPath = Cloud.Storage.DownloadVideo(jsonOverrideUrl);
+                    if (jsonPath != null)
+                    {
+                        overrides = VideoTime.FromJsonFile(jsonPath);
+                        Logger.Log($"Video overrides found start, duration: {overrides.Start}, {overrides.Duration}");
+                    }
+                });
             }
             catch (System.Net.WebException)
             {
