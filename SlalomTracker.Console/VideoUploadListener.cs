@@ -124,8 +124,18 @@ namespace SkiConsole
             }
             catch (Exception e)
             {
-                await _queueClient.AbandonAsync(message.SystemProperties.LockToken);
-                Logger.Log($"Abandoned message.", e);
+                if (message.SystemProperties.DeliveryCount <= 2)
+                {
+                    Logger.Log($"Abandoned message.", e);
+                    // abandon and allow another to try in case of transient errors
+                    await _queueClient.AbandonAsync(message.SystemProperties.LockToken); 
+                }
+                else
+                {
+                    Logger.Log($"Dead lettering message.", e);
+                    await _queueClient.DeadLetterAsync(message.SystemProperties.LockToken,
+                        e.Message, e.InnerException?.Message);
+                }
             }
             finally
             {
@@ -149,6 +159,7 @@ namespace SkiConsole
         {
             _queueClient.RegisterMessageHandler( (message, cancel) => {
                 Logger.Log($"Dead letter message: {Encoding.UTF8.GetString(message.Body)}");
+                Logger.Log($"Reason: {message.UserProperties["DeadLetterReason"]}");
                 return Task.CompletedTask;
             }, new MessageHandlerOptions(ExceptionReceivedHandler) { AutoComplete = true });
         }  
