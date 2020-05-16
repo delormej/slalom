@@ -162,12 +162,13 @@ namespace MetadataExtractor
 
             StringBuilder resultBuilder = new StringBuilder();
             process.OutputDataReceived += (p, e) => {
-                resultBuilder.Append(e.Data);
+                resultBuilder.AppendLine(e.Data);
             };
             
             process.Start();
             process.BeginOutputReadLine();
             process.WaitForExit(TimeoutMs);
+            process.CancelOutputRead();
 
             if (!process.HasExited)
             {
@@ -175,7 +176,7 @@ namespace MetadataExtractor
                 throw new ApplicationException(
                     $"Timeout ({TimeoutMs / 1000} seconds) exceeded while reading gmpf from {mp4Path}");
             }
-
+            
             if (resultBuilder.Length > 0)
                 return resultBuilder.ToString();
             else
