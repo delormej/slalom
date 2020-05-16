@@ -145,8 +145,8 @@ namespace SlalomTracker
 
         public double GetGatePrecision()
         {
-            var entryM = FindHandleAtY(Course.Gates[0].Y);
-            var exitM = FindHandleAtY(Course.Gates[3].Y);
+            var entryM = this.Measurements.FindHandleAtY(Course.Gates[0].Y);
+            var exitM = this.Measurements.FindHandleAtY(Course.Gates[3].Y);
             if (entryM == null || exitM == null)
                 return double.MaxValue;
 
@@ -164,7 +164,7 @@ namespace SlalomTracker
 
         public double GetSecondsAtSkierEntry()
         {
-            Measurement measurement = FindHandleAtY(Course.Gates[0].Y);
+            Measurement measurement = this.Measurements.FindHandleAtY(Course.Gates[0].Y);
             if (measurement == null) 
             {
                 Logger.Log("Didn't find handle at Skier Entry.");
@@ -190,33 +190,6 @@ namespace SlalomTracker
         {
             int count = Measurements.Count-1;
             return GetSecondsFromStart(this.Measurements[count]);
-        }
-
-        public Measurement FindHandleAtSeconds(double seconds)
-        {
-            const double offset = 0.25;
-            DateTime start = new DateTime().AddSeconds(seconds);
-            DateTime end = new DateTime().AddSeconds(seconds + offset);
-            
-            // try to find an event within 1/4 second:
-            var match = this.Measurements.Where(m => 
-                m.Timestamp >= start
-                && m.Timestamp < end )
-            .FirstOrDefault();
-
-            return match;
-        }
-    
-        private Measurement FindHandleAtY(double y)
-        {
-            double start = y;
-            double end = start + 1.5; // tolerance
-            var match = this.Measurements.Where(m => 
-                m.HandlePosition.Y >= start
-                && m.HandlePosition.Y < end )
-            .FirstOrDefault();
-
-            return match;
         }
 
         private double GetSecondsFromStart(Measurement measurement)

@@ -108,20 +108,13 @@ namespace SlalomTracker
             m_course = null; // Clear out existing course.
             CoursePass nextPass = null;
             
-            var measurements = DeserializeMeasurements(); // Should I really need to do this each time???
+            var measurements = Measurement.DeserializeMeasurements(_json);
             List<Measurement> nextMeasurements = GetNextPassMeasurements(exit, measurements);
             if (nextMeasurements != null && nextMeasurements.Count > 0)
             {
                 nextPass = CreatePass(nextMeasurements);
             }
             return nextPass;
-        }
-
-        private List<Measurement> DeserializeMeasurements()
-        {
-            var measurements = (List<Measurement>)
-                JsonConvert.DeserializeObject(_json, typeof(List<Measurement>));
-            return measurements;
         }
 
         private List<Measurement> GetNextPassMeasurements(
@@ -191,7 +184,7 @@ namespace SlalomTracker
         {
             if (_json == null)
                 throw new ApplicationException("Must load json from File, Url or String.");
-            var measurements = DeserializeMeasurements();
+            var measurements = Measurement.DeserializeMeasurements(_json);
             return CreatePass(measurements);
         }
 

@@ -5,39 +5,34 @@
    "version": "0.2.0",
    "configurations": [
         {
-            "name": "skiwebapi Launch",
+            "name": ".NET Core Launch (web)",
             "type": "coreclr",
             "request": "launch",
-        //    "preLaunchTask": "dotenv",
-            "requireExactSource": false,
+            "preLaunchTask": "build",
+            // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/SlalomTracker.WebApi/bin/Debug/netcoreapp3.1/SlalomTracker.WebApi.dll",
             "args": [],
             "cwd": "${workspaceFolder}/SlalomTracker.WebApi",
             "stopAtEntry": false,
-            "launchBrowser": {
-                "enabled": false
-            },
+            /* Enable launching a web browser when ASP.NET Core starts. For more information: https://aka.ms/VSCode-CS-LaunchJson-WebBrowser
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "^\\s*Now listening on:\\s+(https?://\\S+)"
+            },*/
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             },
-            "envFile": "${workspaceFolder}/.env"           
+            "envFile": "${workspaceFolder}/.env",                
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            }
         },
         {
-            "name": "skiwebapi Attach",
+            "name": ".NET Core Attach",
             "type": "coreclr",
             "request": "attach",
-            "processId": "${command:pickRemoteProcess}",
-            "pipeTransport": {
-                "pipeProgram": "docker",
-                "pipeArgs": [ "exec", "-i", "ski-web" ],
-                "debuggerPath": "/vsdbg/vsdbg",
-                "pipeCwd": "${workspaceRoot}",
-                "quoteArgs": false
-            },
-            "sourceFileMap": {
-                "/ski": "${workspaceRoot}/"
-            }
-        },        
+            "processId": "${command:pickProcess}"
+        },
         {
             "name": "skiconsole Attach",
             "type": "coreclr",
@@ -53,6 +48,22 @@
             "sourceFileMap": {
                 "/ski": "${workspaceRoot}/"
             }
+        },   
+        {
+            "name": "skiwebapi Attach",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:pickRemoteProcess}",
+            "pipeTransport": {
+                "pipeProgram": "docker",
+                "pipeArgs": [ "exec", "-i", "ski-web" ],
+                "debuggerPath": "/vsdbg/vsdbg",
+                "pipeCwd": "${workspaceRoot}",
+                "quoteArgs": false
+            },
+            "sourceFileMap": {
+                "/ski": "${workspaceRoot}/"
+            }
         }
-    ,]
+    ]
 }

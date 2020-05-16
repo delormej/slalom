@@ -1,4 +1,7 @@
 using System;
+using System.Net;
+using Microsoft.Net.Http.Headers;
+using System.Collections.Generic;
 using SlalomTracker.Cloud;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -29,11 +32,10 @@ namespace SlalomTracker.WebApi.Controllers
                 if (entity == null)
                     throw new ApplicationException($"Unable to load SkiVideo {recordedDate}, {mp4Filename}");
 
-                CoursePassFactory factory = new CoursePassFactory();
-                CoursePass pass = factory.FromSkiVideo(entity);
-                Measurement measurement = pass.FindHandleAtSeconds(seconds + entity.EntryTime);
-                
-                return Content(measurement.ToString(), new Microsoft.Net.Http.Headers.MediaTypeHeaderValue("application/json"));
+                Measurement measurement = GetMeasurement(entity, seconds);
+
+                return Content(measurement.ToString(), 
+                    new MediaTypeHeaderValue("application/json"));
             }
             catch (Exception e)
             {
@@ -41,5 +43,27 @@ namespace SlalomTracker.WebApi.Controllers
                 return StatusCode(500);
             }
         }      
+
+        private Measurement GetMeasurement(SkiVideoEntity entity, double seconds)
+        {
+            List<Measurement> measurements = null;
+            if (!string.IsNullOrWhiteSpace(entity.CourseName))
+            {
+                CoursePassFactory factory = new CoursePassFactory();
+                CoursePass pass = factory.FromSkiVideo(entity);
+                measurements = pass.Measurements;
+            }
+            else
+            {
+                WebClient client = new WebClient();
+                string json = client.DownloadString(entity.JsonUrl);
+                measurements = Measurement.DeserializeMeasurements(json);
+            }
+
+            Measurement measurement = measurements.
+                FindHandleAtSeconds(seconds + entity.EntryTime);
+            
+            return measurement;            
+        }
     }
 }
