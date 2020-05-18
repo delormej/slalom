@@ -464,7 +464,7 @@ namespace SkiConsole
             IEnumerable<SkiVideoEntity> SortVideos(IEnumerable<SkiVideoEntity> videos)
             {
                 return videos.OrderBy(v => v.RecordedTime)
-                    .Where(v => v.HotUrl != null)
+                    .Where(v => !string.IsNullOrWhiteSpace(v.HotUrl) && v.Starred != true)
                     .Take(count);
             }                    
         }
