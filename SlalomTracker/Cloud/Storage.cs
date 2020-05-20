@@ -65,9 +65,20 @@ namespace SlalomTracker.Cloud
         {
             CloudTableClient client = _account.CreateCloudTableClient();
             CloudTable table = client.GetTableReference(SKITABLE);
-            TableQuery<SkiVideoEntity> query = new TableQuery<SkiVideoEntity>().Where("");
-            TableQuerySegment<SkiVideoEntity> result = await table.ExecuteQuerySegmentedAsync(query, null);
-            return result.Results;
+            TableQuery<SkiVideoEntity> query = new TableQuery<SkiVideoEntity>(); //.Take(10);
+
+            List<SkiVideoEntity> results = new List<SkiVideoEntity>();
+            TableContinuationToken token = null;
+
+            do
+            {
+                var seg = await table.ExecuteQuerySegmentedAsync(query, token);
+                token = seg.ContinuationToken;
+                results.AddRange(seg.Results);
+            }
+            while (token != null);
+
+            return results;
         }
 
         public string UploadVideo(string localFile, DateTime creationTime)
