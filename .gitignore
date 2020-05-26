@@ -268,3 +268,5 @@ __pycache__/
 
 # Environment variables file
 dev.env
+dot.env
+.env
