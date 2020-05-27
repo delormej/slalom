@@ -26,8 +26,9 @@ namespace SlalomTracker
     
         public static Measurement FindHandleAtY(this IEnumerable<Measurement> measurements, double y)
         {
+            const double tolerance_m = 1.5;
             double start = y;
-            double end = start + 1.5; // tolerance
+            double end = start + tolerance_m; 
             var match = measurements.Where(m => 
                 m.HandlePosition.Y >= start
                 && m.HandlePosition.Y < end )

@@ -96,7 +96,7 @@ namespace SlalomTracker.Video
             if (_timeOverrides != null)
                 thumbnailAtSeconds = _timeOverrides.Start;
             else if (pass != null)
-                thumbnailAtSeconds = pass.GetSecondsAtSkierEntry();
+                thumbnailAtSeconds = pass.GetSecondsAtEntry();
             
             string localThumbnailPath = await _videoTasks.GetThumbnailAsync(thumbnailAtSeconds);
             Logger.Log($"Thumbnail created at {localThumbnailPath}");

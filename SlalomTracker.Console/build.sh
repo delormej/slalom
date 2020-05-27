@@ -9,7 +9,7 @@ then
 fi
 container=skiconsole:v$VERSION
 
-echo "service::$SKIJOBS_SERVICE"
+echo "skisb::$SKISB"
 echo "skiblobs::$SKIBLOBS"
 echo "github_token::$GITHUB_TOKEN"
 echo "Building container::$container"
@@ -32,16 +32,16 @@ docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
 # env variable skiblobs still not working...
 docker run -it --rm \
     -v "$PWD":/shared \
-    -e SKIBLOBS='$SKIBLOBS' \
-    -e SKISB='$SKISB' \
+    -e SKIBLOBS="$SKIBLOBS" \
+    -e SKISB="$SKISB" \
     -e GOOGLE_APPLICATION_CREDENTIALS="/ski/gcloud.json" \
     --name ski-console \
     --cpus="2.0" \
     $container
 
-az acr login -n wthacr
-docker tag $container wthacr.azurecr.io/$container
-docker push wthacr.azurecr.io/$container
+# az acr login -n wthacr
+# docker tag $container wthacr.azurecr.io/$container
+# docker push wthacr.azurecr.io/$container
 
 #
 # Script to get message counts from Service Bus

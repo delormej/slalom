@@ -162,18 +162,6 @@ namespace SlalomTracker
             return GetSecondsFromStart(this.Entry);
         }
 
-        public double GetSecondsAtSkierEntry()
-        {
-            Measurement measurement = this.Measurements.FindHandleAtY(Course.Gates[0].Y);
-            if (measurement == null) 
-            {
-                Logger.Log("Didn't find handle at Skier Entry.");
-                return GetSecondsAtEntry();
-            }
-            
-            return GetSecondsFromStart(measurement);
-        }
-
         public double GetDurationSeconds()
         {
             if (this.Exit == null)
