@@ -139,7 +139,8 @@ namespace SlalomTracker.Cloud
             return toFilter.Where(v => 
                         v.RopeLengthM > 0 && 
                         !string.IsNullOrEmpty(v.Skier) &&
-                        !string.IsNullOrEmpty(v.ThumbnailUrl)
+                        !string.IsNullOrEmpty(v.ThumbnailUrl) &&
+                        !v.MarkedForDelete
                     );
         }
 

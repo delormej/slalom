@@ -119,7 +119,7 @@ namespace SkiConsole
             }
             else if (args[0] == "-t") 
             {
-                Train();
+                TrainAsync().Wait();
             }
             else if (args[0] == "-g")
             {
@@ -227,20 +227,25 @@ namespace SkiConsole
             processor.ProcessAsync().Wait();
         }
 
-        private static void Train()
+        private static async Task TrainAsync()
         {
-            var metadataTask = LoadVideosAsync();
             Console.WriteLine("Loading videos to train.");
-            metadataTask.Wait();
-            List<SkiVideoEntity> videos = metadataTask.Result;
+            List<SkiVideoEntity> videos = await LoadVideosAsync();
             
-            Console.WriteLine("Training rope length detection.");
-            RopeMachineLearning ropeMl = new RopeMachineLearning();
-            ropeMl.Train(videos);
+            var ropeTask = Task.Run( () => {
+                Console.WriteLine("Training rope length detection.");
+                RopeMachineLearning ropeMl = new RopeMachineLearning();
+                ropeMl.Train(videos);
+            });
 
-            Console.WriteLine("Training skier detection.");
-            SkierMachineLearning skierMl = new SkierMachineLearning();
-            skierMl.Train(videos);
+            var skierTask = Task.Run( () => {
+                Console.WriteLine("Training skier detection.");
+                SkierMachineLearning skierMl = new SkierMachineLearning();
+                skierMl.Train(videos);
+            });
+
+            await Task.WhenAll(ropeTask, skierTask);
+            Console.WriteLine("Done training.");
         }
 
         private static string CreateImage(string jsonPath, double clOffset, double rope, 
