@@ -486,21 +486,33 @@ namespace SkiConsole
         {
             Storage storage = new Storage();
             List<SkiVideoEntity> videos = await storage.GetAllMetdataAsync();
-            var selectedVideos = videos.OrderByDescending(v => v.RecordedTime).Take(30);
+            var selectedVideos = videos.OrderByDescending(v => v.RecordedTime).Skip(5).Take(30);
 
             foreach(var video in selectedVideos)
             {
-                Logger.Log($"Updating thumbnail for {video.PartitionKey}, {video.RowKey}");
-                double thumbnailAtSeconds = video.EntryTime;
-
-                string localVideoPath = Storage.DownloadVideo(video.HotUrl ?? video.Url);
-                VideoTasks _videoTasks = new VideoTasks(localVideoPath);
-
-                string localThumbnailPath = await _videoTasks.GetThumbnailAsync(thumbnailAtSeconds);
-                string thumbnailUrl = storage.UploadThumbnail(localThumbnailPath, video.RecordedTime);
-
-                Logger.Log($"New thumbnail at {thumbnailUrl}");
+                try
+                {
+                    await UpdateThumbnailAsync(storage, video);
+                }
+                catch (Exception e)
+                {
+                    Logger.Log($"Unable to update thumbnail for {video.PartitionKey}, {video.RowKey}", e);
+                }
             }
+        }
+
+        private static async Task UpdateThumbnailAsync(Storage storage, SkiVideoEntity video)
+        {
+            Logger.Log($"Updating thumbnail for {video.PartitionKey}, {video.RowKey}");
+            double thumbnailAtSeconds = video.EntryTime;
+
+            string localVideoPath = Storage.DownloadVideo(video.HotUrl ?? video.Url);
+            VideoTasks _videoTasks = new VideoTasks(localVideoPath);
+
+            string localThumbnailPath = await _videoTasks.GetThumbnailAsync(thumbnailAtSeconds);
+            string thumbnailUrl = storage.UploadThumbnail(localThumbnailPath, video.RecordedTime);
+
+            Logger.Log($"New thumbnail at {thumbnailUrl}");            
         }
 
         /// <summary>
