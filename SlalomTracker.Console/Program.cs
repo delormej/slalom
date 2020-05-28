@@ -486,7 +486,7 @@ namespace SkiConsole
         {
             Storage storage = new Storage();
             List<SkiVideoEntity> videos = await storage.GetAllMetdataAsync();
-            var selectedVideos = videos.OrderByDescending(v => v.RecordedTime).Skip(5).Take(30);
+            var selectedVideos = videos.OrderByDescending(v => v.RecordedTime).Take(5);
 
             foreach(var video in selectedVideos)
             {
@@ -504,13 +504,15 @@ namespace SkiConsole
         private static async Task UpdateThumbnailAsync(Storage storage, SkiVideoEntity video)
         {
             Logger.Log($"Updating thumbnail for {video.PartitionKey}, {video.RowKey}");
-            double thumbnailAtSeconds = video.EntryTime;
+            double thumbnailAtSeconds = 0; // video.EntryTime;
 
             string localVideoPath = Storage.DownloadVideo(video.HotUrl ?? video.Url);
             VideoTasks _videoTasks = new VideoTasks(localVideoPath);
 
             string localThumbnailPath = await _videoTasks.GetThumbnailAsync(thumbnailAtSeconds);
-            string thumbnailUrl = storage.UploadThumbnail(localThumbnailPath, video.RecordedTime);
+            string modifiedThumbnailPath = localThumbnailPath.Replace("_ts.PNG", ".PNG");
+            System.IO.File.Move(localThumbnailPath, modifiedThumbnailPath);
+            string thumbnailUrl = storage.UploadThumbnail(modifiedThumbnailPath, video.RecordedTime);
 
             Logger.Log($"New thumbnail at {thumbnailUrl}");            
         }
