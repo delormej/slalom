@@ -142,6 +142,10 @@ namespace SkiConsole
             {
                 Notify();
             }            
+            else if (args[0] == "-b")
+            {
+                UpdateThumbnailsAsync().Wait();
+            }
             else
                 ShowUsage();
         }
@@ -476,6 +480,27 @@ namespace SkiConsole
             video.HotUrl = "";
             storage.UpdateMetadata(video);
             Logger.Log($"Metadata updated for video recorded @ {video.RecordedTime}.");
+        }
+
+        private static async Task UpdateThumbnailsAsync()
+        {
+            Storage storage = new Storage();
+            List<SkiVideoEntity> videos = await storage.GetAllMetdataAsync();
+            var selectedVideos = videos.OrderByDescending(v => v.RecordedTime).Take(30);
+
+            foreach(var video in selectedVideos)
+            {
+                Logger.Log($"Updating thumbnail for {video.PartitionKey}, {video.RowKey}");
+                double thumbnailAtSeconds = video.EntryTime;
+
+                string localVideoPath = Storage.DownloadVideo(video.HotUrl ?? video.Url);
+                VideoTasks _videoTasks = new VideoTasks(localVideoPath);
+
+                string localThumbnailPath = await _videoTasks.GetThumbnailAsync(thumbnailAtSeconds);
+                string thumbnailUrl = storage.UploadThumbnail(localThumbnailPath, video.RecordedTime);
+
+                Logger.Log($"New thumbnail at {thumbnailUrl}");
+            }
         }
 
         /// <summary>

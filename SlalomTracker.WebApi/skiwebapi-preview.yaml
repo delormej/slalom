@@ -59,7 +59,7 @@ kind: Ingress
 metadata:
   name: skiwebapi-ingress-preview
   annotations:
-    nginx.ingress.kubernetes.io/enable-cors: "true"
+    #nginx.ingress.kubernetes.io/enable-cors: "true"
     # Required for debugging.
     nginx.ingress.kubernetes.io/cors-allow-origin: "http://localhost:3000"
 spec:
