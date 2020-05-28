@@ -21,7 +21,6 @@ echo "Building container."
 docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
     --build-arg VERSION=$VERSION \
     --force-rm \
-    --target build \
     -f ./SlalomTracker.Console/Dockerfile .
 #
 # To just use the debug image add --target build to the above and it won't build the release stage.
