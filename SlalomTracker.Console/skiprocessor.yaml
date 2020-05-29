@@ -58,6 +58,11 @@ spec:
             secretKeyRef:
               name: skisb-secret
               key: connectionstring
+        - name: SKIMLKEY
+          valueFrom:
+            secretKeyRef:
+              name: skiml-secret
+              key: key              
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /var/secrets/google/key.json              
       imagePullSecrets:
