@@ -146,6 +146,10 @@ namespace SkiConsole
             {
                 UpdateThumbnailsAsync().Wait();
             }
+            else if (args[0] == "--combine" && args.Length > 2)
+            {
+                CombineVideosAsync(args[1], args[2]).Wait();
+            }            
             else
                 ShowUsage();
         }
@@ -520,6 +524,29 @@ namespace SkiConsole
             string thumbnailUrl = storage.UploadThumbnail(modifiedThumbnailPath, video.RecordedTime);
 
             Logger.Log($"New thumbnail at {thumbnailUrl}");            
+        }
+
+        private static async Task CombineVideosAsync(string videoUrl1, string videoUrl2)
+        {
+            try
+            {
+                Task<string> download1 = Task.Run( () => { return Storage.DownloadVideo(videoUrl1); });
+                Task<string> download2 = Task.Run( () => { return Storage.DownloadVideo(videoUrl2); });
+                await Task.WhenAll(download1, download2);
+
+                string videoPath1 = download1.Result;
+                string videoPath2 = download2.Result;
+                
+                VideoTasks videoTasks = new VideoTasks(videoPath1);
+                string output = await videoTasks.CombineVideoAsync(videoPath2);
+                
+                Logger.Log($"Video {videoPath1} combined with {videoPath2} into {output}");
+            }
+            catch (Exception e)
+            {
+                Logger.Log($"Unable to combine {videoUrl1} combined with {videoUrl2}.", e);
+            }
+
         }
 
         /// <summary>

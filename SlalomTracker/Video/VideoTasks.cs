@@ -29,6 +29,19 @@ namespace SlalomTracker
             _videoTimeZone = TimeZoneInfo.FindSystemTimeZoneById(videoTimeZone);
         }
 
+        public async Task<string> CombineVideoAsync(string video2Path)
+        {
+            Logger.Log($"Combining {_localVideoPath} with {video2Path}");
+            string outputPath = GetCombinedVideoPath(video2Path);
+            string arguments = $"-i {_localVideoPath} -i {video2Path} " +
+                "-filter_complex \"[1]format=yuva444p,colorchannelmixer=aa=0.5[in2]; " +
+                $"[in2][0]scale2ref[in2][in1];[in1][in2]overlay\" {outputPath}";
+
+            await _ffmpeg.ExecuteAsync(arguments);
+
+            return outputPath;
+        }
+
         public async Task<string> TrimAndSilenceVideoAsync(double start, double duration, double total)
         {
             if (start > 0 && duration == 0.0d)
@@ -228,6 +241,12 @@ namespace SlalomTracker
             DateTime utcTime = TimeZoneInfo.ConvertTimeToUtc(toConvertTime, _videoTimeZone);
 
             return utcTime;
+        }
+
+        private string GetCombinedVideoPath(string video2Path)
+        {
+            int hash = (_localVideoPath + video2Path).GetHashCode();
+            return $"{hash:X8}.MP4"; 
         }
     }
 }
