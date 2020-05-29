@@ -12,6 +12,7 @@ container=skiconsole:v$VERSION
 echo "skisb::$SKISB"
 echo "skiblobs::$SKIBLOBS"
 echo "github_token::$GITHUB_TOKEN"
+echo "skimlkey::$SKIMLKEY"
 echo "Building container::$container"
 
 #
@@ -34,6 +35,7 @@ docker run -it --rm \
     -v "$PWD":/shared \
     -e SKIBLOBS="$SKIBLOBS" \
     -e SKISB="$SKISB" \
+    -e SKIMLKEY="$SKIMLKEY" \
     -e GOOGLE_APPLICATION_CREDENTIALS="/ski/gcloud.json" \
     --name ski-console \
     --cpus="2.0" \

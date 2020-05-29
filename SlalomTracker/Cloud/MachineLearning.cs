@@ -11,11 +11,12 @@ namespace SlalomTracker.Cloud
 {
     public abstract class MachineLearning
     {
+        public const string ENV_MLKEY = "SKIMLKEY";
         protected string CropThumbnailUrl;
         protected string CustomVisionEndPoint;
-        protected string CustomVisionPredictionKey;
-        protected string CustomVisionTrainingKey;
+        protected string CustomVisionKey;
         protected string CustomVisionModelName;
+        protected string ResourceId;
         protected CustomVisionPredictionClient predictionApi;
         protected CustomVisionTrainingClient trainingApi;
         protected List<TrainingModels.ImageUrlCreateEntry> entries;
@@ -26,29 +27,22 @@ namespace SlalomTracker.Cloud
 
         public MachineLearning()
         {
-#warning CropThumbnailUrl is hardcoded and should be moved to a configuration file.
+            CustomVisionKey = Environment.GetEnvironmentVariable(ENV_MLKEY);
+
+            // TODO: All of this needs to be moved to configuration file.
             CropThumbnailUrl = "https://ski.jasondel.com/api/crop?width=1600&thumbnailUrl=";
-#warning CustomVisionEndPoint is hardcoded and should be moved to a configuration file.
-            CustomVisionEndPoint = "https://ropelengthvision.cognitiveservices.azure.com/";     
-        }
-
-        protected void InitializeApis()
-        {
-            predictionApi = new CustomVisionPredictionClient()
-            {
-                ApiKey = CustomVisionPredictionKey,
-                Endpoint = CustomVisionEndPoint
-            };
-
-            trainingApi = new CustomVisionTrainingClient()
-            {
-                ApiKey = CustomVisionTrainingKey,
-                Endpoint = CustomVisionEndPoint
-            };              
+            CustomVisionEndPoint = "https://eastus.api.cognitive.microsoft.com/";    
+            ResourceId = "/subscriptions/40a293b5-bd26-47ef-acc3-c001a5bfce82/resourceGroups/ski/providers/Microsoft.CognitiveServices/accounts/SlalomDetection";
         }
 
         public void Train(List<SkiVideoEntity> allVideos)
         {
+            trainingApi = new CustomVisionTrainingClient()
+            {
+                ApiKey = CustomVisionKey,
+                Endpoint = CustomVisionEndPoint
+            };        
+
             const int BatchSize = 10;
             this.videos = FilterVideos(allVideos);
 
@@ -81,7 +75,21 @@ namespace SlalomTracker.Cloud
                     SendBatch();
 
                 // Kick off the training.
-                trainingApi.TrainProject(ProjectId);
+                var iteration = trainingApi.TrainProject(ProjectId);
+
+                while (iteration.Status == "Training")
+                {
+                    System.Threading.Thread.Sleep(1000);
+
+                    // Re-query the iteration to get it's updated status
+                    iteration = trainingApi.GetIteration(ProjectId, iteration.Id);
+                }
+
+                // The iteration is now trained. Publish it to the prediction end point.
+                trainingApi.PublishIteration(ProjectId, iteration.Id, CustomVisionModelName, ResourceId);
+
+                Logger.Log("Done publishing iteration.");
+
             }
             catch (TrainingModels.CustomVisionErrorException e)
             {
@@ -95,6 +103,13 @@ namespace SlalomTracker.Cloud
         public virtual string Predict(string thumbnailUrl)
         {
             Logger.Log($"Making a prediction of {CustomVisionModelName} for: " + thumbnailUrl);
+
+            predictionApi = new CustomVisionPredictionClient()
+            {
+                ApiKey = CustomVisionKey,
+                Endpoint = CustomVisionEndPoint
+            };
+
             try 
             {
                 PredictionModels.ImageUrl thumbnail = new PredictionModels.ImageUrl(CropThumbnailUrl + thumbnailUrl);
