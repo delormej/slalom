@@ -5,7 +5,7 @@ using Logger = jasondel.Tools.Logger;
 
 namespace SlalomTracker.Video 
 {
-    public class SkiVideoProcessor
+    public class SkiVideoProcessor : IProcessor
     {
         Storage _storage;
         CoursePassFactory _factory;

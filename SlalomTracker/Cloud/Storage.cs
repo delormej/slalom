@@ -288,13 +288,18 @@ namespace SlalomTracker.Cloud
 
         private void AddTableEntity(SkiVideoEntity entity)
         {
+            AddTableEntityAsync(entity, SKITABLE).Wait();
+        }
+
+        public async Task AddTableEntityAsync(ITableEntity entity, string tableName)
+        {
             CloudTableClient client = _account.CreateCloudTableClient();
-            CloudTable table = client.GetTableReference(SKITABLE);
+            CloudTable table = client.GetTableReference(tableName);
             TableOperation insert = TableOperation.InsertOrReplace(entity);
-            Task createTask = table.CreateIfNotExistsAsync();
-            createTask.Wait();
-            Task insertTask = table.ExecuteAsync(insert);
-            insertTask.Wait();
+            await table.CreateIfNotExistsAsync();
+            var result = await table.ExecuteAsync(insert);
+            
+            Logger.Log($"Inserted table entity {tableName} with status code: {result.HttpStatusCode}");
         }
 
         public SkiVideoEntity GetSkiVideoEntity(string recordedDate, string mp4Filename)

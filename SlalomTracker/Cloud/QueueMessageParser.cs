@@ -1,5 +1,7 @@
 using System;
 using Newtonsoft.Json;
+using SlalomTracker.Video;
+using Logger = jasondel.Tools.Logger;
 
 namespace SlalomTracker.Cloud
 {
@@ -17,10 +19,28 @@ namespace SlalomTracker.Cloud
                 videoUrl = GetUrlFromGoogleStorageEvent(msg);
 
             if (videoUrl == null || !(videoUrl.ToUpper().EndsWith("MP4")))
-            {
-                Console.WriteLine($"WARNING: Valid video url not found: {message}");
-            }
+                Logger.Log($"WARNING: Valid video url not found: {message}");
+            else 
+                Logger.Log($"Received this videoUrl: {videoUrl}");
+
             return videoUrl;
+        }
+
+        public static IProcessor GetProcessor(string message)
+        {
+            IProcessor processor = null;
+            string videoUrl = GetUrl(message);
+            
+            if (videoUrl != null)
+            {
+                processor = new SkiVideoProcessor(videoUrl);
+            }
+            else
+            {
+                
+            }
+
+            return processor;
         }
 
         private static string GetUrlFromAzureStorageEvent(dynamic msg)

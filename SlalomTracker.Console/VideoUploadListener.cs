@@ -105,21 +105,17 @@ namespace SkiConsole
                 return;
             }
 
-            string videoUrl = "";
             try
             {
                 // Process the message.
-                Logger.Log($"Received message: SequenceNumber:{message.SystemProperties.SequenceNumber} Body:{Encoding.UTF8.GetString(message.Body)}");
+                Logger.Log($"Received message: SequenceNumber:{message.SystemProperties.SequenceNumber} " +
+                    $"Body:{Encoding.UTF8.GetString(message.Body)}");
 
                 string json = Encoding.UTF8.GetString(message.Body);
-                videoUrl = QueueMessageParser.GetUrl(json);
-                Logger.Log($"Received this videoUrl: {videoUrl}");
-
-                if (videoUrl.EndsWith("test.MP4"))
-                    throw new ApplicationException("Something broke, fail safe for testing exceptions!");
-            
-                SkiVideoProcessor processor = new SkiVideoProcessor(videoUrl);
+                IProcessor processor = QueueMessageParser.GetProcessor(json);
+                
                 await processor.ProcessAsync();
+                
                 await _queueClient.CompleteAsync(message.SystemProperties.LockToken);
             }
             catch (Exception e)
@@ -139,7 +135,7 @@ namespace SkiConsole
             }
             finally
             {
-                Logger.Log($"Message handler completed for {videoUrl}.");
+                Logger.Log($"Message handler completed.");
                 if (Completed != null)
                     Completed(this, null);
             }

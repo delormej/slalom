@@ -4,25 +4,19 @@ using Microsoft.WindowsAzure.Storage.Table;
 
 namespace SlalomTracker.Cloud
 {
-    public class SkiVideoEntity : TableEntity
+    public class SkiVideoEntity : BaseVideoEntity
     {
         public SkiVideoEntity()
         {
             
         }
 
-        public SkiVideoEntity(string videoUrl, DateTime creationTime)
+        public SkiVideoEntity(string videoUrl, DateTime creationTime) : 
+            base(videoUrl, creationTime)
         {
-            this.Url = videoUrl;
             this.RecordedTime = creationTime;
-            this.PartitionKey = creationTime.ToString("yyyy-MM-dd");
-            this.RowKey = GetFilenameFromUrl(videoUrl); 
-            this.SlalomTrackerVersion = GetVersion();
         }
-
-
-        public string Url { get; set; }
-        
+       
         /// <summary>
         /// Url for hot storage (currently Google storage).  Only most recent 
         /// videos stored here.
@@ -54,29 +48,10 @@ namespace SlalomTracker.Cloud
 
         public string Notes { get; set; }
 
-        public string SlalomTrackerVersion { get; set; }
-
         public DateTime RecordedTime { get; set; }
 
         public bool MarkedForDelete { get; set; } = false;
 
         public bool Starred { get; set; } = false;
-
-        private string GetFilenameFromUrl(string videoUrl)
-        {
-            Uri uri = new Uri(videoUrl);
-            string filename = System.IO.Path.GetFileName(uri.LocalPath);
-            return filename;
-        }
-
-        private string GetVersion()
-        {
-            var extractor = typeof(MetadataExtractor.Extract).Assembly.GetName();
-            var assembly = System.Reflection.Assembly.GetEntryAssembly().GetName();
-            string version = $"{assembly.Name}:v{assembly.Version.ToString()}, " +
-                $"{extractor.Name}:v{extractor.Version.ToString()}";
-
-            return version;
-        }
     }
 }

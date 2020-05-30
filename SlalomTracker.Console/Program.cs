@@ -528,25 +528,10 @@ namespace SkiConsole
 
         private static async Task CombineVideosAsync(string videoUrl1, string videoUrl2)
         {
-            try
-            {
-                Task<string> download1 = Task.Run( () => { return Storage.DownloadVideo(videoUrl1); });
-                Task<string> download2 = Task.Run( () => { return Storage.DownloadVideo(videoUrl2); });
-                await Task.WhenAll(download1, download2);
+            Logger.Log($"Combining video {videoUrl1} combined with {videoUrl2}.");
 
-                string videoPath1 = download1.Result;
-                string videoPath2 = download2.Result;
-                
-                VideoTasks videoTasks = new VideoTasks(videoPath1);
-                string output = await videoTasks.CombineVideoAsync(videoPath2);
-                
-                Logger.Log($"Video {videoPath1} combined with {videoPath2} into {output}");
-            }
-            catch (Exception e)
-            {
-                Logger.Log($"Unable to combine {videoUrl1} combined with {videoUrl2}.", e);
-            }
-
+            CompareVideoProcessor processor = new CompareVideoProcessor(videoUrl1, videoUrl2);
+            await processor.ProcessAsync();
         }
 
         /// <summary>
