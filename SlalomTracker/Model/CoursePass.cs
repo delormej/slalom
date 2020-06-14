@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SlalomTracker.Video;
 using Logger = jasondel.Tools.Logger;
 
 namespace SlalomTracker
@@ -157,27 +158,48 @@ namespace SlalomTracker
             return Math.Sqrt(dEntry + dExit);
         }
 
+        public VideoTime GetVideoTime()
+        {
+            VideoTime time = new VideoTime();
+
+            const double MAGIC_JUST_PAST_55s = 0.1;   // Has to be > 0
+            const double DEFAULT_DURATION = 25.0;
+
+            Measurement start = Measurements.FindBoatAtY(MAGIC_JUST_PAST_55s); 
+            Measurement exit = Measurements.FindHandleAtY(Course.PreGates[3].Y);
+
+            if (start == null)
+            {
+                Logger.Log("Unable to find boat at 55s, returning start time as 0 seconds.");
+                time.Start = 0;
+            }
+            else
+            {
+                time.Start = GetSecondsFromStart(start);
+            }
+
+            if (exit == null)
+            {
+                Logger.Log("Unable to find exit, returning a default duration.");
+                double totalDuration = GetSecondsFromStart(Measurements.Last());
+
+                if (totalDuration >= (time.Start + DEFAULT_DURATION))
+                    time.Duration = DEFAULT_DURATION;
+                else
+                    time.Duration = totalDuration - time.Start;
+            }
+            else
+            {
+                double exitDuration = GetSecondsFromStart(exit);
+                time.Duration = exitDuration - time.Start;
+            }
+
+            return time;
+        }
+
         public double GetSecondsAtEntry()
         {
             return GetSecondsFromStart(this.Entry);
-        }
-
-        public double GetDurationSeconds()
-        {
-            if (this.Exit == null)
-                return 0.0d;
-            
-            double start = GetSecondsAtEntry();
-            double duration = this.Exit.Timestamp.Subtract(
-                this.Entry.Timestamp).TotalSeconds;
-
-            return duration;
-        }
-
-        public double GetTotalSeconds()
-        {
-            int count = Measurements.Count-1;
-            return GetSecondsFromStart(this.Measurements[count]);
         }
 
         private double GetSecondsFromStart(Measurement measurement)
@@ -188,6 +210,6 @@ namespace SlalomTracker
             if (fromStart != null)
                 seconds = fromStart.TotalSeconds;
             return seconds;
-        }
+        }        
     }
 }

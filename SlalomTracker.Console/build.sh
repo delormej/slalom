@@ -5,7 +5,7 @@
 # This will get the latest short commit hash: $(git rev-parse --short HEAD)
 if [ -z "$VERSION" ]
 then 
-    VERSION=$(git describe --abbrev=0 --tag)
+    VERSION=$(git describe --abbrev=1 --tags)
 fi
 container=skiconsole:v$VERSION
 

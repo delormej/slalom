@@ -42,20 +42,10 @@ namespace SlalomTracker
             return outputPath;
         }
 
-        public async Task<string> TrimAndSilenceVideoAsync(double start, double duration, double total)
-        {
-            if (start > 0 && duration == 0.0d)
-            {
-                // Likely a crash or didn't exit course, grab 15 seconds or less of the video.
-                if (total > (start + 15.0d))
-                    duration = 15.0d;                    
-                else
-                    duration = (total - start);
-            }
-                
+        public async Task<string> TrimAndSilenceVideoAsync(double start, double duration)
+        {               
             if (duration > 0.0d)
             {
-                duration += 5.0; /* pad 5 seconds more */
                 Logger.Log(
                     $"Trimming {_localVideoPath} from {start} seconds for {duration} seconds.");     
 
@@ -74,7 +64,7 @@ namespace SlalomTracker
             else
             {
                 throw new ApplicationException(
-                    $"Start ({start}) and duration ({duration}) invalid for video: {_localVideoPath}.  Total duration {total} seconds.");
+                    $"Start ({start}) and duration ({duration}) invalid for video: {_localVideoPath}.");
             }
         }
 

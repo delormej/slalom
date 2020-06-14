@@ -37,5 +37,17 @@ namespace SlalomTracker
             return match;
         }
 
+        public static Measurement FindBoatAtY(this IEnumerable<Measurement> measurements, double y)
+        {
+            const double tolerance_m = 1.5;
+            double start = y;
+            double end = start + tolerance_m; 
+            var match = measurements.Where(m => 
+                m.BoatPosition.Y >= start
+                && m.BoatPosition.Y < end )
+            .FirstOrDefault();
+
+            return match;            
+        }
     }
 }

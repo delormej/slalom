@@ -15,7 +15,7 @@ namespace SlalomTracker.Video
         string _json;
         DateTime _creationTime;
         VideoProcessedNotifier _processedNotifer;
-        VideoTime _timeOverrides = null;
+        VideoTime _videoTime = null;
 
         public SkiVideoProcessor(string videoUrl)
         {
@@ -39,12 +39,19 @@ namespace SlalomTracker.Video
                 
                 await Task.WhenAll(download, timeOverride);
                 _localVideoPath = download.Result;
-                _timeOverrides = timeOverride.Result;
+                _videoTime = timeOverride.Result;
                 
                 _videoTasks = new VideoTasks(_localVideoPath);
 
                 var getCreationTime = GetCreationTimeAsync(); 
                 CoursePass pass = await CreateCoursePassAsync();
+                
+                //
+                // TODO: Video time is global, but pass is local to this loop..
+                // need to deal with this.
+                //
+                if (_videoTime == null)
+                    _videoTime = pass.GetVideoTime();
 
                 do {
                     var createThumbnail = CreateThumbnailAsync(pass); 
@@ -90,15 +97,8 @@ namespace SlalomTracker.Video
 
         private async Task<string> CreateThumbnailAsync(CoursePass pass)
         {  
-            Logger.Log($"Creating Thumbnail for video {_sourceVideoUrl}...");
-            
-            double thumbnailAtSeconds = 0;
-            if (_timeOverrides != null)
-                thumbnailAtSeconds = _timeOverrides.Start;
-            else if (pass != null)
-                thumbnailAtSeconds = pass.GetSecondsAtEntry();
-            
-            string localThumbnailPath = await _videoTasks.GetThumbnailAsync(thumbnailAtSeconds);
+            Logger.Log($"Creating Thumbnail for video {_sourceVideoUrl}...");           
+            string localThumbnailPath = await _videoTasks.GetThumbnailAsync(_videoTime.Start);
             Logger.Log($"Thumbnail created at {localThumbnailPath}");
             
             return localThumbnailPath;
@@ -108,26 +108,12 @@ namespace SlalomTracker.Video
         {
             Logger.Log($"Trimming and silencing video {_sourceVideoUrl}...");
 
-            double start = 0, duration = 0, total = 0;
-            if (_timeOverrides != null)
-            {
-                start = _timeOverrides.Start;
-                duration = _timeOverrides.Duration;
-                total = start + duration;
-            }
-            else
-            {
-                if (pass == null)
-                    throw new ApplicationException(
-                        "CoursePass was not found and no pass overrides were available for " +
-                        $"{_sourceVideoUrl}");
-
-                start = pass.GetSecondsAtEntry();
-                duration = pass.GetDurationSeconds();
-                total = pass.GetTotalSeconds();
-            }
+            if (pass == null)
+                throw new ApplicationException(
+                    "CoursePass was not found and no pass overrides were available for " +
+                    $"{_sourceVideoUrl}");
             
-            return _videoTasks.TrimAndSilenceVideoAsync(start, duration, total); 
+            return _videoTasks.TrimAndSilenceVideoAsync(_videoTime.Start, _videoTime.Duration); 
         }
 
         private async Task<string> UploadThumbnailAsync(Task<string> createThumbnail, Task getCreationTime)
