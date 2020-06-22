@@ -28,7 +28,25 @@ namespace SlalomTracker
                 foreach (Course course in _knownCourses)
                 {
                     if (course.IsBoatInEntry(m.BoatGeoCoordinate))
-                        return course;
+                    {
+                        const int skipCount = 100;
+                        // Ensure that the direction of travel matches Entry -> Exit.
+                        int current = measurements.IndexOf(m);
+                        if (measurements.Count > current + skipCount)
+                        {
+                            Measurement nextM = measurements[current + skipCount];
+                            double boatHeading = Util.GetHeading(m.BoatGeoCoordinate, nextM.BoatGeoCoordinate);
+                            double courseHeading = course.GetCourseHeadingDeg();
+
+                            // within some tolerance
+                            const double tolerance = 15.0;
+                            if (boatHeading - tolerance <= courseHeading &&
+                                boatHeading + tolerance >= courseHeading)
+                            {
+                                return course;
+                            }
+                        }
+                    }
                 }
             }
 
