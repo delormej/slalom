@@ -31,7 +31,7 @@ docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
 docker run --rm --name ski-web -p 80:80 -it \
     -e SKIBLOBS='$SKIBLOBS' \
     -e SKISB='$SKISB' \
-    -e SKISIGNALR='$SKISIGNALR' \
+    -e SKISIGNALR="$SKISIGNALR" \
     -e SKIJOBS_SERVICE="$SKIJOBS_SERVICE" \
     -e Logging__LogLevel__Default="Debug" \
     $container 
