@@ -29,7 +29,7 @@ namespace SlalomTracker
                 {
                     if (course.IsBoatInEntry(m.BoatGeoCoordinate))
                     {
-                        const int skipCount = 100;
+                        const int skipCount = 20;
                         // Ensure that the direction of travel matches Entry -> Exit.
                         int current = measurements.IndexOf(m);
                         if (measurements.Count > current + skipCount)
@@ -88,14 +88,15 @@ namespace SlalomTracker
         // These functions below should not be needed if we can load from Azure Storage table.
         //
 
-        public GeoCoordinate GetNewCoordinates(string courseName,
+        public GeoCoordinate[] GetNew55Coordinates(string courseName,
             double meters, double heading)
         {
             Course course = ByName(courseName);
             if (course == null)
                 throw new ApplicationException($"Unable to find course named {courseName}");
-            GeoCoordinate newCoord = Util.MoveTo(course.Course55EntryCL, meters, heading);
-            return newCoord;
+            GeoCoordinate newEntry = Util.MoveTo(course.Course55EntryCL, meters, heading);
+            GeoCoordinate newExit = Util.MoveTo(course.Course55ExitCL, meters, heading);
+            return new GeoCoordinate[] { newEntry, newExit };
         }
     }
 }
