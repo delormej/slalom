@@ -149,7 +149,11 @@ namespace SkiConsole
             else if (args[0] == "--combine" && args.Length > 2)
             {
                 CombineVideosAsync(args[1], args[2]).Wait();
-            }            
+            }      
+            else if (args[0] == "--courses")
+            {
+                PrintCourses(args);
+            }
             else
                 ShowUsage();
         }
@@ -383,8 +387,9 @@ namespace SkiConsole
         {
             Console.WriteLine($"Moving {courseName} by {meters}m @ {heading} degrees.");
             KnownCourses courses = new KnownCourses();
-            var coords = courses.GetNewCoordinates(courseName, meters, heading);
-            Console.WriteLine($"Lat: {coords.Latitude}, Lon: {coords.Longitude}");
+            var coords = courses.GetNew55Coordinates(courseName, meters, heading);
+            Console.WriteLine($"course55Entry={coords[0].Latitude},{coords[0].Longitude}");
+            Console.WriteLine($"course55Exit={coords[1].Latitude},{coords[1].Longitude}");
         }
 
         private static void GoogleStorageOperations(string[] args)
@@ -453,6 +458,7 @@ namespace SkiConsole
             GoogleStorage gstore = new GoogleStorage();
             float size = await gstore.GetBucketSizeAsync();
             Console.WriteLine($"Total bucket size is {size:0,0.0} MiB");
+            ListLargest();
         }
 
         private static async Task<int> DeleteOldestAsync(int count)
@@ -480,6 +486,35 @@ namespace SkiConsole
                     .Where(v => !string.IsNullOrWhiteSpace(v.HotUrl) && v.Starred != true)
                     .Take(count);
             }                    
+        }
+
+        private static async Task<int> DeleteLargestAsync(int count)
+        {
+            int deleted = 0;
+            GoogleStorage gstore = new GoogleStorage();
+            Storage storage = new Storage();
+            var videos = await LoadVideosAsync();
+            var largest = gstore.GetLargest().Take(Math.Abs(count));
+
+            foreach (var large in largest)
+            {
+                SkiVideoEntity video = videos.Single(v => v.HotUrl == gstore.BaseUrl + large.Name);
+                if (!video.Starred)
+                {
+                    await DeleteGoogleVideoAsync(gstore, storage, video);
+                    deleted++;
+                }
+            }
+
+            return deleted;
+        }
+
+        private static void ListLargest()
+        {
+            GoogleStorage gstore = new GoogleStorage();
+            var largest = gstore.GetLargest();
+            foreach (var o in largest)
+                System.Console.WriteLine("{0}, {1:,0.0}", o.Name, (o.Size / 1024F*1024F));
         }
 
         private static async Task DeleteGoogleVideoAsync(GoogleStorage gstore, Storage storage, SkiVideoEntity video)

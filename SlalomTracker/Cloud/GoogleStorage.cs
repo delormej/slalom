@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Google.Cloud.Storage.V1;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace SlalomTracker.Cloud
 {
@@ -49,6 +50,16 @@ namespace SlalomTracker.Cloud
             });
         }        
 
+        public IEnumerable<GoogleStorageObject> GetLargest()
+        {
+            var list = _storage.ListObjects(BucketName);
+            var objects = list.OrderByDescending(o => o.Size)
+                .Select(o => 
+                    new GoogleStorageObject() { Name = o.Name, Size = o.Size }
+                );
+            return objects;
+        }                
+
         public Task DeleteAsync(string videoUrl)
         {
             return Task.Run(() => 
@@ -59,6 +70,12 @@ namespace SlalomTracker.Cloud
         private string GetObjectName(string videoUrl)
         {
             return videoUrl.Replace(BaseUrl, "");
+        }
+
+        public class GoogleStorageObject
+        {
+            public string Name;
+            public ulong? Size;
         }
     }
 }
