@@ -32,6 +32,7 @@ namespace SlalomTracker
             DrawVersion();
             DrawCourseSpeed();
             DrawRopeLength();
+            DrawCenterLineOffset();
 
             //DrawCourseBounds(_pass.Course.Polygon, Color.CadetBlue);
             DrawCourseBounds(_pass.Course.EntryPolygon, Color.Green);
@@ -123,6 +124,14 @@ namespace SlalomTracker
             _graphics.DrawString(speed, font, Brushes.Green, point);
         }
 
+        private void DrawCenterLineOffset()
+        {
+            string clOffset = $"CL Offset: {Math.Round(_pass.CenterLineDegreeOffset,2)}";
+            Font font = new Font(FontFamily.GenericMonospace, 12);
+
+            PointF point = new PointF(5,72);
+            _graphics.DrawString(clOffset, font, Brushes.Green, point);
+        }
 
         private void DrawCourseBounds(List<GeoCoordinate> list, Color color)
         {
