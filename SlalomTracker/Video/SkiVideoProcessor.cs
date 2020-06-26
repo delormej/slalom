@@ -40,7 +40,7 @@ namespace SlalomTracker.Video
 
                 _localVideoPath = download.Result;
                 VideoTime videoTime = timeOverride.Result;
-                bool hasTimeOverride = !timeOverride.IsFaulted;
+                bool hasTimeOverride = videoTime != null;
 
                 _videoTasks = new VideoTasks(_localVideoPath);
 
