@@ -158,12 +158,16 @@ namespace SlalomTracker
             return Math.Sqrt(dEntry + dExit);
         }
 
+        /// <summary>
+        /// Returns a struct that represents the time since the begining of video in fractional seconds
+        /// when the boat first goes through the 55s and how long until it goes through exit 55s.
+        /// </summary>
         public VideoTime GetVideoTime()
         {
             VideoTime time = new VideoTime();
 
             const double MAGIC_JUST_PAST_55s = 0.1;   // Has to be > 0
-            const double DEFAULT_DURATION = 25.0;
+            const double DEFAULT_DURATION = 30.0;
 
             Measurement start = Measurements.FindBoatAtY(MAGIC_JUST_PAST_55s); 
             Measurement exit = Measurements.FindHandleAtY(Course.PreGates[3].Y);
@@ -175,24 +179,22 @@ namespace SlalomTracker
             }
             else
             {
-                time.Start = GetSecondsFromStart(start);
+                // Hack to get the total seconds.
+                time.Start = new TimeSpan(start.Timestamp.Ticks).TotalSeconds;
             }
 
             if (exit == null)
             {
-                Logger.Log("Unable to find exit, returning a default duration.");
-                double totalDuration = GetSecondsFromStart(Measurements.Last());
-
-                if (totalDuration >= (time.Start + DEFAULT_DURATION))
-                    time.Duration = DEFAULT_DURATION;
-                else
-                    time.Duration = totalDuration - time.Start;
+                Logger.Log("Unable to find exit, will use last measurement or default.");
+                time.Duration = GetSecondsFromStart(Measurements.Last());
             }
             else
             {
-                double exitDuration = GetSecondsFromStart(exit);
-                time.Duration = exitDuration - time.Start;
+                time.Duration = exit.Timestamp.Subtract(start.Timestamp).TotalSeconds;
             }
+
+            if (time.Duration > DEFAULT_DURATION)
+                time.Duration = DEFAULT_DURATION;
 
             return time;
         }
