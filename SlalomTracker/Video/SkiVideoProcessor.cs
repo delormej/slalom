@@ -60,7 +60,8 @@ namespace SlalomTracker.Video
                     var uploadVideo = UploadVideoAsync(trimAndSilence, getCreationTime);
                     var uploadHotVideo = UploadGoogleVideoAsync(trimAndSilence, getCreationTime);
                     
-                    await FitCenterLineAsync(pass);
+                    // Some challenges with fit right now, so avoid till resolved.
+                    // await FitCenterLineAsync(pass);
                     await CreateAndUploadMetadataAsync(
                         pass,
                         uploadThumbnail,
