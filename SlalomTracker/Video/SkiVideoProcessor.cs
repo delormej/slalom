@@ -15,7 +15,6 @@ namespace SlalomTracker.Video
         string _json;
         DateTime _creationTime;
         VideoProcessedNotifier _processedNotifer;
-        VideoTime _videoTime = null;
 
         public SkiVideoProcessor(string videoUrl)
         {
@@ -38,25 +37,23 @@ namespace SlalomTracker.Video
                 var timeOverride = GetPassOverrideAsync();
                 
                 await Task.WhenAll(download, timeOverride);
+
                 _localVideoPath = download.Result;
-                _videoTime = timeOverride.Result;
-                
+                VideoTime videoTime = timeOverride.Result;
+                bool hasTimeOverride = !timeOverride.IsFaulted;
+
                 _videoTasks = new VideoTasks(_localVideoPath);
 
                 var getCreationTime = GetCreationTimeAsync(); 
                 CoursePass pass = await CreateCoursePassAsync();
                 
-                //
-                // TODO: Video time is global, but pass is local to this loop..
-                // need to deal with this.
-                //
-                if (_videoTime == null)
-                    _videoTime = pass.GetVideoTime();
-
                 do {
-                    var createThumbnail = CreateThumbnailAsync(pass); 
+                    if (!hasTimeOverride)
+                        videoTime = pass.GetVideoTime();
+
+                    var createThumbnail = CreateThumbnailAsync(pass, videoTime.Start); 
                     var uploadThumbnail = UploadThumbnailAsync(createThumbnail, getCreationTime);
-                    var trimAndSilence = TrimAndSilenceAsync(pass); 
+                    var trimAndSilence = TrimAndSilenceAsync(pass, videoTime); 
                     var uploadVideo = UploadVideoAsync(trimAndSilence, getCreationTime);
                     var uploadHotVideo = UploadGoogleVideoAsync(trimAndSilence, getCreationTime);
                     
@@ -68,7 +65,7 @@ namespace SlalomTracker.Video
                         uploadVideo,
                         uploadHotVideo
                     );
-                } while ((pass = HasAnotherPass(in pass)) != null);
+                } while (!hasTimeOverride && (pass = HasAnotherPass(in pass)) != null);
 
                 DeleteIngestVideo();
             }
@@ -96,16 +93,16 @@ namespace SlalomTracker.Video
             Logger.Log($"Creation time is {_creationTime}");
         }
 
-        private async Task<string> CreateThumbnailAsync(CoursePass pass)
+        private async Task<string> CreateThumbnailAsync(CoursePass pass, double atSeconds)
         {  
             Logger.Log($"Creating Thumbnail for video {_sourceVideoUrl}...");           
-            string localThumbnailPath = await _videoTasks.GetThumbnailAsync(_videoTime.Start);
+            string localThumbnailPath = await _videoTasks.GetThumbnailAsync(atSeconds);
             Logger.Log($"Thumbnail created at {localThumbnailPath}");
             
             return localThumbnailPath;
         }
 
-        private Task<string> TrimAndSilenceAsync(CoursePass pass)
+        private Task<string> TrimAndSilenceAsync(CoursePass pass, VideoTime videoTime)
         {
             Logger.Log($"Trimming and silencing video {_sourceVideoUrl}...");
 
@@ -114,7 +111,7 @@ namespace SlalomTracker.Video
                     "CoursePass was not found and no pass overrides were available for " +
                     $"{_sourceVideoUrl}");
             
-            return _videoTasks.TrimAndSilenceVideoAsync(_videoTime.Start, _videoTime.Duration); 
+            return _videoTasks.TrimAndSilenceVideoAsync(videoTime.Start, videoTime.Duration); 
         }
 
         private async Task<string> UploadThumbnailAsync(Task<string> createThumbnail, Task getCreationTime)
