@@ -25,6 +25,12 @@ namespace SlalomTracker
         public GeoCoordinate BoatGeoCoordinate { get; set; }
 
         /// <summary>
+        /// GPS Precision, under 500 is good.
+        /// </summary>
+        /// https://github.com/gopro/gpmf-parser
+        public double GpsAccuracy { get; set; }
+
+        /// <summary>
         /// Indicates whether boat is in the course or not.
         /// </summary>
         public bool InCourse { get; set; }

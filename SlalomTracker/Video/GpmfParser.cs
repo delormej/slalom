@@ -18,6 +18,7 @@ namespace MetadataExtractor
         const string GPMFEXE = "gpmfdemo";
         const string GYRO = "GYRO";
         const string GPS = "GPS5";
+        const string GPSP = "GPSP";
         const string TIME = "TIME";
         const double gpsHz = 18; // GPS5 18.169 Hz
         const double gyroHz = 399;  // GYRO 403.846 Hz
@@ -38,6 +39,7 @@ namespace MetadataExtractor
         DateTime initialTime = DateTime.MinValue;
         int currentGpsCount, currentGyroCount;
         double start, accumZ;
+        double gpsAccuracy = 0.0;
 
         public List<Measurement> LoadFromMp4(string mp4Path)
         {
@@ -68,6 +70,10 @@ namespace MetadataExtractor
                     {
                         ProcessGps(row);
                     }
+                    else if (rowLabel == GPSP)
+                    {
+                        ProcessGpsPrecision(row);   
+                    }                    
                     else if (rowLabel == GYRO)
                     {
                         ProcessGyro(row);
@@ -107,9 +113,20 @@ namespace MetadataExtractor
                 double.Parse(GetColumn(row, Column.Lat)),
                 double.Parse(GetColumn(row, Column.Lon)));
             m.BoatSpeedMps = double.Parse(GetColumn(row, Column.Speed));
+            m.GpsAccuracy = gpsAccuracy;
             measurements.Add(m);
 
             currentGpsCount++;
+        }
+
+        /// <summary>
+        /// Process GPS Precision
+        /// </summary>
+        /// <param name="row"></param>
+        private void ProcessGpsPrecision(string[] row)
+        {
+            if (row.Length > 2)
+                double.TryParse(row[1], out gpsAccuracy);
         }
 
         /// <summary>
