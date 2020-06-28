@@ -25,6 +25,10 @@ namespace SlalomTracker
         {
             foreach (var m in measurements)
             {
+                // Skip if accuracy is not under 500.
+                if (m.GpsAccuracy > 500.0) 
+                    continue;
+
                 foreach (Course course in _knownCourses)
                 {
                     if (course.IsBoatInEntry(m.BoatGeoCoordinate))
