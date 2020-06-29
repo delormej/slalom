@@ -134,10 +134,19 @@ namespace SlalomTracker.Video
         {
             await getCreationTime; // Ensure creation time has been generated.
             string processedVideoPath = await trimAndSilence;
+            string videoUrl = null;
 
-            Logger.Log($"Uploading video {processedVideoPath}...");
-            string videoUrl = _storage.UploadVideo(processedVideoPath, _creationTime);
-            Logger.Log($"Video uploaded to {videoUrl}");
+            try 
+            {
+                Logger.Log($"Uploading video {processedVideoPath}...");
+                videoUrl = _storage.UploadVideo(processedVideoPath, _creationTime);
+                Logger.Log($"Video uploaded to {videoUrl}");
+            }
+            catch (Exception e)
+            {
+                Logger.Log($"Unable to upload {processedVideoPath} to Azure.", e);
+            }
+
             return videoUrl;
         }
 
