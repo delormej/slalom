@@ -21,7 +21,6 @@ echo "Building container::$container"
 echo "Building container."
 docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
     --build-arg VERSION=$VERSION \
-    --target build \
     --force-rm \
     -f ./SlalomTracker.Console/Dockerfile .
 #
@@ -31,20 +30,21 @@ docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
 #
 #
 # Launch container
-# env variable skiblobs still not working...
+#
 docker run -it --rm \
     -v "$PWD":/shared \
     -e SKIBLOBS="$SKIBLOBS" \
     -e SKISB="$SKISB" \
     -e SKIMLKEY="$SKIMLKEY" \
     -e GOOGLE_APPLICATION_CREDENTIALS="/ski/gcloud.json" \
+    -e GITHUB_TOKEN="$GITHUB_TOKEN" \
     --name ski-console \
     --cpus="2.0" \
     $container
 
 # az acr login -n wthacr
-# docker tag $container wthacr.azurecr.io/$container
-# docker push wthacr.azurecr.io/$container
+docker tag $container wthacr.azurecr.io/$container
+docker push wthacr.azurecr.io/$container
 
 #
 # Script to get message counts from Service Bus

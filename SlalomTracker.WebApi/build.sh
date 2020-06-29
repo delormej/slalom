@@ -28,9 +28,10 @@ docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
 #
 # Launch debug container... not logging level overridden below to "Info"
 #
-docker run --rm --name ski-web -p 80:80 -it \
-    -e SKIBLOBS='$SKIBLOBS' \
-    -e SKISB='$SKISB' \
+docker run --rm --name ski-web -p 5000:5000 -it \
+    -e PORT=5000 \
+    -e SKIBLOBS="$SKIBLOBS" \
+    -e SKISB="$SKISB" \
     -e SKISIGNALR="$SKISIGNALR" \
     -e SKIJOBS_SERVICE="$SKIJOBS_SERVICE" \
     -e Logging__LogLevel__Default="Debug" \

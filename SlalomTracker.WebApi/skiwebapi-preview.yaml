@@ -5,7 +5,7 @@ metadata:
   labels:
     app: skiwebapi-preview
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: skiwebapi-preview
@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: skiwebapi-preview
-        image: wthacr.azurecr.io/skiwebapi:v2.5.8.1
+        image: wthacr.azurecr.io/skiwebapi:v2.6.1
         imagePullPolicy: Always
         env:
         - name: PORT
