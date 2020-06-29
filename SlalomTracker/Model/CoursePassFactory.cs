@@ -240,10 +240,14 @@ namespace SlalomTracker
                 if (previous.InCourse == false)
                     pass.Entry = current;
             }
-            else if (previous.InCourse && current.BoatPosition.Y >= Course.Gates[3].Y)
+            else if (previous.InCourse)
             {
-                current.InCourse = false;
-                pass.Exit = current;
+                if (current.BoatPosition.Y >= Course.Gates[3].Y || 
+                        IsWrongDirection(measurements, i))
+                {
+                    current.InCourse = false;
+                    pass.Exit = current;
+                }
             }
             else
             {
@@ -295,7 +299,24 @@ namespace SlalomTracker
 
             double speedMps = distance / duration.TotalSeconds;
             pass.AverageBoatSpeed = Math.Round(speedMps * CoursePass.MPS_TO_MPH, 1);
-        }        
+        }
+        
+        private bool IsWrongDirection(List<Measurement> measurements, int i)
+        {
+            // Avoid data errors, but going back some # of measurements.
+            const int THRESHOLD = 5;
+            bool wrongDirection = false;
+            
+            if (i > THRESHOLD)
+            {
+                double previousY = measurements[i - THRESHOLD].BoatPosition.Y;
+                double currentY = measurements[i].BoatPosition.Y;
+                // Current Y should be greater if we're travelling in the right direction.
+                wrongDirection = (previousY > currentY);
+            }
+
+            return wrongDirection;
+        }
 
         private double AverageRopeSwingSpeedRadS(List<Measurement> measurements, int index)
         {
