@@ -47,6 +47,9 @@ namespace SlalomTracker.Video
                 var getCreationTime = GetCreationTimeAsync(); 
                 CoursePass pass = await CreateCoursePassAsync();
                 
+                if (!hasTimeOverride && pass == null)
+                    throw new ApplicationException($"No time override and no course pass found in {_localVideoPath}");
+
                 do {
                     if (!hasTimeOverride)
                         videoTime = pass.GetVideoTime();

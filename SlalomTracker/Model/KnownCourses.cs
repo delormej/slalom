@@ -3,6 +3,7 @@ using System.Linq;
 using GeoCoordinatePortable;
 using System.Collections.Generic;
 using SlalomTracker.Cloud;
+using Logger = jasondel.Tools.Logger;
 
 namespace SlalomTracker
 {
@@ -23,11 +24,15 @@ namespace SlalomTracker
 
         public Course FindCourse(List<Measurement> measurements)
         {
+            int gpsInaccuracyCount = 0;
             foreach (var m in measurements)
             {
                 // Skip if accuracy is not under 500.
                 if (m.GpsAccuracy > 500.0) 
+                {
+                    gpsInaccuracyCount++;
                     continue;
+                }
 
                 foreach (Course course in _knownCourses)
                 {
@@ -54,6 +59,7 @@ namespace SlalomTracker
                 }
             }
 
+            Logger.Log($"No course found: {gpsInaccuracyCount} inaccurate of total {measurements.Count()} measurements.");          
             return null;
         }
 
