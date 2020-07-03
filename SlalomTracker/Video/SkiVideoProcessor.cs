@@ -54,9 +54,9 @@ namespace SlalomTracker.Video
                     if (!hasTimeOverride)
                         videoTime = pass.GetVideoTime();
 
-                    var createThumbnail = CreateThumbnailAsync(pass, videoTime.Start); 
+                    var createThumbnail = CreateThumbnailAsync(videoTime.Start); 
                     var uploadThumbnail = UploadThumbnailAsync(createThumbnail, getCreationTime);
-                    var trimAndSilence = TrimAndSilenceAsync(pass, videoTime); 
+                    var trimAndSilence = TrimAndSilenceAsync(videoTime); 
                     var uploadVideo = UploadVideoAsync(trimAndSilence, getCreationTime);
                     var uploadHotVideo = UploadGoogleVideoAsync(trimAndSilence, getCreationTime);
                     
@@ -96,7 +96,7 @@ namespace SlalomTracker.Video
             Logger.Log($"Creation time is {_creationTime}");
         }
 
-        private async Task<string> CreateThumbnailAsync(CoursePass pass, double atSeconds)
+        private async Task<string> CreateThumbnailAsync(double atSeconds)
         {  
             Logger.Log($"Creating Thumbnail for video {_sourceVideoUrl}...");           
             string localThumbnailPath = await _videoTasks.GetThumbnailAsync(atSeconds);
@@ -105,15 +105,9 @@ namespace SlalomTracker.Video
             return localThumbnailPath;
         }
 
-        private Task<string> TrimAndSilenceAsync(CoursePass pass, VideoTime videoTime)
+        private Task<string> TrimAndSilenceAsync(VideoTime videoTime)
         {
-            Logger.Log($"Trimming and silencing video {_sourceVideoUrl}...");
-
-            if (pass == null)
-                throw new ApplicationException(
-                    "CoursePass was not found and no pass overrides were available for " +
-                    $"{_sourceVideoUrl}");
-            
+            Logger.Log($"Trimming and silencing video {_sourceVideoUrl}...");           
             return _videoTasks.TrimAndSilenceVideoAsync(videoTime.Start, videoTime.Duration); 
         }
 
