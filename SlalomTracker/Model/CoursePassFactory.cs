@@ -112,7 +112,11 @@ namespace SlalomTracker
             
             var measurements = Measurement.DeserializeMeasurements(_json);
             List<Measurement> nextMeasurements = GetNextPassMeasurements(exit, measurements);
-            return CreatePass(nextMeasurements);
+
+            if (nextMeasurements?.Count() > 0)
+                return CreatePass(nextMeasurements);
+            else
+                return null;
         }
 
         private List<Measurement> GetNextPassMeasurements(
