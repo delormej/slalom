@@ -12,15 +12,22 @@ namespace SlalomTracker
     /// </summary>
     public class CoursePass
     {
+        private VideoTime m_time;
         private Measurement m_courseEntry;
         private Measurement m_courseExit;
 
+        /// <summary>
+        /// First measurement at the 55 entry to the course, NOT actual course entry gates.
+        /// </summary>
         public Measurement Entry 
         { 
             get { return m_courseEntry; } 
             internal set { m_courseEntry = value;} 
         }
-        
+
+        /// <summary>
+        /// First measurement at the 55 exit of the course, NOT actual course exit gates.
+        /// </summary>
         public Measurement Exit 
         { 
             get { return m_courseExit; } 
@@ -57,44 +64,6 @@ namespace SlalomTracker
             Measurements = new List<Measurement>();
         }
 
-        /// <summary>
-        /// From the rope's compass heading (degress) and the heading from the center line
-        /// straight through the course, determines the starting angle of the rope for which
-        /// all rope position calculations will be based on.
-        /// </summary>
-        /// <remarks>
-        /// This is required because all rope swing events are reported in radians per second, 
-        /// each event is an indication of the direction and speed the rope is swinging, but
-        /// without calibration we don't know where centerline started. 
-        /// 
-        /// A headingDeg 0 inidicates a manual calibration with the rope directly behind the
-        /// boat on the center line.
-        /// </remarks>
-        /// <param name="heading"></param>
-        public void CalibrateRopeAngle(double headingDeg)
-        {
-            // Requires the caller to get the heading from the device.
-
-            if (headingDeg != 0)
-            {
-                throw new NotImplementedException("CalibrateRopeAngle not yet implemented.");
-            }
-
-            CenterLineDegreeOffset = 0;
-        }
-
-        public double GetRopeArcLength(Measurement current, Measurement previous)
-        {
-            // Calculate linear distance from previous.X,Y (A) to current.X,Y (B)
-            // In the center, draw a perpendicular line to a point Y away (C)
-            // Create a triangle between A->C, C->B
-            // Calculate the angle at C
-
-            double distance = current.BoatPosition.X - previous.BoatPosition.X;
-            double angleDelta = Math.Abs(current.RopeAngleDegrees - previous.RopeAngleDegrees);
-            return GetRopeArcLength(distance, Rope.LengthM, angleDelta);
-        }
-
         public double GetRopeArcLength(double boatDistance, double ropeLengthM, double angleDelta)
         {
             double radius = ropeLengthM;
@@ -123,7 +92,10 @@ namespace SlalomTracker
         /// </summary>
         public VideoTime GetVideoTime()
         {
-            VideoTime time = new VideoTime();
+            if (m_time != null)
+                return m_time;
+            
+            m_time = new VideoTime();
 
             const double DEFAULT_DURATION = 30.0;
             const double GATE_OFFSET_SECONDS = 1.0;
@@ -131,18 +103,18 @@ namespace SlalomTracker
             if (Entry == null)
             {
                 Logger.Log("Unable to find boat at 55s, returning start time as 0 seconds.");
-                time.Start = 0;
+                m_time.Start = 0;
             }
             else
             {
-                time.Start = Entry.Timestamp.TimeOfDay.TotalSeconds >= GATE_OFFSET_SECONDS ? 
+                m_time.Start = Entry.Timestamp.TimeOfDay.TotalSeconds >= GATE_OFFSET_SECONDS ? 
                     Entry.Timestamp.TimeOfDay.TotalSeconds - GATE_OFFSET_SECONDS : 0;
             }
 
             if (Exit == null)
             {
                 Logger.Log("Unable to find exit, will use last measurement or default.");
-                time.Duration = GetSecondsFromStart(Measurements.Last());
+                m_time.Duration = GetSecondsFromEntry(Measurements.Last());
             }
             else
             {
@@ -150,25 +122,28 @@ namespace SlalomTracker
                 if (exitSeconds > Measurements.Last().Timestamp.TimeOfDay.TotalSeconds)
                     exitSeconds = Measurements.Last().Timestamp.TimeOfDay.TotalSeconds;
 
-                time.Duration = exitSeconds - time.Start;
+                m_time.Duration = exitSeconds - m_time.Start;
             }
 
-            if (time.Duration > DEFAULT_DURATION)
-                time.Duration = DEFAULT_DURATION;
+            if (m_time.Duration > DEFAULT_DURATION)
+                m_time.Duration = DEFAULT_DURATION;
 
-            return time;
+            return m_time;
         }
 
-        public double GetSecondsAtEntry()
+        public double GetSecondsAtEntry55()
         {
-            return GetSecondsFromStart(this.Entry);
+            if (m_time == null)
+                GetVideoTime();
+
+            return m_time.Start;
         }
 
-        private double GetSecondsFromStart(Measurement measurement)
+        private double GetSecondsFromEntry(Measurement measurement)
         {
             double seconds = 0.0d;
             TimeSpan fromStart = measurement.Timestamp.Subtract(
-                this.Measurements[0].Timestamp);
+                Entry.Timestamp);
             if (fromStart != null)
                 seconds = fromStart.TotalSeconds;
             return seconds;

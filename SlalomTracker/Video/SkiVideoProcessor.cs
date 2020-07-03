@@ -286,7 +286,7 @@ namespace SlalomTracker.Video
             {
                 entity.BoatSpeedMph = pass.AverageBoatSpeed;
                 entity.CourseName = pass.Course.Name;
-                entity.EntryTime = pass.GetSecondsAtEntry();     
+                entity.EntryTime = pass.GetSecondsAtEntry55();     
                 entity.RopeLengthM = pass.Rope != null ? pass.Rope.FtOff : 0;
                 entity.CenterLineDegreeOffset = pass.CenterLineDegreeOffset;   
             }
