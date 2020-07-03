@@ -33,7 +33,7 @@ namespace SlalomTracker
         public static CoursePass CreateTestCoursePass()
         {
             CoursePassFactory factory = new CoursePassFactory();
-            return factory.FromFile("./Video/GOPR0194.json");
+            return factory.FromLocalJsonFile("./Video/GOPR0194.json");
         }
 
         public static Course CreateTestCourse()
@@ -93,7 +93,7 @@ namespace SlalomTracker
         public void TestFindCourse()
         {
             CoursePassFactory factory = new CoursePassFactory();
-            CoursePass pass = factory.FromFile("./Video/GOPR0565.json");
+            CoursePass pass = factory.FromLocalJsonFile("./Video/GOPR0565.json");
             List<Measurement> measurements = pass.Measurements;
             Assert.IsNotNull(pass.Course);
         }

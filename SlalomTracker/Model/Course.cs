@@ -22,8 +22,8 @@ namespace SlalomTracker
         
         public string Name { get; set; }
         private List<GeoCoordinate> _polygon;
-        private List<GeoCoordinate> _entryPolygon;
-        private List<GeoCoordinate> _exitPolygon;
+        private List<GeoCoordinate> _entry55Polygon;
+        private List<GeoCoordinate> _exit55Polygon;
 
         /// <summary>
         /// Lat/Long of the pilon as you enter & exit the 55s (pregates) of the course.
@@ -32,8 +32,8 @@ namespace SlalomTracker
         public GeoCoordinate Course55ExitCL { get; set; }
         public string FriendlyName { get; set; }
         public List<GeoCoordinate> Polygon { get { return _polygon; } }
-        public List<GeoCoordinate> EntryPolygon { get { return _entryPolygon; } }
-        public List<GeoCoordinate> ExitPolygon { get { return _exitPolygon; } }
+        public List<GeoCoordinate> Entry55Polygon { get { return _entry55Polygon; } }
+        public List<GeoCoordinate> Exit55Polygon { get { return _exit55Polygon; } }
 
         static Course()
         {
@@ -49,12 +49,56 @@ namespace SlalomTracker
         {
         }
 
-        public Course(GeoCoordinate entry, GeoCoordinate exit)
+        public Course(GeoCoordinate entry55, GeoCoordinate exit55)
         {
-            Course55EntryCL = entry;
-            Course55ExitCL = exit;
+            Course55EntryCL = entry55;
+            Course55ExitCL = exit55;
             GeneratePolygons();
         }
+
+        private delegate bool InPoly(GeoCoordinate geo);
+
+        public Measurement FindEntry55(List<Measurement> measurements)
+        {
+            return FindMeasurement(IsBoatInEntry55, measurements);
+        }
+
+        public Measurement FindExit55(List<Measurement> measurements)
+        {
+            return FindMeasurement(IsBoatInExit55, measurements);
+        }
+
+        private Measurement FindMeasurement(InPoly isBoatIn, List<Measurement> measurements)
+        {
+            Measurement found = null;
+
+            foreach (Measurement m in measurements)
+            {
+                if (isBoatIn(m.BoatGeoCoordinate))
+                {
+                    const int skipCount = 20;
+                    // Ensure that the direction of travel matches Entry -> Exit.
+                    int current = measurements.IndexOf(m);
+                    if (measurements.Count > current + skipCount)
+                    {
+                        Measurement nextM = measurements[current + skipCount];
+                        double boatHeading = Util.GetHeading(m.BoatGeoCoordinate, nextM.BoatGeoCoordinate);
+                        double courseHeading = GetCourseHeadingDeg();
+
+                        // within some tolerance
+                        const double tolerance = 15.0;
+                        if (boatHeading - tolerance <= courseHeading &&
+                            boatHeading + tolerance >= courseHeading)
+                        {
+                            found = m;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return found;
+        }        
 
         /// <summary>
         /// Generates Balls, BoatMarkers, Gates once Course Entry & Exit coordinates are available.
@@ -101,10 +145,9 @@ namespace SlalomTracker
 
         private void GeneratePolygons()
         {
-            //double reverseHeading = (GetCourseHeadingDeg() + 180) % 360;
             _polygon = GetCoursePolygon();
-            _entryPolygon = GetEntryGatePolygon(); //Get55mPolygon(Course55EntryCL, GetCourseHeadingDeg());
-            _exitPolygon = GetExitGatePolygon();//Get55mPolygon(Course55ExitCL, reverseHeading);
+            _entry55Polygon = GetGatePolygon(Course55EntryCL);
+            _exit55Polygon = GetGatePolygon(Course55ExitCL);
         }
 
         /// <summary>
@@ -128,14 +171,18 @@ namespace SlalomTracker
             return poly;
         }
 
-        private List<GeoCoordinate> GetEntryGatePolygon()
+        /// <summary>
+        /// Returns a polygon with reference point in the center of start, 1 meter
+        /// wider on each side and 1 meter past.
+        /// </summary>
+        private List<GeoCoordinate> GetGatePolygon(GeoCoordinate reference)
         {
             double halfWidth = WidthM / 2.0d; 
             double left, right, heading = this.GetCourseHeadingDeg();
             right = (heading + 90 + 360) % 360;
             left = (right + 180) % 360;
             
-            GeoCoordinate GateCL = Util.MoveTo(this.Course55EntryCL, 55.0, heading);
+            GeoCoordinate GateCL = reference;
             GeoCoordinate LeftTop = Util.MoveTo(GateCL, halfWidth, left);
             GeoCoordinate RightTop = Util.MoveTo(GateCL, halfWidth, right);
             GeoCoordinate RightBottom = Util.MoveTo(
@@ -143,33 +190,6 @@ namespace SlalomTracker
                 halfWidth, right);
             GeoCoordinate LeftBottom = Util.MoveTo(
                 Util.MoveTo(GateCL, 1.0, heading),
-                halfWidth, left);
-
-            List<GeoCoordinate> poly = new List<GeoCoordinate>(4);
-            poly.Add(LeftTop);
-            poly.Add(RightTop);
-            poly.Add(RightBottom);
-            poly.Add(LeftBottom);
-
-            return poly;
-        }
-
-        private List<GeoCoordinate> GetExitGatePolygon()
-        {
-            double halfWidth = WidthM / 2.0d; 
-            double left, right;
-            double reverseHeading = (GetCourseHeadingDeg() + 180) % 360;
-            right = (reverseHeading + 90 + 360) % 360;
-            left = (right + 180) % 360;
-            
-            GeoCoordinate GateCL = Util.MoveTo(this.Course55ExitCL, 55.0, reverseHeading);
-            GeoCoordinate LeftTop = Util.MoveTo(GateCL, halfWidth, left);
-            GeoCoordinate RightTop = Util.MoveTo(GateCL, halfWidth, right);
-            GeoCoordinate RightBottom = Util.MoveTo(
-                Util.MoveTo(GateCL, 1.0, reverseHeading),
-                halfWidth, right);
-            GeoCoordinate LeftBottom = Util.MoveTo(
-                Util.MoveTo(GateCL, 1.0, reverseHeading),
                 halfWidth, left);
 
             List<GeoCoordinate> poly = new List<GeoCoordinate>(4);
@@ -182,29 +202,27 @@ namespace SlalomTracker
         }
 
         /// <summary>
-        /// Returns a polygon as wide as the course and 1m long, relative to the reference coordinate.
+        /// Given the boat's position, calculate in the matrix (x,y) relative to the course. 
         /// </summary>
-        private List<GeoCoordinate> Get55mPolygon(GeoCoordinate reference, double heading)
+        /// <param name="boatPosition"></param>
+        /// <returns></returns>
+        public CoursePosition CoursePositionFromGeo(double latitude, double longitude)
         {
-            double left, right;
-            right = (heading + 90 + 360) % 360;
-            left = (right + 180) % 360;
+            return CoursePositionFromGeo(new GeoCoordinate(latitude, longitude));
+        }
 
-            // From the 55's.
-            List<GeoCoordinate> poly = new List<GeoCoordinate>(4);
-            // Create a poly that is 1 meter long, 5 meters wide.
-            
-            // Course entry is 55m from the reference passed in.
-            GeoCoordinate entryCL = Util.MoveTo(reference, 54.5, heading);
-            
-            poly.Add(Util.MoveTo(entryCL, 5.0, left));
-            poly.Add(Util.MoveTo(entryCL, 5.0, right));
-            poly.Add(Util.MoveTo(
-                Util.MoveTo(entryCL, 1.0, heading), 5.0, right));
-            poly.Add(Util.MoveTo(
-                Util.MoveTo(entryCL,  1.0, heading), 5.0, left));
-
-            return poly;
+        /// <summary>
+        /// Given the boat's position, calculate in the matrix (x,y) relative to the course. 
+        /// Where 0,0 is center line of pre-gates.
+        /// </summary>
+        /// <param name="boatPosition"></param>
+        /// <returns></returns>
+        public CoursePosition CoursePositionFromGeo(GeoCoordinate boatPosition)
+        {
+            if (!IsBoatInCourse(boatPosition))
+                return CoursePosition.Empty;
+            else
+                return Util.CoursePositionFromGeo(boatPosition, this);
         }
 
         /// <summary>
@@ -217,14 +235,14 @@ namespace SlalomTracker
             return IsPointInPoly(point, _polygon);
         }
 
-        public bool IsBoatInEntry(GeoCoordinate point)
+        public bool IsBoatInEntry55(GeoCoordinate point)
         {
-            return IsPointInPoly(point, _entryPolygon);
+            return IsPointInPoly(point, _entry55Polygon);
         }
 
-        public bool IsBoatInExit(GeoCoordinate point)
+        public bool IsBoatInExit55(GeoCoordinate point)
         {
-            return IsPointInPoly(point, _exitPolygon);
+            return IsPointInPoly(point, _exit55Polygon);
         }
 
         private bool IsPointInPoly(GeoCoordinate point, List<GeoCoordinate> polygon)

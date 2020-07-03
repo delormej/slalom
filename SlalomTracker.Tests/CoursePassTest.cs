@@ -96,7 +96,7 @@ namespace SlalomTracker
             //42.2867806,"Longitude":-71.3594418 == Chet @ 15 seconds into the GOPR0565.mp4
             // .\slalom\SlalomTracker\Video\MetadataExtractor\GOPR0565.json
             CoursePassFactory factory = new CoursePassFactory();
-            CoursePass pass = factory.FromFile("./Video/GOPR0565.json");
+            CoursePass pass = factory.FromLocalJsonFile("./Video/GOPR0565.json");
             CoursePosition position = pass.CoursePositionFromGeo(42.2867806, -71.3594418);
 
             Assert.IsTrue((int)position.X == 0, "Incorrect course X position.");
@@ -118,7 +118,7 @@ namespace SlalomTracker
         {
             CoursePassFactory factory = new CoursePassFactory();
             factory.RopeLengthOff = 22;
-            CoursePass pass = factory.FromFile("./Video/GOPR0565.json");
+            CoursePass pass = factory.FromLocalJsonFile("./Video/GOPR0565.json");
             CoursePass best = factory.FitPass(pass.Measurements);
             double precision = best.GetGatePrecision();
 

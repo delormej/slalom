@@ -266,9 +266,9 @@ namespace SkiConsole
             factory.Course55Coordinates = coords;
 
             if (jsonPath.StartsWith("http")) 
-                pass = factory.FromUrl(jsonPath);
+                pass = factory.FromJsonUrl(jsonPath);
             else
-                pass = factory.FromFile(jsonPath);
+                pass = factory.FromLocalJsonFile(jsonPath);
 
             if (pass == null)
                 throw new ApplicationException($"Unable to create a pass for {jsonPath}");  
@@ -291,7 +291,7 @@ namespace SkiConsole
 
             CoursePassFactory factory = new CoursePassFactory();
             factory.RopeLengthOff = rope;
-            CoursePass pass = factory.FromUrl(jsonPath);     
+            CoursePass pass = factory.FromJsonUrl(jsonPath);     
             if (pass == null)
                 throw new ApplicationException($"Unable to create a pass for {jsonPath}");    
                      

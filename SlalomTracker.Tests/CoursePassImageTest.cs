@@ -14,7 +14,7 @@ namespace SlalomTracker
             CoursePassFactory factory = new CoursePassFactory();
             factory.RopeLengthOff = 32;
             factory.CenterLineDegreeOffset = 19;
-            CoursePass pass = factory.FromFile("./Video/GOPR0565.json");
+            CoursePass pass = factory.FromLocalJsonFile("./Video/GOPR0565.json");
             CoursePassImage image = new CoursePassImage(pass);
             Bitmap bitmap = image.Draw();
 

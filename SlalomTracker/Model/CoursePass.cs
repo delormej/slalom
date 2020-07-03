@@ -12,9 +12,6 @@ namespace SlalomTracker
     /// </summary>
     public class CoursePass
     {
-        // Flag if the boat pilon entered the course geofenced area.
-        bool m_entered55s; 
-
         private Measurement m_courseEntry;
         private Measurement m_courseExit;
 
@@ -32,12 +29,12 @@ namespace SlalomTracker
 
         public List<Measurement> Measurements;
 
-        public Course Course { get; private set; }
+        public Course Course { get; internal set; }
 
         /// <summary>
         /// Rope length used for the pass.
         /// </summary>
-        public Rope Rope { get; private set; }
+        public Rope Rope { get; internal set; }
 
         /// <summary>
         /// Average boat speed (i.e. 30.4,32.3,34.2,36 mph) for the course.
@@ -52,42 +49,12 @@ namespace SlalomTracker
         /// </summary>
         public double CenterLineDegreeOffset { get; set; }
 
-        public CoursePass(Course course, Rope rope) : this(course, rope, 0)
+        /// <summary>
+        /// Use CoursePassFactory to create CoursePass object.
+        /// </summary>
+        internal CoursePass()
         {
-        }
-
-        public CoursePass(Course course, Rope rope, double CenterLineDegreeOffset)
-        {
-            this.Course = course;
-            this.Rope = rope;
-            this.CenterLineDegreeOffset = CenterLineDegreeOffset;
             Measurements = new List<Measurement>();
-        }
-
-        /// <summary>
-        /// Given the boat's position, calculate in the matrix (x,y) relative to the course. 
-        /// </summary>
-        /// <param name="boatPosition"></param>
-        /// <returns></returns>
-        public CoursePosition CoursePositionFromGeo(double latitude, double longitude)
-        {
-            return CoursePositionFromGeo(new GeoCoordinate(latitude, longitude));
-        }
-
-        /// <summary>
-        /// Given the boat's position, calculate in the matrix (x,y) relative to the course. 
-        /// Where 0,0 is center line of pre-gates.
-        /// </summary>
-        /// <param name="boatPosition"></param>
-        /// <returns></returns>
-        public CoursePosition CoursePositionFromGeo(GeoCoordinate boatPosition)
-        {
-            // TODO: with the exception of this entered check, everything else seems like logic that should live in
-            // the Course class? Evaluate this.
-            if (!m_entered55s)
-                return CoursePosition.Empty;
-            else
-                return Util.CoursePositionFromGeo(boatPosition, Course);
         }
 
         /// <summary>
@@ -114,14 +81,6 @@ namespace SlalomTracker
             }
 
             CenterLineDegreeOffset = 0;
-        }
-
-        public void Track(Measurement current)
-        { 
-            if (!m_entered55s && this.Course.IsBoatInCourse(current.BoatGeoCoordinate))
-                m_entered55s = true;
-                
-            Measurements.Add(current);
         }
 
         public double GetRopeArcLength(Measurement current, Measurement previous)
@@ -166,31 +125,32 @@ namespace SlalomTracker
         {
             VideoTime time = new VideoTime();
 
-            const double MAGIC_JUST_PAST_55s = 0.1;   // Has to be > 0
             const double DEFAULT_DURATION = 30.0;
+            const double GATE_OFFSET_SECONDS = 1.0;
 
-            Measurement start = Measurements.FindBoatAtY(MAGIC_JUST_PAST_55s); 
-            Measurement exit = Measurements.FindHandleAtY(Course.PreGates[3].Y);
-
-            if (start == null)
+            if (Entry == null)
             {
                 Logger.Log("Unable to find boat at 55s, returning start time as 0 seconds.");
                 time.Start = 0;
             }
             else
             {
-                // Hack to get the total seconds.
-                time.Start = new TimeSpan(start.Timestamp.Ticks).TotalSeconds;
+                time.Start = Entry.Timestamp.TimeOfDay.TotalSeconds >= GATE_OFFSET_SECONDS ? 
+                    Entry.Timestamp.TimeOfDay.TotalSeconds - GATE_OFFSET_SECONDS : 0;
             }
 
-            if (exit == null)
+            if (Exit == null)
             {
                 Logger.Log("Unable to find exit, will use last measurement or default.");
                 time.Duration = GetSecondsFromStart(Measurements.Last());
             }
             else
             {
-                time.Duration = exit.Timestamp.Subtract(start.Timestamp).TotalSeconds;
+                double exitSeconds = Exit.Timestamp.TimeOfDay.TotalSeconds + GATE_OFFSET_SECONDS;
+                if (exitSeconds > Measurements.Last().Timestamp.TimeOfDay.TotalSeconds)
+                    exitSeconds = Measurements.Last().Timestamp.TimeOfDay.TotalSeconds;
+
+                time.Duration = exitSeconds - time.Start;
             }
 
             if (time.Duration > DEFAULT_DURATION)

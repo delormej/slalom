@@ -61,14 +61,14 @@ namespace SlalomTracker
             KnownCourses courses = new KnownCourses();
             Course = courses.ByName(video.CourseName);
 
-            return FromUrl(video.JsonUrl);
+            return FromJsonUrl(video.JsonUrl);
         }
 
         /// <summary>
         /// Loads an object of List<Measurment> from a JSON file.
         /// </summary>
         /// <param name="path"></param>
-        public CoursePass FromFile(string path)
+        public CoursePass FromLocalJsonFile(string path)
         {
             using (var sr = File.OpenText(path))
                 _json = sr.ReadToEnd();
@@ -78,7 +78,10 @@ namespace SlalomTracker
             return FromJson(_json);
         }
 
-        public CoursePass FromUrl(string url)
+        /// <summary>
+        /// Downloads json from the provided url to creates a CoursePass.
+        /// </summary>
+        public CoursePass FromJsonUrl(string url)
         {
             WebClient client = new WebClient();
             _json = client.DownloadString(url);
@@ -106,15 +109,10 @@ namespace SlalomTracker
         public CoursePass GetNextPass(Measurement exit)
         {
             m_course = null; // Clear out existing course.
-            CoursePass nextPass = null;
             
             var measurements = Measurement.DeserializeMeasurements(_json);
             List<Measurement> nextMeasurements = GetNextPassMeasurements(exit, measurements);
-            if (nextMeasurements != null && nextMeasurements.Count > 0)
-            {
-                nextPass = CreatePass(nextMeasurements);
-            }
-            return nextPass;
+            return CreatePass(nextMeasurements);
         }
 
         private List<Measurement> GetNextPassMeasurements(
@@ -127,10 +125,7 @@ namespace SlalomTracker
                 m => m.Timestamp > offsetStart
             );
 
-            if (nextMeasurements != null && nextMeasurements.Count() > 0)
-                return nextMeasurements.ToList();
-            else
-                return null;
+            return nextMeasurements?.ToList();
         }
 
         /// <summary>
@@ -138,7 +133,7 @@ namespace SlalomTracker
         /// </summary>
         public double FitPass(string jsonUrl)
         {
-            CoursePass bestPass = FromUrl(jsonUrl);
+            CoursePass bestPass = FromJsonUrl(jsonUrl);
             return FitPass(bestPass);
         }
 
@@ -164,20 +159,26 @@ namespace SlalomTracker
             return bestPass.CenterLineDegreeOffset;
         }
 
-        private void FindCourse(List<Measurement> measurements)
+        private Course GetCourse(List<Measurement> measurements, out Measurement entry55)
         {
+            Course course;
+            entry55 = null;
+
             if (Course55Coordinates.EntryLat != default(double)) 
             {
-                this.m_course = new Course(
+                course = new Course(
                     new GeoCoordinate(Course55Coordinates.EntryLat, Course55Coordinates.EntryLon),
                     new GeoCoordinate(Course55Coordinates.ExitLat, Course55Coordinates.ExitLon)
                 );
+                entry55 = course.FindEntry55(measurements);
             }
             else 
             {
                 KnownCourses knownCourses = new KnownCourses();
-                this.m_course = knownCourses.FindCourse(measurements);
+                course = knownCourses.FindCourse(measurements, out entry55);
             }    
+
+            return course;
         }
 
         private CoursePass CreatePass()
@@ -190,107 +191,107 @@ namespace SlalomTracker
 
         private CoursePass CreatePass(List<Measurement> measurements)
         {
-            if (this.m_course == null)
-                FindCourse(measurements);
+            const double MAX_PASS_SECONDS = 30.0;
+
+            if (measurements == null || measurements.Count() <= 1)
+                throw new ApplicationException("Unable to create a pass, no measurements passed.");
+
+            Measurement entry55 = null;
+            CoursePass pass = new CoursePass();
+            pass.CenterLineDegreeOffset = CenterLineDegreeOffset;
             
-            if (this.m_course == null)
+            if (m_rope == null)
+                m_rope = Rope.Default;
+            pass.Rope = m_rope;
+
+            if (m_course == null)
+                pass.Course = GetCourse(measurements, out entry55);
+            else
+                pass.Course = m_course;
+
+            if (pass.Course == null || entry55 == null)
             {
                 Logger.Log("Unable to find a course for this ski run.");       
                 return null;
             }
+            
+            pass.Entry = entry55;
+            pass.Exit = pass.Course.FindExit55(measurements) ?? measurements.Last();
 
-            if (m_rope == null)
-                m_rope = Rope.Default;
+            if (pass.Exit.Timestamp.Subtract(pass.Entry.Timestamp).TotalSeconds > MAX_PASS_SECONDS)
+            {
+                pass.Exit = measurements.FindHandleAtSeconds(
+                    pass.Entry.Timestamp.AddSeconds(MAX_PASS_SECONDS).TimeOfDay.TotalSeconds
+                );
+            }
 
-            CoursePass pass = new CoursePass(m_course, m_rope, CenterLineDegreeOffset);
-            for (int i = 0; i < measurements.Count; i++)
+            int lastIndex = measurements.IndexOf(pass.Exit);
+            int firstIndex = measurements.IndexOf(pass.Entry);
+            if (firstIndex == 0)
+                firstIndex++;           
+            
+            measurements[firstIndex-1].RopeAngleDegrees = CenterLineDegreeOffset;
+            
+            for (int i = firstIndex; i < lastIndex; i++)
             {
                 Measurement current = measurements[i];
-                current.BoatPosition = pass.CoursePositionFromGeo(current.BoatGeoCoordinate);               
-                if (current.BoatPosition == CoursePosition.Empty)
-                    continue;               
-                
-                CalculateInCourse(pass, measurements, i);
-                CalculateCurrent(measurements, i);
-                pass.Track(current);
+                current.BoatPosition = pass.Course.CoursePositionFromGeo(current.BoatGeoCoordinate);
 
-                // If the handle has passed the 55s, we're done here.
-                if (current.HandlePosition.Y > Course.LengthM)
-                    break;
-            }
-            
-            CalculateCoursePassSpeed(pass);
-            return pass;
-        }
+                if (current.BoatPosition != CoursePosition.Empty)
+                {                    
+                    current.InCourse = (current.BoatPosition.Y >= Course.Gates[0].Y && 
+                        current.BoatPosition.Y <= Course.Gates[3].Y);                       
 
-        private void CalculateInCourse(CoursePass pass, List<Measurement> measurements, int i)
-        {
-            Measurement current = measurements[i];
-            if (i == 0)
-            {
-                current.InCourse = false;
-                return;
-            }
-            
-            Measurement previous = measurements[i-1];
-            if (current.BoatPosition.Y >= Course.Gates[0].Y && 
-                current.BoatPosition.Y <= Course.Gates[3].Y )
-            {
-                current.InCourse = true;
-                if (previous.InCourse == false)
-                    pass.Entry = current;
-            }
-            else if (previous.InCourse)
-            {
-                if (current.BoatPosition.Y >= Course.Gates[3].Y || 
-                        IsWrongDirection(measurements, i))
-                {
-                    current.InCourse = false;
-                    pass.Exit = current;
+                    HandleCalculations(current, measurements, i);               
+                    pass.Measurements.Add(current);
+
+                    if (current.Timestamp >= pass.Exit.Timestamp)
+                        break;
                 }
             }
-            else
-            {
-                current.InCourse = false;
-            }
+            
+            pass.AverageBoatSpeed = CalculateCoursePassSpeed(pass);
+
+            return pass;
         }
-
-        private void CalculateCurrent(List<Measurement> measurements, int index)
+ 
+        /// <summary>
+        /// This is the main method to do all calculations for the handle position / speed.
+        /// </summary>
+        private void HandleCalculations(Measurement current, List<Measurement> measurements, int index)
         {
-            Measurement current = measurements[index];
-            Measurement previous = null;
-            double seconds = 0.0d;
+            Measurement previous = measurements[index - 1];
 
-            if (index == 0)
-            {
-                measurements[index].RopeAngleDegrees = CenterLineDegreeOffset;
-            }
-            else 
-            {
-                previous = measurements[index - 1];
-                seconds = current.Timestamp.Subtract(previous.Timestamp).TotalSeconds;
-                
-                // Convert radians per second to degrees per second.  
-                double averageRopeSwingSpeedRadS = AverageRopeSwingSpeedRadS(measurements, index);
-                current.RopeAngleDegrees = previous.RopeAngleDegrees +
-                    Util.RadiansToDegrees(averageRopeSwingSpeedRadS * seconds);
-            }
+            // Convert radians per second to degrees per second.  
+            double seconds = current.Timestamp.Subtract(previous.Timestamp).TotalSeconds;
+            double averageRopeSwingSpeedRadS = AverageRopeSwingSpeedRadS(measurements, index);
+            current.RopeAngleDegrees = previous.RopeAngleDegrees +
+                Util.RadiansToDegrees(averageRopeSwingSpeedRadS * seconds);
 
             current.HandlePosition = CalculateRopeHandlePosition(current);
             current.HandleSpeedMps = CalculateHandleSpeed(previous, current, seconds);
         }
 
-        private void CalculateCoursePassSpeed(CoursePass pass)
+        private double CalculateCoursePassSpeed(CoursePass pass)
         {
-            if (pass.Exit == null || pass.Entry == null)
+            Measurement entryGate = pass.Measurements.FindBoatAtY(Course.Gates[0].Y);
+            Measurement exitGate = pass.Measurements.FindBoatAtY(Course.Gates[3].Y);
+
+            if (entryGate == null || exitGate == null)
             {
-                Logger.Log("Skiping course pass speed calculation since Entry or Exit are null.");
-                return;
+                Logger.Log("Skiping course pass speed calculation since gates are null.");
+                return 0;                
             }
 
-            TimeSpan duration = pass.Exit.Timestamp.Subtract(pass.Entry.Timestamp);
-            double distance = pass.Exit.BoatGeoCoordinate.GetDistanceTo(
-                pass.Entry.BoatGeoCoordinate);
+            if (exitGate.Timestamp.Subtract(entryGate.Timestamp).TotalSeconds > 30)
+            {
+                Logger.Log("Skiping course pass speed calculation, exit gate is out of range.");
+                return 0;
+            }
+
+            TimeSpan duration = exitGate.Timestamp.Subtract(entryGate.Timestamp);
+            double distance = exitGate.BoatGeoCoordinate.GetDistanceTo(
+                entryGate.BoatGeoCoordinate);
             
             if (duration == null || duration.Seconds <= 0 || distance <= 0)
             {
@@ -298,24 +299,7 @@ namespace SlalomTracker
             }
 
             double speedMps = distance / duration.TotalSeconds;
-            pass.AverageBoatSpeed = Math.Round(speedMps * CoursePass.MPS_TO_MPH, 1);
-        }
-        
-        private bool IsWrongDirection(List<Measurement> measurements, int i)
-        {
-            // Avoid data errors, but going back some # of measurements.
-            const int THRESHOLD = 5;
-            bool wrongDirection = false;
-            
-            if (i > THRESHOLD)
-            {
-                double previousY = measurements[i - THRESHOLD].BoatPosition.Y;
-                double currentY = measurements[i].BoatPosition.Y;
-                // Current Y should be greater if we're travelling in the right direction.
-                wrongDirection = (previousY > currentY);
-            }
-
-            return wrongDirection;
+            return Math.Round(speedMps * CoursePass.MPS_TO_MPH, 1);
         }
 
         private double AverageRopeSwingSpeedRadS(List<Measurement> measurements, int index)
@@ -347,7 +331,7 @@ namespace SlalomTracker
 
         private double CalculateHandleSpeed(Measurement previous, Measurement current, double time) 
         {
-            if (previous == null || time == 0)
+            if (previous?.HandlePosition == null || time == 0)
                 return 0.0d;
 
             // Calculate 1 side of right angle triangle

@@ -9,6 +9,9 @@ namespace SlalomTracker
     /// </summary>
     public static class MeasurementsExtensions
     {
+        /// <summary>
+        /// Finds a measurement at the second mark in total video seconds.
+        /// </summary>
         public static Measurement FindHandleAtSeconds(this IEnumerable<Measurement> measurements, double seconds)
         {
             const double offset = 0.25;

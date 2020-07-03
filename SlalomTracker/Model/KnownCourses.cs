@@ -22,45 +22,41 @@ namespace SlalomTracker
 
         public List<Course> List { get { return _knownCourses; } }
 
-        public Course FindCourse(List<Measurement> measurements)
+        /// <summary>
+        /// Searches through all measurements to find the first course entry.
+        /// </summary>
+        public Course FindCourse(List<Measurement> measurements, out Measurement entry55)
         {
-            int gpsInaccuracyCount = 0;
-            foreach (var m in measurements)
+            List<KeyValuePair<Course, Measurement>> results = new List<KeyValuePair<Course, Measurement>>();
+            Course found = null;
+            entry55 = null;
+
+            foreach (Course course in _knownCourses)
             {
-                // Skip if accuracy is not under 500.
-                if (m.GpsAccuracy > 500.0) 
-                {
-                    gpsInaccuracyCount++;
-                    continue;
-                }
-
-                foreach (Course course in _knownCourses)
-                {
-                    if (course.IsBoatInEntry(m.BoatGeoCoordinate))
-                    {
-                        const int skipCount = 20;
-                        // Ensure that the direction of travel matches Entry -> Exit.
-                        int current = measurements.IndexOf(m);
-                        if (measurements.Count > current + skipCount)
-                        {
-                            Measurement nextM = measurements[current + skipCount];
-                            double boatHeading = Util.GetHeading(m.BoatGeoCoordinate, nextM.BoatGeoCoordinate);
-                            double courseHeading = course.GetCourseHeadingDeg();
-
-                            // within some tolerance
-                            const double tolerance = 15.0;
-                            if (boatHeading - tolerance <= courseHeading &&
-                                boatHeading + tolerance >= courseHeading)
-                            {
-                                return course;
-                            }
-                        }
-                    }
-                }
+                Measurement course55Entry = course.FindEntry55(measurements);
+                if (course55Entry != null)
+                    results.Add(new KeyValuePair<Course, Measurement>(course, course55Entry));
             }
 
-            Logger.Log($"No course found: {gpsInaccuracyCount} inaccurate of total {measurements.Count()} measurements.");          
-            return null;
+            if (results.Count() > 1)
+            {
+                var first = results.OrderBy(kvp => kvp.Value.Timestamp).First();
+                found = first.Key;
+                entry55 = first.Value;
+            }
+            else if (results.Count() == 1)
+            {
+                found = results[0].Key;
+                entry55 = results[0].Value;
+            }
+
+            if (found == null)
+            {
+                int gpsInaccuracyCount = measurements.Count(m => m.GpsAccuracy > 500.0);
+                Logger.Log($"No course found.  Had {gpsInaccuracyCount} inaccurate of total {measurements.Count()} measurements.");          
+            }
+
+            return found;
         }
 
         public Course ByName(string name)

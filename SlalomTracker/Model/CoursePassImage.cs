@@ -35,8 +35,8 @@ namespace SlalomTracker
             DrawCenterLineOffset();
 
             //DrawCourseBounds(_pass.Course.Polygon, Color.CadetBlue);
-            DrawCourseBounds(_pass.Course.EntryPolygon, Color.Green);
-            DrawCourseBounds(_pass.Course.ExitPolygon, Color.Red);
+            DrawCourseBounds(_pass.Course.Entry55Polygon, Color.Green);
+            DrawCourseBounds(_pass.Course.Exit55Polygon, Color.Red);
 
             DrawCourseFeature(Color.Green, Course.PreGates);
             DrawCourseFeature(Color.Red, Course.Gates);
@@ -139,7 +139,7 @@ namespace SlalomTracker
             List<PointF> points = new List<PointF>(list.Count);
             for (int i = 0; i < list.Count; i++)
             {
-                CoursePosition position = _pass.CoursePositionFromGeo(list[i]);
+                CoursePosition position = _pass.Course.CoursePositionFromGeo(list[i]);
                 points.Add(PointFromCoursePosition(position));
             }
 

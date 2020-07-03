@@ -39,10 +39,30 @@ namespace SlalomTracker
             return new CoursePosition(a.X + b.X, a.Y + b.Y);
         }
 
+        public static bool operator ==(CoursePosition a, CoursePosition b)
+        {
+            return (a?.X == b?.X && a?.Y == b?.Y);
+        }
+
+        public static bool operator !=(CoursePosition a, CoursePosition b)
+        {
+            return (a?.X != b?.X || a?.Y != b?.Y);
+        }
+
         public static CoursePosition Empty
         {
             get { return new CoursePosition(0, 0); }
         }
+
+        public override bool Equals(object obj)
+        {
+            return this == (CoursePosition)obj;
+        }
+
+        public override int GetHashCode()
+        {
+            return Tuple.Create(X, Y).GetHashCode();
+        }        
 
         public override string ToString()
         {
