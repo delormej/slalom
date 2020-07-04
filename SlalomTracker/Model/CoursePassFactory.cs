@@ -209,14 +209,20 @@ namespace SlalomTracker
             pass.Rope = m_rope;
 
             if (m_course == null)
+            {
                 pass.Course = GetCourse(measurements, out entry55);
+            }
             else
+            {
                 pass.Course = m_course;
+                pass.Entry = pass.Course.FindEntry55(measurements);
+            }
 
             if (pass.Course == null || entry55 == null)
             {
-                Logger.Log("Unable to find a course for this ski run.");       
-                return null;
+                int gpsInaccuracyCount = measurements.Count(m => m.GpsAccuracy > 500.0);
+                string error = $"No course found.  Had {gpsInaccuracyCount} inaccurate of total {measurements.Count()} measurements.";
+                throw new ApplicationException(error);
             }
             
             pass.Entry = entry55;

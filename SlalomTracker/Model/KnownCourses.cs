@@ -50,12 +50,6 @@ namespace SlalomTracker
                 entry55 = results[0].Value;
             }
 
-            if (found == null)
-            {
-                int gpsInaccuracyCount = measurements.Count(m => m.GpsAccuracy > 500.0);
-                Logger.Log($"No course found.  Had {gpsInaccuracyCount} inaccurate of total {measurements.Count()} measurements.");          
-            }
-
             return found;
         }
 
