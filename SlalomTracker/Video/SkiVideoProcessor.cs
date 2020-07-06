@@ -208,10 +208,18 @@ namespace SlalomTracker.Video
 
         private CoursePass HasAnotherPass(in CoursePass lastPass)
         {
-            if (lastPass == null || lastPass.Exit == null)
-                return null;
-
-            CoursePass nextPass = _factory.GetNextPass(lastPass.Exit);
+            CoursePass nextPass = null;
+            
+            try 
+            {            
+                if (lastPass != null && lastPass?.Exit != null)
+                    nextPass = _factory.GetNextPass(lastPass.Exit);
+            }
+            catch (ApplicationException e)
+            {
+                Logger.Log("Unable to find another pass.", e);
+            }
+            
             return nextPass;
         }   
 
