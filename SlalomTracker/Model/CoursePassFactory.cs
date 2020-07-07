@@ -215,7 +215,7 @@ namespace SlalomTracker
             else
             {
                 pass.Course = m_course;
-                pass.Entry = pass.Course.FindEntry55(measurements);
+                entry55 = pass.Course.FindEntry55(measurements);               
             }
 
             if (pass.Course == null || entry55 == null)
