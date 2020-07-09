@@ -31,15 +31,11 @@ namespace SlalomTracker.Cloud
             IProcessor processor = null;
             string videoUrl = GetUrl(message);
             
-            if (videoUrl != null)
-            {
-                processor = new SkiVideoProcessor(videoUrl);
-            }
-            else
-            {
-                
-            }
+            if (videoUrl == null)
+                throw new ApplicationException("Unable to find videoUrl in message.");
 
+            // TODO: Need to parse Compare Message and optinally create a CompareVideoProcessor here.
+            processor = new SkiVideoProcessor(videoUrl);           
             return processor;
         }
 
