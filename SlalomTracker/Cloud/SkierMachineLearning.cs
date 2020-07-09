@@ -11,8 +11,8 @@ namespace SlalomTracker.Cloud
     {
         public SkierMachineLearning()
         {
-            ProjectId = new Guid("c38bd611-86ee-43ff-ad76-20d339665e34");
-            CustomVisionModelName = "SkierDetection";      
+            ProjectId = new Guid(Environment.GetEnvironmentVariable("SKIMLSKIERID"));
+            CustomVisionModelName = Environment.GetEnvironmentVariable("SKIMLSKIERMODEL");
         }
 
         protected override string GetTagValue(SkiVideoEntity video)
