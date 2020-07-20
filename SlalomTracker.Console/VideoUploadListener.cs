@@ -156,9 +156,6 @@ namespace SkiConsole
                 Logger.Log($"Reason: {message.UserProperties["DeadLetterReason"]}");
                 return Task.CompletedTask;
             }, new MessageHandlerOptions(ExceptionReceivedHandler) { AutoComplete = true });
-            
-            if (Completed != null)
-                Completed(this, null);            
         }  
     }
 }
