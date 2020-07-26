@@ -108,12 +108,10 @@ namespace SkiConsole
             try
             {
                 // Process the message.
-                Logger.Log($"Received message: SequenceNumber:{message.SystemProperties.SequenceNumber} " +
-                    $"Body:{Encoding.UTF8.GetString(message.Body)}");
-
                 string json = Encoding.UTF8.GetString(message.Body);
-                IProcessor processor = QueueMessageParser.GetProcessor(json);
-                
+                Logger.Log($"Received message: SequenceNumber:{message.SystemProperties.SequenceNumber} Body:{json}");
+
+                IProcessor processor = QueueMessageParser.GetProcessor(json);               
                 await processor.ProcessAsync();
                 
                 await _queueClient.CompleteAsync(message.SystemProperties.LockToken);
@@ -158,6 +156,9 @@ namespace SkiConsole
                 Logger.Log($"Reason: {message.UserProperties["DeadLetterReason"]}");
                 return Task.CompletedTask;
             }, new MessageHandlerOptions(ExceptionReceivedHandler) { AutoComplete = true });
+            
+            if (Completed != null)
+                Completed(this, null);            
         }  
     }
 }

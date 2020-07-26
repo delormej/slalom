@@ -22,6 +22,7 @@ echo "Building container."
 docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
     --build-arg VERSION=$VERSION \
     --force-rm \
+    --target build \
     -f ./SlalomTracker.Console/Dockerfile .
 #
 # To just use the debug image add --target build to the above and it won't build the release stage.
@@ -38,13 +39,17 @@ docker run -it --rm \
     -e SKIMLKEY="$SKIMLKEY" \
     -e GOOGLE_APPLICATION_CREDENTIALS="/ski/gcloud.json" \
     -e GITHUB_TOKEN="$GITHUB_TOKEN" \
+    -e SKIMLROPEMODEL="RopeDetection-4" \
+    -e SKIMLROPEID="e3ee86a8-f298-46b5-87fd-31a09f0480d7" \
+    -e SKIMLSKIERID="c38bd611-86ee-43ff-ad76-20d339665e34" \
+    -e SKIMLSKIERMODEL="SkierDetection-2" \
     --name ski-console \
     --cpus="2.0" \
     $container
 
 # az acr login -n wthacr
-docker tag $container wthacr.azurecr.io/$container
-docker push wthacr.azurecr.io/$container
+# docker tag $container wthacr.azurecr.io/$container
+# docker push wthacr.azurecr.io/$container
 
 #
 # Script to get message counts from Service Bus

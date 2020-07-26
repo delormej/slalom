@@ -8,8 +8,8 @@ namespace SlalomTracker.Cloud
     {
         public RopeMachineLearning()
         {
-            ProjectId = new Guid("e3ee86a8-f298-46b5-87fd-31a09f0480d7");
-            CustomVisionModelName = "RopeDetection"; 
+            ProjectId = new Guid(Environment.GetEnvironmentVariable("SKIMLROPEID"));
+            CustomVisionModelName = Environment.GetEnvironmentVariable("SKIMLROPEMODEL");
         }
 
         public double PredictRopeLength(string thumbnail)

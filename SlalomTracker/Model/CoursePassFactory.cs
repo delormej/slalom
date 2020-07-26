@@ -215,7 +215,7 @@ namespace SlalomTracker
             else
             {
                 pass.Course = m_course;
-                pass.Entry = pass.Course.FindEntry55(measurements);
+                entry55 = pass.Course.FindEntry55(measurements);               
             }
 
             if (pass.Course == null || entry55 == null)
@@ -286,6 +286,12 @@ namespace SlalomTracker
         {
             Measurement entryGate = pass.Measurements.FindBoatAtY(Course.Gates[0].Y);
             Measurement exitGate = pass.Measurements.FindBoatAtY(Course.Gates[3].Y);
+
+            if (exitGate == null)
+            {
+                // Try to calculate speed at 1 ball.
+                exitGate = pass.Measurements.FindBoatAtY(Course.Balls[0].Y);
+            }
 
             if (entryGate == null || exitGate == null)
             {
