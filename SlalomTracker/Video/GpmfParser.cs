@@ -19,6 +19,7 @@ namespace MetadataExtractor
         const string GYRO = "GYRO";
         const string GPS = "GPS5";
         const string GPSP = "GPSP";
+        const string GPSU = "GPSU";
         const string TIME = "TIME";
         const double gpsHz = 18; // GPS5 18.169 Hz
         const double gyroHz = 399;  // GYRO 403.846 Hz
@@ -36,9 +37,9 @@ namespace MetadataExtractor
         };
 
         List<Measurement> measurements;
-        DateTime initialTime = DateTime.MinValue;
+        DateTime measurmentTime = DateTime.MinValue;
         int currentGpsCount, currentGyroCount;
-        double start, accumZ;
+        double accumZ;
         double gpsAccuracy = 0.0;
 
         public List<Measurement> LoadFromMp4(string mp4Path)
@@ -62,9 +63,9 @@ namespace MetadataExtractor
                     string[] row = line.Split(',');
                     string rowLabel = GetColumn(row, Column.Label);
 
-                    if (rowLabel == TIME)
+                    if (rowLabel == GPSU)
                     {
-                        ProcessTime(row);
+                        ProcessGPSTime(row);
                     }
                     else if (rowLabel == GPS)
                     {
@@ -84,13 +85,26 @@ namespace MetadataExtractor
             return measurements;
         }
 
-        private void ProcessTime(string[] row)
+        private void ProcessGPSTime(string[] row)
         {
             // Reset datapoint item count.
             currentGpsCount = 0;
             currentGyroCount = 0;
             accumZ = 0;
-            start = double.Parse(GetColumn(row, Column.SecondsIn));
+                           
+            measurmentTime = ParseUTC(row[1]);
+        }
+
+        private DateTime ParseUTC(string value)
+        {
+            string raw = value?.Trim();
+            if (string.IsNullOrWhiteSpace(raw))
+                throw new ApplicationException("UTC Date Value empty.");
+
+            const string gpmfFormat = "yyMMddHHmmss.fff";
+            DateTime gpmfDate = DateTime.ParseExact(raw, gpmfFormat, 
+                System.Globalization.CultureInfo.InvariantCulture);
+            return gpmfDate;
         }
 
         /// <summary>
@@ -103,12 +117,8 @@ namespace MetadataExtractor
             if (currentGpsCount > gpsHz)
                 return;
 
-            // @ GPS Hz, get fractional seconds.
-            DateTime startTime = initialTime.AddSeconds(
-                start + (currentGpsCount / gpsHz));
-
             Measurement m = new Measurement();
-            m.Timestamp = startTime;
+            m.Timestamp = measurmentTime;
             m.BoatGeoCoordinate = new GeoCoordinate(
                 double.Parse(GetColumn(row, Column.Lat)),
                 double.Parse(GetColumn(row, Column.Lon)));

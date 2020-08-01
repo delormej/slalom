@@ -31,6 +31,7 @@ namespace SlalomTracker
 
         public async Task<string> CombineVideoAsync(string video2Path)
         {
+            // -itsoffset 0.2 <-- use this param in front of the video you what to offset the start time of video (e.g. 0.2 seconds)
             Logger.Log($"Combining {_localVideoPath} with {video2Path}");
             string outputPath = GetCombinedVideoPath(video2Path);
             string arguments = $"-i {_localVideoPath} -i {video2Path} " +

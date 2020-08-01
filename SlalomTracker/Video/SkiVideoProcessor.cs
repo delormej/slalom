@@ -220,6 +220,9 @@ namespace SlalomTracker.Video
                 Logger.Log("Unable to find another pass.", e);
             }
             
+            if (nextPass != null)
+                _creationTime = _creationTime.AddSeconds(nextPass.GetSecondsAtEntry55());
+
             return nextPass;
         }   
 

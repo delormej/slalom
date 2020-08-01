@@ -19,6 +19,7 @@ echo "Building container::$container"
 docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
     --build-arg VERSION=$VERSION \
     --force-rm \
+     --target build \
     -f ./SlalomTracker.WebApi/Dockerfile . 
 #
 # To just use the debug image add:
@@ -42,5 +43,5 @@ docker run --rm --name ski-web -p 5000:5000 -it \
 #
 # Tag and push the container.
 #
-docker tag $container wthacr.azurecr.io/$container
-docker push wthacr.azurecr.io/$container
+# docker tag $container wthacr.azurecr.io/$container
+# docker push wthacr.azurecr.io/$container
