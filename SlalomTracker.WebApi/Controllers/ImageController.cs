@@ -94,7 +94,7 @@ namespace SlalomTracker.WebApi.Controllers
                 RopeLengthOff = rope,
                 Course = course
             };
-            CoursePass pass = factory.FromUrl(jsonUrl);
+            CoursePass pass = factory.FromJsonUrl(jsonUrl);
             if (pass == null)
                 throw new ApplicationException($"Unable to create a pass for {jsonUrl}");  
 
