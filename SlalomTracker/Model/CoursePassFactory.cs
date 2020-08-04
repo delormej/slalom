@@ -325,6 +325,7 @@ namespace SlalomTracker
             {
                 // Try to calculate speed at 1 ball.
                 exitGate = pass.Measurements.FindBoatAtY(Course.Balls[0].Y);
+                Logger.Log("Course exit null, trying to caluculate from ball 1: " + exitGate?.BoatPosition.Y);
             }
 
             if (entryGate == null || exitGate == null)
