@@ -61,7 +61,7 @@ namespace SlalomTracker.WebApi.Controllers
             }
 
             Measurement measurement = measurements.
-                FindHandleAtSeconds(seconds + entity.EntryTime);
+                FindAtSeconds(seconds + entity.EntryTime);
             
             return measurement;            
         }

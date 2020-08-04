@@ -12,7 +12,7 @@ namespace SlalomTracker
         /// <summary>
         /// Finds a measurement at the second mark in total video seconds.
         /// </summary>
-        public static Measurement FindHandleAtSeconds(this IEnumerable<Measurement> measurements, double seconds)
+        public static Measurement FindAtSeconds(this IEnumerable<Measurement> measurements, double seconds)
         {
             const double offset = 0.25;
             DateTime start = new DateTime().AddSeconds(seconds);
