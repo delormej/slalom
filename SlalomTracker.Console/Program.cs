@@ -243,17 +243,38 @@ namespace SkiConsole
         {
             Console.WriteLine("Loading videos to train.");
             List<SkiVideoEntity> videos = await LoadVideosAsync();
-            
+            var skiers = 
+                from v in videos
+                group v by v.Skier into skiersGroup
+                select skiersGroup;
+            var ropes = 
+                from v in videos
+                group v by v.RopeLengthM into ropeGroup
+                select ropeGroup;
+
+            var excludeSkiers = skiers.Where(s => s.Count() <= 5).Select(s => s.Key);
+            var excludeRopes = ropes.Where(s => s.Count() <= 5).Select(s => s.Key);
+
+            System.Console.WriteLine("Filtered out these tags.");
+            foreach(var s in excludeSkiers)
+                System.Console.WriteLine(s);
+            foreach(var s in excludeRopes)
+                System.Console.WriteLine(s);
+
+            var filtered = videos.Where(v => !excludeSkiers.Contains(v.Skier) && !excludeRopes.Contains(v.RopeLengthM) ).ToList();
+
+            System.Console.WriteLine($"Original {videos.Count()}, filtered {filtered.Count()}");
+
             var ropeTask = Task.Run( () => {
                 Console.WriteLine("Training rope length detection.");
                 RopeMachineLearning ropeMl = new RopeMachineLearning();
-                ropeMl.Train(videos);
+                ropeMl.Train(filtered);
             });
 
             var skierTask = Task.Run( () => {
                 Console.WriteLine("Training skier detection.");
                 SkierMachineLearning skierMl = new SkierMachineLearning();
-                skierMl.Train(videos);
+                skierMl.Train(filtered);
             });
 
             await Task.WhenAll(ropeTask, skierTask);
