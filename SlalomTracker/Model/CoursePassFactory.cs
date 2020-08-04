@@ -24,6 +24,10 @@ namespace SlalomTracker
     public class CoursePassFactory
     {
         private string _json;
+        
+        // Hangs on to the first measurement's time as the recorded time and reference
+        // for subsequent videos in the file.
+        private DateTime _videoStart = DateTime.MinValue;
 
         public double CenterLineDegreeOffset { get; set; } = 0;
         public double RopeLengthOff { 
@@ -93,7 +97,7 @@ namespace SlalomTracker
         }
 
         /// <summary>
-        /// Loads a List<Measurment> collection serialized as JSON in the string.
+        /// Loads a List<Measurement> collection serialized as JSON in the string.
         /// </summary>
         /// <param name="json"></param>
         public CoursePass FromJson(string json)
@@ -103,7 +107,7 @@ namespace SlalomTracker
         }
 
         /// <summary>
-        /// Returns another coures pass if one exists after the exit measurment in 
+        /// Returns another course pass if one exists after the exit measurement in 
         /// this collection of measurements of pass.  Returns null if there isn't another
         /// course pass found.
         /// </summary>
@@ -133,6 +137,37 @@ namespace SlalomTracker
             return nextMeasurements?.ToList();
         }
 
+        /// <summary>
+        /// Does a linear regression to fit the best centerline offset based on entry/exit gates.
+        /// </summary>
+        public double FitPass(string jsonUrl)
+        {
+            CoursePass bestPass = FromJsonUrl(jsonUrl);
+            return FitPass(bestPass);
+        }
+
+        public double FitPass(CoursePass pass)
+        {
+            const int MAX = 90, MIN = -90;
+            double bestPrecision = double.MaxValue;
+            CoursePass bestPass = pass;
+
+            for (int i = MIN; i <= MAX; i++)
+            {
+                CenterLineDegreeOffset = i;
+                CoursePass nextPass = CreatePass(pass.Measurements);
+                double precision = nextPass.GetGatePrecision();
+                
+                if (precision < bestPrecision)
+                {
+                    bestPrecision = precision;
+                    bestPass = nextPass;
+                }
+            }
+            Logger.Log($"Best Precision: {bestPrecision} = {bestPass.CenterLineDegreeOffset}");
+            return bestPass.CenterLineDegreeOffset;
+        }
+
         private Course GetCourse(List<Measurement> measurements, out Measurement entry55)
         {
             Course course;
@@ -159,7 +194,10 @@ namespace SlalomTracker
         {
             if (_json == null)
                 throw new ApplicationException("Must load json from File, Url or String.");
+
             var measurements = Measurement.DeserializeMeasurements(_json);
+            _videoStart = measurements[0].Timestamp;
+
             return CreatePass(measurements);
         }
 
@@ -206,7 +244,7 @@ namespace SlalomTracker
                 );
             }
 
-            pass.VideoTime = GetVideoTime(measurements, pass.Entry, pass.Exit);
+            pass.VideoTime = GetVideoTime(pass.Entry, pass.Exit);
 
             int lastIndex = measurements.IndexOf(pass.Exit);
             int firstIndex = measurements.IndexOf(pass.Entry);
@@ -338,31 +376,31 @@ namespace SlalomTracker
         /// Returns a struct that represents the time since the begining of video in fractional seconds
         /// when the boat first goes through the 55s and how long until it goes through exit 55s.
         /// </summary>
-        private VideoTime GetVideoTime(List<Measurement> measurements, Measurement entry, Measurement exit)
+        private VideoTime GetVideoTime(Measurement entry, Measurement exit)
         {
             const double GATE_OFFSET_SECONDS = 1.0; // amount of time before 55s to trim with.
 
             VideoTime time = new VideoTime();
-            time.Start = GetSecondsFrom(measurements[0], entry);
+            time.Start = GetSecondsFromVideoStart(entry);
 
             // Start video earlier if possible.
             if (time.Start >= GATE_OFFSET_SECONDS)
                 time.Start -= GATE_OFFSET_SECONDS;
 
-            double exitSeconds = GetSecondsFrom(measurements[0], exit);
-            time.Duration = (exitSeconds - time.Duration) + GATE_OFFSET_SECONDS;
+            double exitSeconds = GetSecondsFromVideoStart(exit);
+            time.Duration = (exitSeconds - time.Start) + GATE_OFFSET_SECONDS;
 
             return time;
-        }
+        }            
 
-        private double GetSecondsFrom(Measurement start, Measurement end)
+        private double GetSecondsFromVideoStart(Measurement end)
         {
             double seconds = 0.0d;
             TimeSpan fromStart = end.Timestamp.Subtract(
-                start.Timestamp);
+                _videoStart);
             if (fromStart != null)
                 seconds = fromStart.TotalSeconds;
             return seconds;
-        }                
+        }  
     }
 }

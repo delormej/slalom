@@ -37,7 +37,7 @@ namespace MetadataExtractor
         };
 
         List<Measurement> measurements;
-        DateTime measurmentTime = DateTime.MinValue;
+        DateTime initialTime = DateTime.MinValue;
         int currentGpsCount, currentGyroCount;
         double accumZ;
         double gpsAccuracy = 0.0;
@@ -92,7 +92,7 @@ namespace MetadataExtractor
             currentGyroCount = 0;
             accumZ = 0;
                            
-            measurmentTime = ParseUTC(row[1]);
+            initialTime = ParseUTC(row[1]);
         }
 
         private DateTime ParseUTC(string value)
@@ -117,8 +117,11 @@ namespace MetadataExtractor
             if (currentGpsCount > gpsHz)
                 return;
 
+            // @ GPS Hz, get fractional seconds.
+            DateTime startTime = initialTime.AddSeconds((currentGpsCount / gpsHz));
+
             Measurement m = new Measurement();
-            m.Timestamp = measurmentTime;
+            m.Timestamp = startTime;
             m.BoatGeoCoordinate = new GeoCoordinate(
                 double.Parse(GetColumn(row, Column.Lat)),
                 double.Parse(GetColumn(row, Column.Lon)));
