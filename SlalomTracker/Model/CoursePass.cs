@@ -15,6 +15,8 @@ namespace SlalomTracker
         private VideoTime m_time;
         private Measurement m_courseEntry;
         private Measurement m_courseExit;
+        private double _offsetX;
+        private double _offsetY;
 
         /// <summary>
         /// First measurement at the 55 entry to the course, NOT actual course entry gates.
@@ -56,12 +58,24 @@ namespace SlalomTracker
         /// </summary>
         public double CenterLineDegreeOffset { get; set; }
 
+        public double GpsAccuracy()
+        {
+            return this.Measurements.Average(m => m.GpsAccuracy);
+        }
+
         /// <summary>
         /// Use CoursePassFactory to create CoursePass object.
         /// </summary>
         internal CoursePass()
         {
             Measurements = new List<Measurement>();
+        }
+
+        public void SetOffsets(CoursePosition offset, double centerLineOffset)
+        {
+            _offsetX = offset.X;
+            _offsetY = offset.Y;
+            this.CenterLineDegreeOffset = centerLineOffset;
         }
 
         public double GetRopeArcLength(double boatDistance, double ropeLengthM, double angleDelta)
@@ -84,6 +98,18 @@ namespace SlalomTracker
             double dExit = Math.Pow(Math.Abs(exitM.HandlePosition.X), 2);
 
             return Math.Sqrt(dEntry + dExit);
+        }
+
+        /// <summary>
+        /// Returns the relative boat position X/Y with any potential offsets from GPS coords.
+        /// </summary>
+        public CoursePosition GetBoatPosition(Measurement current)
+        {
+            CoursePosition position = this.Course.CoursePositionFromGeo(current.BoatGeoCoordinate);    
+            position.X += _offsetX;
+            position.Y += _offsetY;  
+
+            return position;
         }
 
         /// <summary>

@@ -32,6 +32,7 @@ namespace SlalomTracker
             DrawVersion();
             DrawCourseSpeed();
             DrawRopeLength();
+            DrawGpsAccuracy();
             DrawCenterLineOffset();
 
             //DrawCourseBounds(_pass.Course.Polygon, Color.CadetBlue);
@@ -131,6 +132,15 @@ namespace SlalomTracker
 
             PointF point = new PointF(5,72);
             _graphics.DrawString(clOffset, font, Brushes.Green, point);
+        }
+
+        private void DrawGpsAccuracy()
+        {
+            string speed = $"GPS Accuracy: {Math.Round(_pass.GpsAccuracy(),0)}";
+            Font font = new Font(FontFamily.GenericMonospace, 12);
+
+            PointF point = new PointF(5,93);
+            _graphics.DrawString(speed, font, Brushes.Green, point);
         }
 
         private void DrawCourseBounds(List<GeoCoordinate> list, Color color)

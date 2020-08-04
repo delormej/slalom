@@ -163,6 +163,28 @@ namespace SlalomTracker
             return bestPass.CenterLineDegreeOffset;
         }
 
+        /// <summary>
+        /// Calculates x/y offsets to fit pass to a course.
+        /// </summary>
+        private CoursePosition CalculateOffsets(List<Measurement> measurements)
+        {
+            // Reference for not needing an OffsetX, but needs an OffsetY
+            // 2020-07-26/GOPR4123_ts.MP4
+
+            // Calculate average X between entry and exit.
+            double x = measurements.Where(m =>
+                    m.BoatPosition.Y >= Course.Gates[0].Y &&
+                    m.BoatPosition.Y < Course.Gates[3].Y)
+                .Average(m => m.BoatPosition.X);
+
+            // Calculate best Y for Entry & Exit
+            // Where Entry.Y is within 20m +/- of recorded Entry.X between -1.25 and 1.25
+            // Exit is the measurment Entry.Y + 259m and X is between -1.25 and 1.25
+            double y = 10.0; 
+
+            return new CoursePosition(0, 0);
+        }
+
         private Course GetCourse(List<Measurement> measurements, out Measurement entry55)
         {
             Course course;
@@ -200,14 +222,13 @@ namespace SlalomTracker
             if (measurements == null || measurements.Count() <= 1)
                 throw new ApplicationException("Unable to create a pass, no measurements passed.");
 
-            Measurement entry55 = null;
             CoursePass pass = new CoursePass();
-            pass.CenterLineDegreeOffset = CenterLineDegreeOffset;
             
             if (m_rope == null)
                 m_rope = Rope.Default;
             pass.Rope = m_rope;
 
+            Measurement entry55 = null;
             if (m_course == null)
             {
                 pass.Course = GetCourse(measurements, out entry55);
@@ -224,16 +245,19 @@ namespace SlalomTracker
                 string error = $"No course found.  Had {gpsInaccuracyCount} inaccurate of total {measurements.Count()} measurements.";
                 throw new ApplicationException(error);
             }
-            
+
             pass.Entry = entry55;
             pass.Exit = pass.Course.FindExit55(measurements) ?? measurements.Last();
 
             if (pass.Exit.Timestamp.Subtract(pass.Entry.Timestamp).TotalSeconds > MAX_PASS_SECONDS)
             {
-                pass.Exit = measurements.FindHandleAtSeconds(
+                pass.Exit = measurements.FindAtSeconds(
                     pass.Entry.Timestamp.AddSeconds(MAX_PASS_SECONDS).TimeOfDay.TotalSeconds
                 );
             }
+
+            CreateBoatPositions(pass.Course, measurements);
+            pass.SetOffsets(CalculateOffsets(measurements), CenterLineDegreeOffset);
 
             int lastIndex = measurements.IndexOf(pass.Exit);
             int firstIndex = measurements.IndexOf(pass.Entry);
@@ -245,8 +269,9 @@ namespace SlalomTracker
             for (int i = firstIndex; i < lastIndex; i++)
             {
                 Measurement current = measurements[i];
-                current.BoatPosition = pass.Course.CoursePositionFromGeo(current.BoatGeoCoordinate);
-
+                // Reset position based on calculated offsets.
+                current.BoatPosition = pass.GetBoatPosition(current); 
+                
                 if (current.BoatPosition != CoursePosition.Empty)
                 {                    
                     current.InCourse = (current.BoatPosition.Y >= Course.Gates[0].Y && 
@@ -263,6 +288,15 @@ namespace SlalomTracker
             pass.AverageBoatSpeed = CalculateCoursePassSpeed(pass);
 
             return pass;
+        }
+
+        /// <summary>
+        /// Calculate raw boat position (without offsets) based on GeoCoord for each measurment.
+        /// </summary>
+        private void CreateBoatPositions(Course course, List<Measurement> measurements)
+        {
+            foreach (Measurement m in measurements)
+                m.BoatPosition = course.CoursePositionFromGeo(m.BoatGeoCoordinate);  
         }
  
         /// <summary>
@@ -357,6 +391,6 @@ namespace SlalomTracker
             double distance = Math.Sqrt((dY * dY) + (dX * dX));
             
             return distance / time;
-        }        
+        }   
     }
 }
