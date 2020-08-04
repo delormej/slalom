@@ -6,6 +6,7 @@ using GeoCoordinatePortable;
 using Newtonsoft.Json;
 using System.Linq;
 using SlalomTracker.Cloud;
+using SlalomTracker.Video;
 using Logger = jasondel.Tools.Logger;
 
 namespace SlalomTracker
@@ -132,37 +133,6 @@ namespace SlalomTracker
             return nextMeasurements?.ToList();
         }
 
-        /// <summary>
-        /// Does a linear regression to fit the best centerline offset based on entry/exit gates.
-        /// </summary>
-        public double FitPass(string jsonUrl)
-        {
-            CoursePass bestPass = FromJsonUrl(jsonUrl);
-            return FitPass(bestPass);
-        }
-
-        public double FitPass(CoursePass pass)
-        {
-            const int MAX = 90, MIN = -90;
-            double bestPrecision = double.MaxValue;
-            CoursePass bestPass = pass;
-
-            for (int i = MIN; i <= MAX; i++)
-            {
-                CenterLineDegreeOffset = i;
-                CoursePass nextPass = CreatePass(pass.Measurements);
-                double precision = nextPass.GetGatePrecision();
-                
-                if (precision < bestPrecision)
-                {
-                    bestPrecision = precision;
-                    bestPass = nextPass;
-                }
-            }
-            Logger.Log($"Best Precision: {bestPrecision} = {bestPass.CenterLineDegreeOffset}");
-            return bestPass.CenterLineDegreeOffset;
-        }
-
         private Course GetCourse(List<Measurement> measurements, out Measurement entry55)
         {
             Course course;
@@ -200,13 +170,14 @@ namespace SlalomTracker
             if (measurements == null || measurements.Count() <= 1)
                 throw new ApplicationException("Unable to create a pass, no measurements passed.");
 
-            Measurement entry55 = null;
             CoursePass pass = new CoursePass();
             pass.CenterLineDegreeOffset = CenterLineDegreeOffset;
             
             if (m_rope == null)
                 m_rope = Rope.Default;
             pass.Rope = m_rope;
+
+            Measurement entry55 = null;
 
             if (m_course == null)
             {
@@ -235,6 +206,8 @@ namespace SlalomTracker
                 );
             }
 
+            pass.VideoTime = GetVideoTime(measurements, pass.Entry, pass.Exit);
+
             int lastIndex = measurements.IndexOf(pass.Exit);
             int firstIndex = measurements.IndexOf(pass.Entry);
             if (firstIndex == 0)
@@ -242,6 +215,7 @@ namespace SlalomTracker
             
             measurements[firstIndex-1].RopeAngleDegrees = CenterLineDegreeOffset;
             
+            pass.Measurements = new List<Measurement>();
             for (int i = firstIndex; i < lastIndex; i++)
             {
                 Measurement current = measurements[i];
@@ -358,6 +332,61 @@ namespace SlalomTracker
             double distance = Math.Sqrt((dY * dY) + (dX * dX));
             
             return distance / time;
-        }        
+        }    
+
+        /// <summary>
+        /// Returns a struct that represents the time since the begining of video in fractional seconds
+        /// when the boat first goes through the 55s and how long until it goes through exit 55s.
+        /// </summary>
+        private VideoTime GetVideoTime(List<Measurement> measurements, Measurement entry, Measurement exit)
+        {
+            VideoTime time = new VideoTime();
+
+            const double DEFAULT_DURATION = 30.0; // max # of seconds for the video unless otherwise specified.
+            const double GATE_OFFSET_SECONDS = 1.0; // amount of time before 55s to trim with.
+
+            if (entry == null)
+            {
+                Logger.Log("Unable to find boat at 55s, returning start time as 0 seconds.");
+                time.Start = 0;
+            }
+            else
+            {
+                time.Start = GetSecondsFrom(measurements[0], entry);
+
+                // if video has the recording, backup the start before entry.
+                if (time.Start >= GATE_OFFSET_SECONDS)
+                    time.Start -= GATE_OFFSET_SECONDS;
+            }
+
+            if (exit == null)
+            {
+                Logger.Log("Unable to find exit, will use last measurement or default.");
+                time.Duration = GetSecondsFrom(entry, measurements.Last());
+            }
+            else
+            {
+                double exitSeconds = exit.Timestamp.TimeOfDay.TotalSeconds + GATE_OFFSET_SECONDS;
+                if (exitSeconds > measurements.Last().Timestamp.TimeOfDay.TotalSeconds)
+                    exitSeconds = measurements.Last().Timestamp.TimeOfDay.TotalSeconds;
+
+                time.Duration = exitSeconds - time.Start;
+            }
+
+            if (time.Duration > DEFAULT_DURATION)
+                time.Duration = DEFAULT_DURATION;
+
+            return time;
+        }
+
+        private double GetSecondsFrom(Measurement start, Measurement end)
+        {
+            double seconds = 0.0d;
+            TimeSpan fromStart = end.Timestamp.Subtract(
+                start.Timestamp);
+            if (fromStart != null)
+                seconds = fromStart.TotalSeconds;
+            return seconds;
+        }                
     }
 }

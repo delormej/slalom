@@ -12,7 +12,6 @@ namespace SlalomTracker
     /// </summary>
     public class CoursePass
     {
-        private VideoTime m_time;
         private Measurement m_courseEntry;
         private Measurement m_courseExit;
 
@@ -34,7 +33,7 @@ namespace SlalomTracker
             internal set { m_courseExit = value; }    
         }
 
-        public List<Measurement> Measurements;
+        public List<Measurement> Measurements { get; internal set; }
 
         public Course Course { get; internal set; }
 
@@ -42,6 +41,8 @@ namespace SlalomTracker
         /// Rope length used for the pass.
         /// </summary>
         public Rope Rope { get; internal set; }
+
+        public VideoTime VideoTime { get; set; }
 
         /// <summary>
         /// Average boat speed (i.e. 30.4,32.3,34.2,36 mph) for the course.
@@ -61,7 +62,6 @@ namespace SlalomTracker
         /// </summary>
         internal CoursePass()
         {
-            Measurements = new List<Measurement>();
         }
 
         public double GetRopeArcLength(double boatDistance, double ropeLengthM, double angleDelta)
@@ -86,67 +86,9 @@ namespace SlalomTracker
             return Math.Sqrt(dEntry + dExit);
         }
 
-        /// <summary>
-        /// Returns a struct that represents the time since the begining of video in fractional seconds
-        /// when the boat first goes through the 55s and how long until it goes through exit 55s.
-        /// </summary>
-        public VideoTime GetVideoTime()
-        {
-            if (m_time != null)
-                return m_time;
-            
-            m_time = new VideoTime();
-
-            const double DEFAULT_DURATION = 30.0;
-            const double GATE_OFFSET_SECONDS = 1.0;
-
-            if (Entry == null)
-            {
-                Logger.Log("Unable to find boat at 55s, returning start time as 0 seconds.");
-                m_time.Start = 0;
-            }
-            else
-            {
-                m_time.Start = Entry.Timestamp.TimeOfDay.TotalSeconds >= GATE_OFFSET_SECONDS ? 
-                    Entry.Timestamp.TimeOfDay.TotalSeconds - GATE_OFFSET_SECONDS : 0;
-            }
-
-            if (Exit == null)
-            {
-                Logger.Log("Unable to find exit, will use last measurement or default.");
-                m_time.Duration = GetSecondsFromEntry(Measurements.Last());
-            }
-            else
-            {
-                double exitSeconds = Exit.Timestamp.TimeOfDay.TotalSeconds + GATE_OFFSET_SECONDS;
-                if (exitSeconds > Measurements.Last().Timestamp.TimeOfDay.TotalSeconds)
-                    exitSeconds = Measurements.Last().Timestamp.TimeOfDay.TotalSeconds;
-
-                m_time.Duration = exitSeconds - m_time.Start;
-            }
-
-            if (m_time.Duration > DEFAULT_DURATION)
-                m_time.Duration = DEFAULT_DURATION;
-
-            return m_time;
-        }
-
         public double GetSecondsAtEntry55()
         {
-            if (m_time == null)
-                GetVideoTime();
-
-            return m_time.Start;
-        }
-
-        private double GetSecondsFromEntry(Measurement measurement)
-        {
-            double seconds = 0.0d;
-            TimeSpan fromStart = measurement.Timestamp.Subtract(
-                Entry.Timestamp);
-            if (fromStart != null)
-                seconds = fromStart.TotalSeconds;
-            return seconds;
+            return VideoTime?.Start ?? 0;
         }        
     }
 }

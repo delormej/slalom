@@ -52,7 +52,7 @@ namespace SlalomTracker.Video
 
                 do {
                     if (!hasTimeOverride)
-                        videoTime = pass.GetVideoTime();
+                        videoTime = pass.VideoTime;
 
                     var createThumbnail = CreateThumbnailAsync(videoTime.Start); 
                     var uploadThumbnail = UploadThumbnailAsync(createThumbnail, getCreationTime);
@@ -229,16 +229,16 @@ namespace SlalomTracker.Video
         /// <summary>
         /// Finds the best center line offset to use and updates the pass object.
         /// </summary>
-        private Task FitCenterLineAsync(CoursePass pass)
-        {
-            if (pass == null)
-                return Task.CompletedTask;
+        // private Task FitCenterLineAsync(CoursePass pass)
+        // {
+        //     if (pass == null)
+        //         return Task.CompletedTask;
 
-            return Task.Run( () => {
-                CoursePassFactory factory = new CoursePassFactory();
-                pass.CenterLineDegreeOffset = factory.FitPass(pass);
-            });
-        }
+        //     return Task.Run( () => {
+        //         CoursePassFactory factory = new CoursePassFactory();
+        //         pass.CenterLineDegreeOffset = factory.FitPass(pass);
+        //     });
+        // }
 
         private async Task CreateAndUploadMetadataAsync(CoursePass pass,
                         Task<string> uploadThumbnail,
