@@ -202,7 +202,7 @@ namespace SlalomTracker
             if (pass.Exit.Timestamp.Subtract(pass.Entry.Timestamp).TotalSeconds > MAX_PASS_SECONDS)
             {
                 pass.Exit = measurements.FindHandleAtSeconds(
-                    pass.Entry.Timestamp.AddSeconds(MAX_PASS_SECONDS).TimeOfDay.TotalSeconds
+                    pass.Entry.Timestamp.AddSeconds(MAX_PASS_SECONDS).TimeOfDay.TotalSeconds 
                 );
             }
 
@@ -265,7 +265,7 @@ namespace SlalomTracker
             {
                 // Try to calculate speed at 1 ball.
                 exitGate = pass.Measurements.FindBoatAtY(Course.Balls[0].Y);
-                Logger.Log("Course exit null, trying to caluculate from ball 1: " + exitGate?.BoatPosition.Y);
+                Logger.Log("Course exit null, trying to calculate from ball 1: " + exitGate?.BoatPosition.Y);
             }
 
             if (entryGate == null || exitGate == null)
@@ -340,41 +340,17 @@ namespace SlalomTracker
         /// </summary>
         private VideoTime GetVideoTime(List<Measurement> measurements, Measurement entry, Measurement exit)
         {
-            VideoTime time = new VideoTime();
-
-            const double DEFAULT_DURATION = 30.0; // max # of seconds for the video unless otherwise specified.
             const double GATE_OFFSET_SECONDS = 1.0; // amount of time before 55s to trim with.
 
-            if (entry == null)
-            {
-                Logger.Log("Unable to find boat at 55s, returning start time as 0 seconds.");
-                time.Start = 0;
-            }
-            else
-            {
-                time.Start = GetSecondsFrom(measurements[0], entry);
+            VideoTime time = new VideoTime();
+            time.Start = GetSecondsFrom(measurements[0], entry);
 
-                // if video has the recording, backup the start before entry.
-                if (time.Start >= GATE_OFFSET_SECONDS)
-                    time.Start -= GATE_OFFSET_SECONDS;
-            }
+            // Start video earlier if possible.
+            if (time.Start >= GATE_OFFSET_SECONDS)
+                time.Start -= GATE_OFFSET_SECONDS;
 
-            if (exit == null)
-            {
-                Logger.Log("Unable to find exit, will use last measurement or default.");
-                time.Duration = GetSecondsFrom(entry, measurements.Last());
-            }
-            else
-            {
-                double exitSeconds = exit.Timestamp.TimeOfDay.TotalSeconds + GATE_OFFSET_SECONDS;
-                if (exitSeconds > measurements.Last().Timestamp.TimeOfDay.TotalSeconds)
-                    exitSeconds = measurements.Last().Timestamp.TimeOfDay.TotalSeconds;
-
-                time.Duration = exitSeconds - time.Start;
-            }
-
-            if (time.Duration > DEFAULT_DURATION)
-                time.Duration = DEFAULT_DURATION;
+            double exitSeconds = GetSecondsFrom(measurements[0], exit);
+            time.Duration = (exitSeconds - time.Duration) + GATE_OFFSET_SECONDS;
 
             return time;
         }
