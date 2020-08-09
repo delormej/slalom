@@ -13,13 +13,17 @@ echo "skiblobs::$SKIBLOBS"
 echo "github_token::$GITHUB_TOKEN"
 echo "Building container::$container"
 
+if [ $1 == "debug" ]; then
+    target=" --target build "
+    dockerrun="dotnet run -p ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj"
+fi
+
 #
 # Build container
 #
 docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
     --build-arg VERSION=$VERSION \
-    --force-rm \
-     --target build \
+    --force-rm $target \
     -f ./SlalomTracker.WebApi/Dockerfile . 
 #
 # To just use the debug image add:
@@ -36,12 +40,16 @@ docker run --rm --name ski-web -p 5000:5000 -it \
     -e SKISIGNALR="$SKISIGNALR" \
     -e SKIJOBS_SERVICE="$SKIJOBS_SERVICE" \
     -e Logging__LogLevel__Default="Debug" \
-    $container 
+    $container $dockerrun
+    
     
 # dotnet run --project SlalomTracker.WebApi/SlalomTracker.WebApi.csproj
 
 #
 # Tag and push the container.
 #
-# docker tag $container wthacr.azurecr.io/$container
-# docker push wthacr.azurecr.io/$container
+
+if [ $1 != "debug" ]; then
+    docker tag $container wthacr.azurecr.io/$container
+    docker push wthacr.azurecr.io/$container
+fi
