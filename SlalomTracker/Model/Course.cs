@@ -33,7 +33,11 @@ namespace SlalomTracker
         public string FriendlyName { get; set; }
         public List<GeoCoordinate> Polygon { get { return _polygon; } }
         public List<GeoCoordinate> Entry55Polygon { get { return _entry55Polygon; } }
-        public List<GeoCoordinate> Exit55Polygon { get { return _exit55Polygon; } }
+        public List<GeoCoordinate> Exit55Polygon { get { return _exit55Polygon; } }        
+        /// <summary>
+        /// Heading straight through the course from Entry to Exit Center Line.
+        /// </summary>
+        public double CourseHeading { get; private set; }
 
         static Course()
         {
@@ -54,6 +58,7 @@ namespace SlalomTracker
             Course55EntryCL = entry55;
             Course55ExitCL = exit55;
             GeneratePolygons();
+            CourseHeading = Util.GetHeading(Course55EntryCL, Course55ExitCL);
         }
 
         private delegate bool InPoly(GeoCoordinate geo);
@@ -83,12 +88,11 @@ namespace SlalomTracker
                     {
                         Measurement nextM = measurements[current + skipCount];
                         double boatHeading = Util.GetHeading(m.BoatGeoCoordinate, nextM.BoatGeoCoordinate);
-                        double courseHeading = GetCourseHeadingDeg();
 
                         // within some tolerance
                         const double tolerance = 15.0;
-                        if (boatHeading - tolerance <= courseHeading &&
-                            boatHeading + tolerance >= courseHeading)
+                        if (boatHeading - tolerance <= CourseHeading &&
+                            boatHeading + tolerance >= CourseHeading)
                         {
                             found = m;
                             break;
@@ -134,15 +138,6 @@ namespace SlalomTracker
             }
         }
 
-        /// <summary>
-        /// Calculates the heading straight through the course from Entry to Exit Center Line.
-        /// </summary>
-        /// <returns></returns>
-        public double GetCourseHeadingDeg()
-        {
-            return Util.GetHeading(Course55EntryCL, Course55ExitCL);
-        }
-
         private void GeneratePolygons()
         {
             _polygon = GetCoursePolygon();
@@ -157,7 +152,7 @@ namespace SlalomTracker
         private List<GeoCoordinate> GetCoursePolygon()
         {
             double halfWidth = WidthM / 2.0d; // 5.0;
-            double left, right, heading = this.GetCourseHeadingDeg();
+            double left, right, heading = CourseHeading;
             right = (heading + 90 + 360) % 360;
             left = (right + 180) % 360;
 
@@ -178,7 +173,7 @@ namespace SlalomTracker
         private List<GeoCoordinate> GetGatePolygon(GeoCoordinate reference)
         {
             double halfWidth = WidthM / 2.0d; 
-            double left, right, heading = this.GetCourseHeadingDeg();
+            double left, right, heading = CourseHeading;
             right = (heading + 90 + 360) % 360;
             left = (right + 180) % 360;
             
@@ -221,8 +216,7 @@ namespace SlalomTracker
         {
             double distance = boatPosition.GetDistanceTo(Course55EntryCL);
             double boatHeading = Util.GetHeading(Course55EntryCL, boatPosition);
-            double courseHeading = GetCourseHeadingDeg();
-            double radiansOffCenter = Util.DegreesToRadians(courseHeading - boatHeading);
+            double radiansOffCenter = Util.DegreesToRadians(CourseHeading - boatHeading);
             
             // calculate 3 angles
             double deltaRadians = Util.DegreesToRadians(90) - radiansOffCenter;

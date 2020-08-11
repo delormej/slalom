@@ -404,7 +404,7 @@ namespace SkiConsole
                     c.Name, 
                     c.Course55EntryCL.Latitude, 
                     c.Course55EntryCL.Longitude,
-                    c.GetCourseHeadingDeg());
+                    c.CourseHeading);
             }
         }
 
