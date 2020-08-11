@@ -35,10 +35,11 @@ namespace SlalomTracker
             DrawGpsAccuracy();
             DrawCenterLineOffset();
 
-            //DrawCourseBounds(_pass.Course.Polygon, Color.CadetBlue);
+            #if DEBUG
+            DrawCourseBounds(_pass.Course.Polygon, Color.CadetBlue);
             DrawCourseBounds(_pass.Course.Entry55Polygon, Color.Green);
             DrawCourseBounds(_pass.Course.Exit55Polygon, Color.Red);
-
+            #endif
             DrawCourseFeature(Color.Green, Course.PreGates);
             DrawCourseFeature(Color.Red, Course.Gates);
             DrawCourseFeature(Color.Red, Course.Balls);
@@ -68,7 +69,7 @@ namespace SlalomTracker
             for (; i < last; i++)
             {
                 var m = _pass.Measurements[i];
-                if (m.BoatPosition == CoursePosition.Empty)
+                if (!m.InCourse)
                 {
                     Logger.Log($"Out of course {i}");
                     continue;
@@ -145,12 +146,23 @@ namespace SlalomTracker
 
         private void DrawCourseBounds(List<GeoCoordinate> list, Color color)
         {
+            Brush brush = new SolidBrush(color);
+            Font font = new Font(FontFamily.GenericMonospace, 9);
+
             // Convert geos to relative course positions, then to absolute screen points.
             List<PointF> points = new List<PointF>(list.Count);
             for (int i = 0; i < list.Count; i++)
             {
                 CoursePosition position = _pass.Course.CoursePositionFromGeo(list[i]);
                 points.Add(PointFromCoursePosition(position));
+
+                string text = "";
+                if (i == 0)
+                    text = $"0:{position.X:0.0}, {position.Y:0.0}";
+                else
+                    text = i.ToString();
+                    
+                _graphics.DrawString(text, font, brush, points[i]);
             }
 
             Pen pen = new Pen(color, 0.6F);
