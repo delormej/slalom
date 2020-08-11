@@ -282,13 +282,12 @@ namespace SlalomTracker
             {
                 Measurement current = measurements[i];
                 // Reset position based on calculated offsets.
-                current.BoatPosition = pass.GetBoatPosition(current); 
-                
-                if (current.BoatPosition != CoursePosition.Empty)
-                {                    
-                    current.InCourse = (current.BoatPosition.Y >= Course.Gates[0].Y && 
-                        current.BoatPosition.Y <= Course.Gates[3].Y);                       
+                current.BoatPosition = pass.GetBoatPosition(current);                 
+                current.InCourse = (current.BoatPosition.Y >= Course.PreGates[0].Y && 
+                    current.BoatPosition.Y <= Course.PreGates[3].Y);         
 
+                if (current.InCourse)
+                {
                     HandleCalculations(current, measurements, i);               
                     pass.Measurements.Add(current);
 
