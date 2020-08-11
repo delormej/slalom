@@ -219,10 +219,23 @@ namespace SlalomTracker
         /// <returns></returns>
         public CoursePosition CoursePositionFromGeo(GeoCoordinate boatPosition)
         {
-            if (!IsBoatInCourse(boatPosition))
-                return CoursePosition.Empty;
-            else
-                return Util.CoursePositionFromGeo(boatPosition, this);
+            double distance = boatPosition.GetDistanceTo(Course55EntryCL);
+            double boatHeading = Util.GetHeading(Course55EntryCL, boatPosition);
+            double courseHeading = GetCourseHeadingDeg();
+            double radiansOffCenter = Util.DegreesToRadians(courseHeading - boatHeading);
+            
+            // calculate 3 angles
+            double deltaRadians = Util.DegreesToRadians(90) - radiansOffCenter;
+
+            // x axis
+            double x = distance * (Math.Sin(radiansOffCenter) / Math.Sin(Util.DegreesToRadians(90)));
+
+            // y axis (how far down the course)
+            double y = distance * (Math.Sin(deltaRadians) / Math.Sin(Util.DegreesToRadians(90)));
+
+            //Console.WriteLine($"CoursePosition: {boatHeading}, {courseHeading}, {distance}, {x}, {y}");
+
+            return new CoursePosition(x, y);            
         }
 
         /// <summary>
