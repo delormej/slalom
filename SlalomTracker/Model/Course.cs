@@ -57,8 +57,8 @@ namespace SlalomTracker
         {
             Course55EntryCL = entry55;
             Course55ExitCL = exit55;
-            GeneratePolygons();
             CourseHeading = Util.GetHeading(Course55EntryCL, Course55ExitCL);
+            GeneratePolygons();
         }
 
         private delegate bool InPoly(GeoCoordinate geo);
@@ -152,8 +152,8 @@ namespace SlalomTracker
         private List<GeoCoordinate> GetCoursePolygon()
         {
             double halfWidth = WidthM / 2.0d; // 5.0;
-            double left, right, heading = CourseHeading;
-            right = (heading + 90 + 360) % 360;
+            double left, right;
+            right = (CourseHeading + 90 + 360) % 360;
             left = (right + 180) % 360;
 
             // From the 55's.
@@ -173,18 +173,18 @@ namespace SlalomTracker
         private List<GeoCoordinate> GetGatePolygon(GeoCoordinate reference)
         {
             double halfWidth = WidthM / 2.0d; 
-            double left, right, heading = CourseHeading;
-            right = (heading + 90 + 360) % 360;
+            double left, right;
+            right = (CourseHeading + 90 + 360) % 360;
             left = (right + 180) % 360;
             
             GeoCoordinate GateCL = reference;
             GeoCoordinate LeftTop = Util.MoveTo(GateCL, halfWidth, left);
             GeoCoordinate RightTop = Util.MoveTo(GateCL, halfWidth, right);
             GeoCoordinate RightBottom = Util.MoveTo(
-                Util.MoveTo(GateCL, 1.0, heading),
+                Util.MoveTo(GateCL, 1.0, CourseHeading),
                 halfWidth, right);
             GeoCoordinate LeftBottom = Util.MoveTo(
-                Util.MoveTo(GateCL, 1.0, heading),
+                Util.MoveTo(GateCL, 1.0, CourseHeading),
                 halfWidth, left);
 
             List<GeoCoordinate> poly = new List<GeoCoordinate>(4);
