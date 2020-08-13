@@ -184,7 +184,7 @@ namespace SlalomTracker
 
             // Calculate best Y for Entry & Exit
             // Where Entry.Y is within 20m +/- of recorded Entry.X between -1.25 and 1.25
-            // Exit is the measurment Entry.Y + 259m and X is between -1.25 and 1.25
+            // Exit is the measurement Entry.Y + 259m and X is between -1.25 and 1.25
             double y = 10.0; 
 
             return new CoursePosition(0, 0);
@@ -268,6 +268,7 @@ namespace SlalomTracker
             pass.VideoTime = GetVideoTime(pass.Entry, pass.Exit);
             
             CreateBoatPositions(pass.Course, measurements);
+            
             pass.SetOffsets(CalculateOffsets(measurements), CenterLineDegreeOffset);            
 
             int lastIndex = measurements.IndexOf(pass.Exit);

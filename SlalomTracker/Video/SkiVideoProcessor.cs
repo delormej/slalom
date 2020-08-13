@@ -13,7 +13,6 @@ namespace SlalomTracker.Video
         string _sourceVideoUrl;
         string _localVideoPath;
         string _json;
-        DateTime _creationTime;
         VideoProcessedNotifier _processedNotifer;
 
         public SkiVideoProcessor(string videoUrl)
@@ -44,7 +43,6 @@ namespace SlalomTracker.Video
 
                 _videoTasks = new VideoTasks(_localVideoPath);
 
-                var getCreationTime = GetCreationTimeAsync(); 
                 CoursePass pass = await CreateCoursePassAsync();
                 
                 if (!hasTimeOverride && pass == null)
@@ -55,10 +53,10 @@ namespace SlalomTracker.Video
                         videoTime = pass.VideoTime;
 
                     var createThumbnail = CreateThumbnailAsync(videoTime.Start); 
-                    var uploadThumbnail = UploadThumbnailAsync(createThumbnail, getCreationTime);
+                    var uploadThumbnail = UploadThumbnailAsync(createThumbnail, pass.EntryTime);
                     var trimAndSilence = TrimAndSilenceAsync(videoTime); 
-                    var uploadVideo = UploadVideoAsync(trimAndSilence, getCreationTime);
-                    var uploadHotVideo = UploadGoogleVideoAsync(trimAndSilence, getCreationTime);
+                    var uploadVideo = UploadVideoAsync(trimAndSilence, pass.EntryTime);
+                    var uploadHotVideo = UploadGoogleVideoAsync(trimAndSilence, pass.EntryTime);
                     
                     // Some challenges with fit right now, so avoid till resolved.
                     // await FitCenterLineAsync(pass);
@@ -89,13 +87,6 @@ namespace SlalomTracker.Video
             return localPath;
         }
 
-        private async Task GetCreationTimeAsync()
-        {
-            Logger.Log($"Getting creation time from video {_sourceVideoUrl}...");
-            _creationTime = await _videoTasks.GetCreationTimeAsync();
-            Logger.Log($"Creation time is {_creationTime}");
-        }
-
         private async Task<string> CreateThumbnailAsync(double atSeconds)
         {  
             Logger.Log($"Creating Thumbnail for video {_sourceVideoUrl}...");           
@@ -111,29 +102,27 @@ namespace SlalomTracker.Video
             return _videoTasks.TrimAndSilenceVideoAsync(videoTime.Start, videoTime.Duration); 
         }
 
-        private async Task<string> UploadThumbnailAsync(Task<string> createThumbnail, Task getCreationTime)
+        private async Task<string> UploadThumbnailAsync(Task<string> createThumbnail, DateTime entryTime)
         {
-            await getCreationTime; // Ensure creation time has been generated.
             string localThumbnailPath = await createThumbnail;
 
             Logger.Log($"Uploading thumbnail {localThumbnailPath}...");
-            string thumbnailUrl = _storage.UploadThumbnail(localThumbnailPath, _creationTime);
+            string thumbnailUrl = _storage.UploadThumbnail(localThumbnailPath, entryTime);
             Logger.Log($"Uploaded thumbnail to {thumbnailUrl}");
 
             return thumbnailUrl;
         }
 
 //TODO: Consolidate these two storage upload methods.
-        private async Task<string> UploadVideoAsync(Task<string> trimAndSilence, Task getCreationTime)
+        private async Task<string> UploadVideoAsync(Task<string> trimAndSilence, DateTime entryTime)
         {
-            await getCreationTime; // Ensure creation time has been generated.
             string processedVideoPath = await trimAndSilence;
             string videoUrl = null;
 
             try 
             {
                 Logger.Log($"Uploading video {processedVideoPath}...");
-                videoUrl = _storage.UploadVideo(processedVideoPath, _creationTime);
+                videoUrl = _storage.UploadVideo(processedVideoPath, entryTime);
                 Logger.Log($"Video uploaded to {videoUrl}");
             }
             catch (Exception e)
@@ -144,17 +133,16 @@ namespace SlalomTracker.Video
             return videoUrl;
         }
 
-        private async Task<string> UploadGoogleVideoAsync(Task<string> trimAndSilence, Task getCreationTime)
+        private async Task<string> UploadGoogleVideoAsync(Task<string> trimAndSilence, DateTime entryTime)
         {
             string videoUrl = "";
             try 
             {
-                await getCreationTime; 
                 string processedVideoPath = await trimAndSilence;
 
                 Logger.Log($"Uploading video to Google {processedVideoPath}...");
                 GoogleStorage storage = new GoogleStorage();
-                videoUrl = await storage.UploadVideoAsync(processedVideoPath, _creationTime);
+                videoUrl = await storage.UploadVideoAsync(processedVideoPath, entryTime);
                 Logger.Log($"Video uploaded to Google: {videoUrl}");
             }
             catch (Exception e)
@@ -220,9 +208,6 @@ namespace SlalomTracker.Video
                 Logger.Log("Unable to find another pass.", e);
             }
             
-            if (nextPass != null)
-                _creationTime = _creationTime.AddSeconds(nextPass.GetSecondsAtEntry55());
-
             return nextPass;
         }   
 
@@ -285,7 +270,7 @@ namespace SlalomTracker.Video
 
         private SkiVideoEntity CreateSkiVideoEntity(CoursePass pass, string videoUrl)
         {
-            SkiVideoEntity entity = new SkiVideoEntity(videoUrl, _creationTime);
+            SkiVideoEntity entity = new SkiVideoEntity(videoUrl, pass.EntryTime);
 
             if (pass != null) 
             {

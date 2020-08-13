@@ -35,6 +35,11 @@ namespace SlalomTracker
             internal set { m_courseExit = value; }    
         }
 
+        public DateTime EntryTime 
+        {
+             get { return Entry?.Timestamp ?? DateTime.MinValue;  }
+        }
+
         public List<Measurement> Measurements { get; internal set; }
 
         public Course Course { get; internal set; }

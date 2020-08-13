@@ -8,7 +8,6 @@ then
 fi
 container=skiwebapi:v$VERSION
 
-echo "service::$SKIJOBS_SERVICE"
 echo "skiblobs::$SKIBLOBS"
 echo "github_token::$GITHUB_TOKEN"
 echo "Building container::$container"
@@ -16,6 +15,7 @@ echo "Building container::$container"
 if [ $1 == "debug" ]; then
     target=" --target build "
     dockerrun="dotnet run -p ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj"
+    github_token="-e $GITHUB_TOKEN"
 fi
 
 #
@@ -38,7 +38,7 @@ docker run --rm --name ski-web -p 5000:5000 -it \
     -e SKIBLOBS="$SKIBLOBS" \
     -e SKISB="$SKISB" \
     -e SKISIGNALR="$SKISIGNALR" \
-    -e SKIJOBS_SERVICE="$SKIJOBS_SERVICE" \
+    $github_token \
     -e Logging__LogLevel__Default="Debug" \
     $container $dockerrun
     
