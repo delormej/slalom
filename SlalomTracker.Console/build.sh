@@ -15,20 +15,24 @@ echo "github_token::$GITHUB_TOKEN"
 echo "skimlkey::$SKIMLKEY"
 echo "Building container::$container"
 
+if [ "$1" == "debug" ]; then
+    target=" --target build "
+    dockerrun="dotnet run -p ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj"
+    github_token="-e $GITHUB_TOKEN"
+fi
+
 #
 # Build container
 #
 echo "Building container."
 docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
     --build-arg VERSION=$VERSION \
-    --force-rm \
-    --target build \
+      --force-rm $target \
     -f ./SlalomTracker.Console/Dockerfile .
 #
 # To just use the debug image add --target build to the above and it won't build the release stage.
 #
 
-#
 #
 # Launch container
 #
@@ -45,11 +49,14 @@ docker run -it --rm \
     -e SKIMLSKIERMODEL="SkierDetection-2" \
     --name ski-console \
     --cpus="2.0" \
-    $container
+    $github_token \
+    $container $dockerrun
 
 # az acr login -n wthacr
-# docker tag $container wthacr.azurecr.io/$container
-# docker push wthacr.azurecr.io/$container
+if [ "$1" != "debug" ]; then
+    docker tag $container wthacr.azurecr.io/$container
+    docker push wthacr.azurecr.io/$container
+fi
 
 #
 # Script to get message counts from Service Bus
