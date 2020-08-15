@@ -30,6 +30,8 @@ namespace SlalomTracker
             entry55 = null;
 
             // Iterate through each measurement, try each course entry until you find it inside polygon.
+            // Don't iterate through each course first because you'll find subsequent passes before matching
+            // the earlier pass.  This logic was incorrectly reversed in an earlier commit.
             foreach (Measurement m in measurements)
             {
                 foreach (Course course in _knownCourses)
