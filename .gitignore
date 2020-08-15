@@ -270,3 +270,4 @@ __pycache__/
 dev.env
 dot.env
 .env
+gcloud.json
