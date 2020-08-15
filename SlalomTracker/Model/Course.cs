@@ -172,6 +172,7 @@ namespace SlalomTracker
         /// </summary>
         private List<GeoCoordinate> GetGatePolygon(GeoCoordinate reference)
         {
+            const double polygonDepth = 3.0d;
             double halfWidth = WidthM / 2.0d; 
             double left, right;
             right = (CourseHeading + 90 + 360) % 360;
@@ -181,10 +182,10 @@ namespace SlalomTracker
             GeoCoordinate LeftTop = Util.MoveTo(GateCL, halfWidth, left);
             GeoCoordinate RightTop = Util.MoveTo(GateCL, halfWidth, right);
             GeoCoordinate RightBottom = Util.MoveTo(
-                Util.MoveTo(GateCL, 1.0, CourseHeading),
+                Util.MoveTo(GateCL, polygonDepth, CourseHeading),
                 halfWidth, right);
             GeoCoordinate LeftBottom = Util.MoveTo(
-                Util.MoveTo(GateCL, 1.0, CourseHeading),
+                Util.MoveTo(GateCL, polygonDepth, CourseHeading),
                 halfWidth, left);
 
             List<GeoCoordinate> poly = new List<GeoCoordinate>(4);

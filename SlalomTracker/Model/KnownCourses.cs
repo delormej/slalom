@@ -27,30 +27,37 @@ namespace SlalomTracker
         /// </summary>
         public Course FindCourse(List<Measurement> measurements, out Measurement entry55)
         {
-            List<KeyValuePair<Course, Measurement>> results = new List<KeyValuePair<Course, Measurement>>();
-            Course found = null;
             entry55 = null;
 
-            foreach (Course course in _knownCourses)
+            // Iterate through each measurement, try each course entry until you find it inside polygon.
+            foreach (Measurement m in measurements)
             {
-                Measurement course55Entry = course.FindEntry55(measurements);
-                if (course55Entry != null)
-                    results.Add(new KeyValuePair<Course, Measurement>(course, course55Entry));
+                foreach (Course course in _knownCourses)
+                {
+                    if (course.IsBoatInEntry55(m.BoatGeoCoordinate))
+                    {
+                        const int skipCount = 20;
+                        // Ensure that the direction of travel matches Entry -> Exit.
+                        int current = measurements.IndexOf(m);
+                        if (measurements.Count > current + skipCount)
+                        {
+                            Measurement nextM = measurements[current + skipCount];
+                            double boatHeading = Util.GetHeading(m.BoatGeoCoordinate, nextM.BoatGeoCoordinate);
+
+                            // within some tolerance
+                            const double tolerance = 15.0;
+                            if (boatHeading - tolerance <= course.CourseHeading &&
+                                boatHeading + tolerance >= course.CourseHeading)
+                            {
+                                entry55 = m;
+                                return course;
+                            }
+                        }                        
+                    }
+                }
             }
 
-            if (results.Count() > 1)
-            {
-                var first = results.OrderBy(kvp => kvp.Value.Timestamp).First();
-                found = first.Key;
-                entry55 = first.Value;
-            }
-            else if (results.Count() == 1)
-            {
-                found = results[0].Key;
-                entry55 = results[0].Value;
-            }
-
-            return found;
+            return null;
         }
 
         public Course ByName(string name)

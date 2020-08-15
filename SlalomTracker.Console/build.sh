@@ -17,7 +17,6 @@ echo "Building container::$container"
 
 if [ "$1" == "debug" ]; then
     target=" --target build "
-    dockerrun="dotnet run -p ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj"
     github_token="-e $GITHUB_TOKEN"
 fi
 
@@ -50,7 +49,7 @@ docker run -it --rm \
     --name ski-console \
     --cpus="2.0" \
     $github_token \
-    $container $dockerrun
+    $container
 
 # az acr login -n wthacr
 if [ "$1" != "debug" ]; then
