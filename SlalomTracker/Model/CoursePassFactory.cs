@@ -272,7 +272,7 @@ namespace SlalomTracker
                 pass.VideoTime = GetVideoTime(pass.Entry, pass.Exit);
             }
             
-            CreateBoatPositions(pass.Course, measurements);0
+            CreateBoatPositions(pass.Course, measurements);
             
             pass.SetOffsets(CalculateOffsets(measurements), CenterLineDegreeOffset);            
 
