@@ -260,9 +260,7 @@ namespace SlalomTracker
 
             if (pass.Exit.Timestamp.Subtract(pass.Entry.Timestamp).TotalSeconds > MAX_PASS_SECONDS)
             {
-                pass.Exit = measurements.FindAtSeconds(
-                    pass.Entry.Timestamp.AddSeconds(MAX_PASS_SECONDS).TimeOfDay.TotalSeconds 
-                );
+                pass.Exit = measurements.FindAtSeconds(MAX_PASS_SECONDS);
             }
            
             pass.VideoTime = GetVideoTime(pass.Entry, pass.Exit);
