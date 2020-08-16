@@ -658,15 +658,26 @@ namespace SkiConsole
 
         private static async Task RepublishStorageEventsAsync()
         {
-            string messageBody = "{ \"eventType\":\"Microsoft.Storage.BlobCreated\", \"data\":{\"url\":\"https://skivideos.blob.core.windows.net/upload/GP014186.MP4\"} }";
+            string accountKey = System.Environment.GetEnvironmentVariable("SKIVIDEOS_KEY");
+            string accountName = "skivideos";
+
+            var blobs = BlobRestApi.GetBlobs(accountName, accountKey, "upload");
+
+            IList<Microsoft.Azure.ServiceBus.Message> messages = new List<Microsoft.Azure.ServiceBus.Message>();
+
+            foreach (var uri in blobs)
+            {
+                string messageBody = "{ \"eventType\":\"Microsoft.Storage.BlobCreated\", \"data\":{\"url\":\"" + uri + "\"} }";
+                var message = new Microsoft.Azure.ServiceBus.Message(System.Text.Encoding.UTF8.GetBytes(messageBody));
+                messages.Add(message);
+            }          
 
             string serviceBusConnectionString = Environment.GetEnvironmentVariable("SKISB");
             string queueName = "video-uploaded";
             Microsoft.Azure.ServiceBus.QueueClient queueClient = new Microsoft.Azure.ServiceBus.QueueClient(serviceBusConnectionString, queueName);
-            var message = new Microsoft.Azure.ServiceBus.Message(System.Text.Encoding.UTF8.GetBytes(messageBody));
-
-            await queueClient.SendAsync(message);
-            System.Console.WriteLine("Resent message.");
+            
+            await queueClient.SendAsync(messages);
+            System.Console.WriteLine($"Resent {blobs.Count()} message(s).");
         }
     }
 }
