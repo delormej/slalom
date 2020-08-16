@@ -68,7 +68,9 @@ namespace SkiConsole
                 "Train the model with all the data we have.\n\t\t" +
                 "ski -t\n\t\t" +
                 "Listen to service bus queue for new videos uploaded.\n\t\t" +
-                "ski -l [optional]queueName\n\t\t"                       
+                "ski -l [optional]queueName\n\t\t" +
+                "Republish videos currently in upload folder to service bus queue for new videos uploaded.\n\t\t" +
+                "ski -r\n\t\t"                     
             );
         }
 
@@ -157,6 +159,10 @@ namespace SkiConsole
             else if (args[0] == "--fixtime")
             {
                 FixTimestamp().Wait();
+            }
+            else if (args[0] == "-r")
+            {
+                RepublishStorageEventsAsync().Wait();
             }
             else
                 ShowUsage();
@@ -648,6 +654,19 @@ namespace SkiConsole
         {
             VideoProcessedNotifier notifier = new VideoProcessedNotifier();
             notifier.NotifyAsync("Jason", "video.MP4").Wait();
+        }
+
+        private static async Task RepublishStorageEventsAsync()
+        {
+            string messageBody = "{ \"eventType\":\"Microsoft.Storage.BlobCreated\", \"data\":{\"url\":\"https://skivideos.blob.core.windows.net/upload/GP014186.MP4\"} }";
+
+            string serviceBusConnectionString = Environment.GetEnvironmentVariable("SKISB");
+            string queueName = "video-uploaded";
+            Microsoft.Azure.ServiceBus.QueueClient queueClient = new Microsoft.Azure.ServiceBus.QueueClient(serviceBusConnectionString, queueName);
+            var message = new Microsoft.Azure.ServiceBus.Message(System.Text.Encoding.UTF8.GetBytes(messageBody));
+
+            await queueClient.SendAsync(message);
+            System.Console.WriteLine("Resent message.");
         }
     }
 }
