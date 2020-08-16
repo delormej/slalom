@@ -265,8 +265,11 @@ namespace SlalomTracker
             
             if (pass.VideoTime.Duration > MAX_PASS_SECONDS)
             {
-                double exitSeconds = pass.VideoTime.Start + MAX_PASS_SECONDS;
-                pass.Exit = measurements.FindAtSeconds(exitSeconds);
+                // Get the start seconds relative to this set of measurements for this pass.
+                // FindAtSeconds(...) will only be relative to the current measurements collection.
+                double start = pass.Entry.Timestamp.Subtract(measurements[0].Timestamp).TotalSeconds;
+                double exit = start + MAX_PASS_SECONDS;
+                pass.Exit = measurements.FindAtSeconds(exit);
 
                 // Update video time with new exit time.
                 pass.VideoTime = GetVideoTime(pass.Entry, pass.Exit);
