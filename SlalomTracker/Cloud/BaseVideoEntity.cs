@@ -1,10 +1,11 @@
 using System;
 using System.IO;
 using Google.Cloud.Firestore;
+using Microsoft.WindowsAzure.Storage.Table;
 
 namespace SlalomTracker.Cloud
 {
-    public abstract class BaseVideoEntity
+    public abstract class BaseVideoEntity : TableEntity
     {
         [FirestoreProperty]        
         public string Url { get; set; }

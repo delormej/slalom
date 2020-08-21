@@ -68,7 +68,9 @@ namespace SkiConsole
                 "Train the model with all the data we have.\n\t\t" +
                 "ski -t\n\t\t" +
                 "Listen to service bus queue for new videos uploaded.\n\t\t" +
-                "ski -l [optional]queueName\n\t\t"                       
+                "ski -l [optional]queueName\n\t\t" +
+                "Migrate ski video entities.\n\t\t" +
+                "ski --migrate\n\t\t"                                       
             );
         }
 
@@ -157,6 +159,10 @@ namespace SkiConsole
             else if (args[0] == "--fixtime")
             {
                 FixTimestamp().Wait();
+            }
+            else if (args[0] == "--migrate")
+            {
+                MigrateSkiVideoEntities().Wait();
             }
             else
                 ShowUsage();
@@ -642,6 +648,15 @@ namespace SkiConsole
                     System.Console.WriteLine($"Updated video: {v}");
                 }
             }
+        }
+
+        private static async Task MigrateSkiVideoEntities()
+        {
+            List<SkiVideoEntity> videos = await LoadVideosAsync();
+            SkiVideoEntity video = videos.First();
+            GoogleStorage storage = new GoogleStorage();
+            await storage.AddSkiVideoEntityAsync(video);
+            System.Console.WriteLine("Wrote ski video to google.");
         }
 
         private static void Notify()

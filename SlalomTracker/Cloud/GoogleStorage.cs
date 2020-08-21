@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Google.Cloud.Storage.V1;
 using System.Linq;
 using System.Collections.Generic;
+using Google.Cloud.Firestore;
 
 namespace SlalomTracker.Cloud
 {
@@ -38,6 +39,18 @@ namespace SlalomTracker.Cloud
                 throw new ApplicationException($"Unable to upload Video {localFile} to Google storage.");
 
             return $"{BaseUrl}{objectName}";      
+        }
+
+        public async Task AddSkiVideoEntityAsync(SkiVideoEntity entity)
+        {
+            string projectId = Environment.GetEnvironmentVariable("GOOGLE_PROJECT_ID");
+            FirestoreDb db = FirestoreDb.Create(projectId);
+
+            CollectionReference collection = db.Collection("videos/2020-04-04");
+            await collection.Document("GOPR1111.MP4").CreateAsync(entity);
+
+            // Alternatively, collection.Document("los-angeles").Create(city);
+            // DocumentReference document = await collection.AddAsync(entity);            
         }
 
         public Task<float> GetBucketSizeAsync()

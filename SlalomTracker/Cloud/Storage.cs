@@ -53,7 +53,6 @@ namespace SlalomTracker.Cloud
 
         public void UpdateMetadata(SkiVideoEntity entity)
         {
-            return;
             // CloudTableClient client = _account.CreateCloudTableClient();
             // CloudTable table = client.GetTableReference(SKITABLE);
             // TableOperation update = TableOperation.Merge(entity);
@@ -64,23 +63,23 @@ namespace SlalomTracker.Cloud
 
         public async Task<List<SkiVideoEntity>> GetAllMetdataAsync()
         {
-            return null;
-            // CloudTableClient client = _account.CreateCloudTableClient();
-            // CloudTable table = client.GetTableReference(SKITABLE);
-            // TableQuery<SkiVideoEntity> query = new TableQuery<SkiVideoEntity>(); //.Take(10);
+            CloudTableClient client = _account.CreateCloudTableClient();
+            CloudTable table = client.GetTableReference(SKITABLE);
 
-            // List<SkiVideoEntity> results = new List<SkiVideoEntity>();
-            // TableContinuationToken token = null;
+            TableQuery<SkiVideoEntity> query = new TableQuery<SkiVideoEntity>(); //.Take(10);
 
-            // do
-            // {
-            //     var seg = await table.ExecuteQuerySegmentedAsync(query, token);
-            //     token = seg.ContinuationToken;
-            //     results.AddRange(seg.Results);
-            // }
-            // while (token != null);
+            List<SkiVideoEntity> results = new List<SkiVideoEntity>();
+            TableContinuationToken token = null;
 
-            // return results;
+            do
+            {
+                var seg = await table.ExecuteQuerySegmentedAsync(query, token);
+                token = seg.ContinuationToken;
+                results.AddRange(seg.Results);
+            }
+            while (token != null);
+
+            return results;
         }
 
         public string UploadVideo(string localFile, DateTime creationTime)
