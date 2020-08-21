@@ -653,7 +653,13 @@ namespace SkiConsole
         private static async Task MigrateSkiVideoEntities()
         {
             List<SkiVideoEntity> videos = await LoadVideosAsync();
-            SkiVideoEntity video = videos.First();
+            SkiVideoEntity video = videos.Where(v => v.Url == 
+                "https://skivideostorage.blob.core.windows.net/ski/2020-08-20/GOPR4271_ts.MP4").First();
+
+            // Workaround required..
+            // video.RecordedTime = DateTime.SpecifyKind(video.RecordedTime, DateTimeKind.Utc);
+            video.Timestamp = DateTime.SpecifyKind(video.Timestamp, DateTimeKind.Utc);
+
             GoogleStorage storage = new GoogleStorage();
             await storage.AddSkiVideoEntityAsync(video);
             System.Console.WriteLine("Wrote ski video to google.");

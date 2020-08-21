@@ -43,14 +43,22 @@ namespace SlalomTracker.Cloud
 
         public async Task AddSkiVideoEntityAsync(SkiVideoEntity entity)
         {
-            string projectId = Environment.GetEnvironmentVariable("GOOGLE_PROJECT_ID");
-            FirestoreDb db = FirestoreDb.Create(projectId);
+            try
+            {
+                string projectId = Environment.GetEnvironmentVariable("GOOGLE_PROJECT_ID");
+                FirestoreDb db = FirestoreDb.Create(projectId);
 
-            CollectionReference collection = db.Collection("videos/2020-04-04");
-            await collection.Document("GOPR1111.MP4").CreateAsync(entity);
+                DocumentReference doc = db.Collection("videos").
+                    Document("2020-08-20");
+                await doc.Collection("videos").Document("GOPR1111.MP4").CreateAsync(entity);
 
             // Alternatively, collection.Document("los-angeles").Create(city);
             // DocumentReference document = await collection.AddAsync(entity);            
+            }
+            catch (Exception e)
+            {
+                System.Console.WriteLine("ERROR!\n" + e.Message);
+            }
         }
 
         public Task<float> GetBucketSizeAsync()
