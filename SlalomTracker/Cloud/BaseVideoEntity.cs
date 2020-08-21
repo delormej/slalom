@@ -1,14 +1,25 @@
 using System;
 using System.IO;
-using Microsoft.WindowsAzure.Storage.Table;
+using Google.Cloud.Firestore;
 
 namespace SlalomTracker.Cloud
 {
-    public abstract class BaseVideoEntity : TableEntity
+    public abstract class BaseVideoEntity
     {
-        
+        [FirestoreProperty]        
         public string Url { get; set; }
+        
+        [FirestoreProperty]        
         public string SlalomTrackerVersion { get; set; }
+
+        [FirestoreProperty]
+        public string PartitionKey { get; set; }
+
+        [FirestoreProperty]
+        public string RowKey { get; set; }
+
+        [FirestoreProperty]
+        public DateTime Timestamp { get; set; }
 
         public BaseVideoEntity()
         {}
