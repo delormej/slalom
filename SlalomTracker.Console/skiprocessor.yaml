@@ -33,14 +33,14 @@ spec:
           secretName: gcloud-key
       containers:
       - name: skiprocessor
-        image: wthacr.azurecr.io/skiconsole:v2.8.0
+        image: wthacr.azurecr.io/skiconsole:v2.8.5
         # Interestingly requests have to equal limits with virtualnode: https://github.com/virtual-kubelet/azure-aci/issues/17
         resources:
           requests:
-            cpu: "2000m"
-            memory: "2.0Gi"
+            cpu: "1000m"
+            memory: "1.0Gi"
           limits:
-            cpu: "2000m"
+            cpu: "4000m"
             memory: "2.0Gi"
         command: ["./ski"]
         args: ["-l", "video-uploaded"]
@@ -77,11 +77,11 @@ spec:
       imagePullSecrets:
         - name: acr-secret
       nodeSelector:
-        kubernetes.io/role: agent
-        beta.kubernetes.io/os: linux
-        type: virtual-kubelet
-      tolerations:
-      - key: virtual-kubelet.io/provider
-        operator: Exists
-      - key: azure
-        effect: NoSchedule        
+      #   kubernetes.io/role: agent
+      #   beta.kubernetes.io/os: linux
+         nodeRole: skiprocessor
+      # tolerations:
+      # - key: virtual-kubelet.io/provider
+      #   operator: Exists
+      # - key: azure
+      #   effect: NoSchedule        
