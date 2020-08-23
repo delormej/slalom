@@ -13,14 +13,14 @@ namespace SlalomTracker.Cloud
         [FirestoreProperty]        
         public string SlalomTrackerVersion { get; set; }
 
-        [FirestoreProperty]
-        public string PartitionKey { get; set; }
+        [FirestoreProperty("PartitionKey")]
+        public string Date { get { return PartitionKey; } set {  } }
+        
+        [FirestoreProperty("RowKey")]
+        public string VideoFile { get { return RowKey; } set {  } }
 
-        [FirestoreProperty]
-        public string RowKey { get; set; }
-
-        [FirestoreProperty]
-        public DateTime Timestamp { get; set; }
+        [FirestoreDocumentUpdateTimestamp]
+        public new Timestamp Timestamp { get; set; }
 
         public BaseVideoEntity()
         {}

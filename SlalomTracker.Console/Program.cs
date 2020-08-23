@@ -635,30 +635,32 @@ namespace SkiConsole
 
         private static async Task FixTimestamp()
         {
-            Console.WriteLine("Loading videos.");
-            Storage storage = new Storage();
-            List<SkiVideoEntity> videos = await storage.GetAllMetdataAsync();
+            // Console.WriteLine("Loading videos.");
+            // Storage storage = new Storage();
+            // List<SkiVideoEntity> videos = await storage.GetAllMetdataAsync();
 
-            foreach (var v in videos)
-            {
-                if (v.RecordedTime == DateTime.MinValue)
-                {
-                    v.RecordedTime = new DateTime(v.Timestamp.Year, v.Timestamp.Month, v.Timestamp.Day);
-                    storage.UpdateMetadata(v);
-                    System.Console.WriteLine($"Updated video: {v}");
-                }
-            }
+            // foreach (var v in videos)
+            // {
+            //     if (v.RecordedTime == DateTime.MinValue)
+            //     {
+            //         v.RecordedTime = new DateTime(v.Timestamp.Year, v.Timestamp.Month, v.Timestamp.Day);
+            //         storage.UpdateMetadata(v);
+            //         System.Console.WriteLine($"Updated video: {v}");
+            //     }
+            // }
         }
 
         private static async Task MigrateSkiVideoEntities()
         {
             List<SkiVideoEntity> videos = await LoadVideosAsync();
             SkiVideoEntity video = videos.Where(v => v.Url == 
-                "https://skivideostorage.blob.core.windows.net/ski/2020-08-20/GOPR4271_ts.MP4").First();
+                "https://skivideostorage.blob.core.windows.net/ski/2020-05-20/GOPR2453_ts.MP4").First();
+
+            System.Console.WriteLine($"Video timestamp: {video.RowKey}: {video.Timestamp}");
 
             // Workaround required..
             // video.RecordedTime = DateTime.SpecifyKind(video.RecordedTime, DateTimeKind.Utc);
-            video.Timestamp = DateTime.SpecifyKind(video.Timestamp, DateTimeKind.Utc);
+            //video.Timestamp = DateTime.SpecifyKind(video.Timestamp, DateTimeKind.Utc);
 
             GoogleStorage storage = new GoogleStorage();
             await storage.AddSkiVideoEntityAsync(video);
