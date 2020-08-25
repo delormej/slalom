@@ -38,10 +38,10 @@ spec:
         resources:
           requests:
             cpu: "1000m"
-            memory: "1.0Gi"
+            memory: "1.9Gi"
           limits:
-            cpu: "4000m"
-            memory: "2.0Gi"
+            cpu: "2000m"
+            memory: "3.0Gi"
         command: ["./ski"]
         args: ["-l", "video-uploaded"]
         volumeMounts:
