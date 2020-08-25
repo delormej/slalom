@@ -69,8 +69,8 @@ namespace SkiConsole
                 "ski -t\n\t\t" +
                 "Listen to service bus queue for new videos uploaded.\n\t\t" +
                 "ski -l [optional]queueName\n\t\t" +
-                "Migrate ski video entities.\n\t\t" +
-                "ski --migrate\n\t\t"                                       
+                "Republish videos currently in upload folder to service bus queue for new videos uploaded.\n\t\t" +
+                "ski -r\n\t\t"                     
             );
         }
 
@@ -160,9 +160,9 @@ namespace SkiConsole
             {
                 FixTimestamp().Wait();
             }
-            else if (args[0] == "--migrate")
+            else if (args[0] == "-r")
             {
-                MigrateSkiVideoEntities().Wait();
+                RepublishStorageEventsAsync().Wait();
             }
             else
                 ShowUsage();
@@ -650,27 +650,34 @@ namespace SkiConsole
             // }
         }
 
-        private static async Task MigrateSkiVideoEntities()
-        {
-            List<SkiVideoEntity> videos = await LoadVideosAsync();
-            SkiVideoEntity video = videos.Where(v => v.Url == 
-                "https://skivideostorage.blob.core.windows.net/ski/2020-05-20/GOPR2453_ts.MP4").First();
-
-            System.Console.WriteLine($"Video timestamp: {video.RowKey}: {video.Timestamp}");
-
-            // Workaround required..
-            // video.RecordedTime = DateTime.SpecifyKind(video.RecordedTime, DateTimeKind.Utc);
-            //video.Timestamp = DateTime.SpecifyKind(video.Timestamp, DateTimeKind.Utc);
-
-            GoogleStorage storage = new GoogleStorage();
-            await storage.AddSkiVideoEntityAsync(video);
-            System.Console.WriteLine("Wrote ski video to google.");
-        }
-
         private static void Notify()
         {
             VideoProcessedNotifier notifier = new VideoProcessedNotifier();
             notifier.NotifyAsync("Jason", "video.MP4").Wait();
+        }
+
+        private static async Task RepublishStorageEventsAsync()
+        {
+            string accountKey = System.Environment.GetEnvironmentVariable("SKIVIDEOS_KEY");
+            string accountName = "skivideos";
+
+            var blobs = BlobRestApi.GetBlobs(accountName, accountKey, "upload");
+
+            IList<Microsoft.Azure.ServiceBus.Message> messages = new List<Microsoft.Azure.ServiceBus.Message>();
+
+            foreach (var uri in blobs)
+            {
+                string messageBody = "{ \"eventType\":\"Microsoft.Storage.BlobCreated\", \"data\":{\"url\":\"" + uri + "\"} }";
+                var message = new Microsoft.Azure.ServiceBus.Message(System.Text.Encoding.UTF8.GetBytes(messageBody));
+                messages.Add(message);
+            }          
+
+            string serviceBusConnectionString = Environment.GetEnvironmentVariable("SKISB");
+            string queueName = "video-uploaded";
+            Microsoft.Azure.ServiceBus.QueueClient queueClient = new Microsoft.Azure.ServiceBus.QueueClient(serviceBusConnectionString, queueName);
+            
+            await queueClient.SendAsync(messages);
+            System.Console.WriteLine($"Resent {blobs.Count()} message(s).");
         }
     }
 }
