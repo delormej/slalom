@@ -26,7 +26,10 @@ namespace SlalomTracker
         private string _json;
         
         // Hangs on to the first measurement's time as the recorded time and reference
-        // for subsequent videos in the file.
+        // for subsequent videos in the file.  This is important because subsequent passes
+        // in the same video will truncate Measurement collection to that start of the 
+        // next pass.
+        // See: GetSecondsFromVideoStart() to get the right seconds in the video stream.
         private DateTime _videoStart = DateTime.MinValue;
 
         public double CenterLineDegreeOffset { get; set; } = 0;
@@ -258,14 +261,19 @@ namespace SlalomTracker
             pass.Entry = entry55;
             pass.Exit = pass.Course.FindExit55(measurements) ?? measurements.Last();
 
-            if (pass.Exit.Timestamp.Subtract(pass.Entry.Timestamp).TotalSeconds > MAX_PASS_SECONDS)
-            {
-                pass.Exit = measurements.FindAtSeconds(
-                    pass.Entry.Timestamp.AddSeconds(MAX_PASS_SECONDS).TimeOfDay.TotalSeconds 
-                );
-            }
-           
             pass.VideoTime = GetVideoTime(pass.Entry, pass.Exit);
+            
+            if (pass.VideoTime.Duration > MAX_PASS_SECONDS)
+            {
+                // Get the start seconds relative to this set of measurements for this pass.
+                // FindAtSeconds(...) will only be relative to the current measurements collection.
+                double start = pass.Entry.Timestamp.Subtract(measurements[0].Timestamp).TotalSeconds;
+                double exit = start + MAX_PASS_SECONDS;
+                pass.Exit = measurements.FindAtSeconds(exit);
+
+                // Update video time with new exit time.
+                pass.VideoTime = GetVideoTime(pass.Entry, pass.Exit);
+            }
             
             CreateBoatPositions(pass.Course, measurements);
             
@@ -427,6 +435,14 @@ namespace SlalomTracker
             return time;
         }            
 
+        /// <summary>
+        /// Gets the fractional seconds since the beginning of the video stream even if there are
+        /// multiple passes in the video stream.
+        /// </summary>
+        /// <note>
+        /// Avoid using Timestamp math directly, always use this method to get the relative time in 
+        /// seconds from the start of the video stream, which could include multiple passes.
+        /// </note>
         private double GetSecondsFromVideoStart(Measurement end)
         {
             double seconds = 0.0d;

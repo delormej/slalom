@@ -4,7 +4,8 @@ kubectl create secret generic skisb-secret --from-literal=connectionstring="$SKI
 kubectl create secret generic skiblob-secret --from-literal=connectionstring="$SKIBLOBS" -n ski
 kubectl create secret generic skisignalr-secret --from-literal=connectionstring="$SKISIGNALR" -n ski
 kubectl create secret generic skiml-secret --from-literal=key="$SKIMLKEY" -n ski
-kubectl create secret generic gcloud-key --from-file ../gcloud.json -n ski
+cp ../gcloud.json ../key.json
+kubectl create secret generic gcloud-key --from-file ../key.json -n ski
 
 # For non-Azure clusters use this to create the docker password for ACR.
 kubectl create secret docker-registry acr-secret \

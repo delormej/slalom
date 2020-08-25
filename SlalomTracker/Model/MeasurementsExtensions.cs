@@ -14,9 +14,12 @@ namespace SlalomTracker
         /// </summary>
         public static Measurement FindAtSeconds(this IEnumerable<Measurement> measurements, double seconds)
         {
+            if (measurements?.Count() <= 0)
+                return null;
+
             const double offset = 0.25;
-            DateTime start = new DateTime().AddSeconds(seconds);
-            DateTime end = new DateTime().AddSeconds(seconds + offset);
+            DateTime start = measurements.First().Timestamp.AddSeconds(seconds);
+            DateTime end = start.AddSeconds(seconds + offset);
             
             // try to find an event within 1/4 second:
             var match = measurements.Where(m => 
