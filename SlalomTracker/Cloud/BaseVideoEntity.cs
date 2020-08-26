@@ -7,6 +7,8 @@ namespace SlalomTracker.Cloud
 {
     public abstract class BaseVideoEntity : TableEntity
     {
+        private DateTimeOffset? _timestamp;
+
         [FirestoreProperty]        
         public string Url { get; set; }
         
@@ -20,7 +22,11 @@ namespace SlalomTracker.Cloud
         public string VideoFile { get { return RowKey; } set {  } }
 
         [FirestoreDocumentUpdateTimestamp]
-        public new Timestamp Timestamp { get; set; }
+        public new DateTimeOffset? Timestamp 
+        { 
+            get { return _timestamp; } 
+            set { _timestamp = value; } 
+        }
 
         public BaseVideoEntity()
         {}
