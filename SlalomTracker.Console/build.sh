@@ -63,3 +63,4 @@ fi
 # Script to get message counts from Service Bus
 #
 #az servicebus queue show -g jasondel-aks --namespace-name jasondel-skivideos --name video-uploaded --query "countDetails"
+# gsutil cors set CORS.json gs://$GOOGLE_STORAGE_BUCKET
