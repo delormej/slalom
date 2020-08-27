@@ -40,7 +40,7 @@ docker run -it --rm \
     -e SKIBLOBS="$SKIBLOBS" \
     -e SKISB="$SKISB" \
     -e SKIMLKEY="$SKIMLKEY" \
-    -e GOOGLE_APPLICATION_CREDENTIALS="/ski/gcloud.json" \
+    -e GOOGLE_APPLICATION_CREDENTIALS="/ski/key.json" \
     -e GITHUB_TOKEN="$GITHUB_TOKEN" \
     -e SKIMLROPEMODEL="RopeDetection-4" \
     -e SKIMLROPEID="e3ee86a8-f298-46b5-87fd-31a09f0480d7" \
