@@ -10,15 +10,16 @@ namespace SlalomTracker.Cloud
 {
     public class GoogleStorage
     {
-        public string BucketName;
-        public string BaseUrl;
+        private string _bucketName;
+        public string BaseUrl { get; private set; }
 
         StorageClient _storage;
 
         public GoogleStorage()
         {
-            BucketName = "skivideo";
-            BaseUrl = $"https://storage.googleapis.com/{BucketName}/";
+            _bucketName = Environment.GetEnvironmentVariable("GOOGLE_STORAGE_BUCKET") 
+                ?? "skivideo";
+            BaseUrl = $"https://storage.googleapis.com/{_bucketName}/";
             _storage = StorageClient.Create();
         }
 
@@ -32,7 +33,7 @@ namespace SlalomTracker.Cloud
             using (var f = File.OpenRead(localFile))
             {
                 string contentType = localFile.ToUpper().EndsWith("MP4") ? "video/mp4" : null;
-                storageObject = await _storage.UploadObjectAsync(BucketName, objectName, contentType, f);
+                storageObject = await _storage.UploadObjectAsync(_bucketName, objectName, contentType, f);
             }
 
             if (storageObject == null)
@@ -87,7 +88,7 @@ namespace SlalomTracker.Cloud
         {
             return Task<float>.Run( () => 
             {
-                var list = _storage.ListObjects(BucketName);
+                var list = _storage.ListObjects(_bucketName);
                 float size = list.Sum(o => (float?)o.Size ?? default(float));
                 return size / (1024F*1024F); // Convert to MB
             });
@@ -95,7 +96,7 @@ namespace SlalomTracker.Cloud
 
         public IEnumerable<GoogleStorageObject> GetLargest()
         {
-            var list = _storage.ListObjects(BucketName);
+            var list = _storage.ListObjects(_bucketName);
             var objects = list.OrderByDescending(o => o.Size)
                 .Select(o => 
                     new GoogleStorageObject() { Name = o.Name, Size = o.Size }
@@ -106,7 +107,7 @@ namespace SlalomTracker.Cloud
         public Task DeleteAsync(string videoUrl)
         {
             return Task.Run(() => 
-                _storage.DeleteObject(BucketName, GetObjectName(videoUrl))
+                _storage.DeleteObject(_bucketName, GetObjectName(videoUrl))
             );
         }
 
