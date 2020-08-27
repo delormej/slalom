@@ -8,6 +8,7 @@ namespace SlalomTracker.Video
     public class SkiVideoProcessor : IProcessor
     {
         Storage _storage;
+        GoogleStorage _googleStorage;
         CoursePassFactory _factory;
         VideoTasks _videoTasks;
         string _sourceVideoUrl;
@@ -19,6 +20,7 @@ namespace SlalomTracker.Video
         {
             _sourceVideoUrl = videoUrl;
             _storage = new Storage();
+            _googleStorage = new GoogleStorage();
             _factory = new CoursePassFactory();
             _processedNotifer = new VideoProcessedNotifier();
         }
@@ -141,8 +143,7 @@ namespace SlalomTracker.Video
                 string processedVideoPath = await trimAndSilence;
 
                 Logger.Log($"Uploading video to Google {processedVideoPath}...");
-                GoogleStorage storage = new GoogleStorage();
-                videoUrl = await storage.UploadVideoAsync(processedVideoPath, entryTime);
+                videoUrl = await _googleStorage.UploadVideoAsync(processedVideoPath, entryTime);
                 Logger.Log($"Video uploaded to Google: {videoUrl}");
             }
             catch (Exception e)
@@ -251,7 +252,11 @@ namespace SlalomTracker.Video
                 entity.HotUrl = hotVideoUrl;
 
             Logger.Log($"Creating and uploading metadata for video {_localVideoPath}...");
+            
+            // This currently mutates the entity before persisting, so requires some changes to
+            // avoid side-effects.
             _storage.AddMetadata(entity, _json);
+            await _googleStorage.AddSkiVideoEntityAsync(entity);
             
             await _processedNotifer.NotifyAsync(entity.Skier, entity.RowKey);
         }   
