@@ -294,13 +294,13 @@ namespace SlalomTracker.Cloud
 
         public async Task AddTableEntityAsync(BaseVideoEntity entity, string tableName)
         {
-            // CloudTableClient client = _account.CreateCloudTableClient();
-            // CloudTable table = client.GetTableReference(tableName);
-            // TableOperation insert = TableOperation.InsertOrReplace(entity);
-            // await table.CreateIfNotExistsAsync();
-            // var result = await table.ExecuteAsync(insert);
+            CloudTableClient client = _account.CreateCloudTableClient();
+            CloudTable table = client.GetTableReference(tableName);
+            TableOperation insert = TableOperation.InsertOrReplace(entity);
+            await table.CreateIfNotExistsAsync();
+            var result = await table.ExecuteAsync(insert);
             
-            // Logger.Log($"Inserted table entity {tableName} with status code: {result.HttpStatusCode}");
+            Logger.Log($"Inserted table entity {tableName} with status code: {result.HttpStatusCode}");
         }
 
         public SkiVideoEntity GetSkiVideoEntity(string recordedDate, string mp4Filename)
@@ -309,19 +309,19 @@ namespace SlalomTracker.Cloud
             // RowKey format e.g. GOPR01444.MP4
             SkiVideoEntity entity = null;
 
-            // try
-            // {
-            //     CloudTableClient client = _account.CreateCloudTableClient();
-            //     CloudTable table = client.GetTableReference(SKITABLE);
-            //     TableOperation retrieve = TableOperation.Retrieve<SkiVideoEntity>(recordedDate, mp4Filename);
-            //     Task<TableResult> retrieveTask = table.ExecuteAsync(retrieve);
-            //     retrieveTask.Wait();
-            //     entity = (SkiVideoEntity)retrieveTask.Result.Result;
-            // }
-            // catch (Exception e)
-            // {
-            //     Logger.Log($"Unable to retrieve SkiVideoEntity; ParitionKey {recordedDate}, RowKey {mp4Filename}", e);
-            // }
+            try
+            {
+                CloudTableClient client = _account.CreateCloudTableClient();
+                CloudTable table = client.GetTableReference(SKITABLE);
+                TableOperation retrieve = TableOperation.Retrieve<SkiVideoEntity>(recordedDate, mp4Filename);
+                Task<TableResult> retrieveTask = table.ExecuteAsync(retrieve);
+                retrieveTask.Wait();
+                entity = (SkiVideoEntity)retrieveTask.Result.Result;
+            }
+            catch (Exception e)
+            {
+                Logger.Log($"Unable to retrieve SkiVideoEntity; ParitionKey {recordedDate}, RowKey {mp4Filename}", e);
+            }
 
             return entity;
         }

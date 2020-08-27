@@ -156,10 +156,6 @@ namespace SkiConsole
             {
                 PrintCourses(args);
             }
-            else if (args[0] == "--fixtime")
-            {
-                FixTimestamp().Wait();
-            }
             else if (args[0] == "-r")
             {
                 RepublishStorageEventsAsync().Wait();
@@ -631,23 +627,6 @@ namespace SkiConsole
             
             Logger.Log($"Done listening for events.");
             AppDomain.CurrentDomain.ProcessExit -= Reset;
-        }
-
-        private static async Task FixTimestamp()
-        {
-            // Console.WriteLine("Loading videos.");
-            // Storage storage = new Storage();
-            // List<SkiVideoEntity> videos = await storage.GetAllMetdataAsync();
-
-            // foreach (var v in videos)
-            // {
-            //     if (v.RecordedTime == DateTime.MinValue)
-            //     {
-            //         v.RecordedTime = new DateTime(v.Timestamp.Year, v.Timestamp.Month, v.Timestamp.Day);
-            //         storage.UpdateMetadata(v);
-            //         System.Console.WriteLine($"Updated video: {v}");
-            //     }
-            // }
         }
 
         private static void Notify()
