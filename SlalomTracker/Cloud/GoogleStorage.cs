@@ -5,6 +5,7 @@ using Google.Cloud.Storage.V1;
 using System.Linq;
 using System.Collections.Generic;
 using Google.Cloud.Firestore;
+using Logger = jasondel.Tools.Logger;
 
 namespace SlalomTracker.Cloud
 {
@@ -53,34 +54,11 @@ namespace SlalomTracker.Cloud
                     Document(entity.PartitionKey);
                 await doc.Collection("videos").Document(entity.RowKey).SetAsync(entity);
 
-
-                DocumentReference docRef = db.Collection("videos").Document("2020-05-20")
-                    .Collection("videos").Document("GOPR2453_ts.MP4");
-                DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
-
-                var skiEntity = snapshot.ConvertTo<SkiVideoEntity>();
-                Console.WriteLine($"My Timestamp: {skiEntity.Timestamp}");
-
-                if (snapshot.Exists)
-                {
-                    Console.WriteLine("Document data for {0} document:", snapshot.Id);
-                    Dictionary<string, object> city = snapshot.ToDictionary();
-                    foreach (KeyValuePair<string, object> pair in city)
-                    {
-                        Console.WriteLine("{0}: {1}", pair.Key, pair.Value);
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Document {0} does not exist!", snapshot.Id);
-                }
-
-            // Alternatively, collection.Document("los-angeles").Create(city);
-            // DocumentReference document = await collection.AddAsync(entity);            
+                Logger.Log($"Added Firestore metadata for {entity.Url}");
             }
             catch (Exception e)
             {
-                System.Console.WriteLine("ERROR!\n" + e.Message);
+                Logger.Log($"Unable to add Firestore metadata for {entity.Url}", e);
             }
         }
 
