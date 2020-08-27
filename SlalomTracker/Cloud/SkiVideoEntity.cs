@@ -14,7 +14,7 @@ namespace SlalomTracker.Cloud
         public SkiVideoEntity(string videoUrl, DateTime creationTime) : 
             base(videoUrl, creationTime)
         {
-            this.RecordedTime = creationTime;
+            this.RecordedTime = creationTime.ToUniversalTime();
         }
        
         /// <summary>
