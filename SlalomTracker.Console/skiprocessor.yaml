@@ -75,7 +75,7 @@ spec:
         - name: SKIMLSKIERMODEL
           value: "SkierDetection-2"
         - name: GOOGLE_PROJECT_ID
-          value: "ski-gke"
+          value: "gke-ski"
         - name: GOOGLE_STORAGE_BUCKET
           value: "gke-ski-videos"
       imagePullSecrets:
