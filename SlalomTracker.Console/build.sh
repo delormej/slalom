@@ -46,6 +46,8 @@ docker run -it --rm \
     -e SKIMLROPEID="e3ee86a8-f298-46b5-87fd-31a09f0480d7" \
     -e SKIMLSKIERID="c38bd611-86ee-43ff-ad76-20d339665e34" \
     -e SKIMLSKIERMODEL="SkierDetection-2" \
+    -e GOOGLE_PROJECT_ID="$GOOGLE_PROJECT_ID" \
+    -e GOOGLE_STORAGE_BUCKET="$GOOGLE_STORAGE_BUCKET" \
     --name ski-console \
     --cpus="2.0" \
     $github_token \
