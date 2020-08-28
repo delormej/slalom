@@ -20,14 +20,10 @@ fi
 #
 # Build container
 #
-# docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
-#     --build-arg VERSION=$VERSION \
-#     --force-rm $target \
-#     -f ./SlalomTracker.WebApi/Dockerfile . 
-#
-# To just use the debug image add:
-#     --target build \
-#
+docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
+    --build-arg VERSION=$VERSION \
+    --force-rm $target \
+    -f ./SlalomTracker.WebApi/Dockerfile . 
 
 #
 # Launch debug container... not logging level overridden below to "Info"
