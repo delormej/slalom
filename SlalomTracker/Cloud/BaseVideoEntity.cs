@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using Google.Cloud.Firestore;
 using Microsoft.WindowsAzure.Storage.Table;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace SlalomTracker.Cloud
 {
@@ -21,6 +23,7 @@ namespace SlalomTracker.Cloud
         [FirestoreProperty("RowKey")]
         public string VideoFile { get { return RowKey; } set {  } }
 
+        [JsonIgnore] // This avoids an error with JSON Serialization Name Collision.  This should be removed when TableEntity base class is removed.
         [FirestoreDocumentUpdateTimestamp]
         public new DateTimeOffset? Timestamp 
         { 
