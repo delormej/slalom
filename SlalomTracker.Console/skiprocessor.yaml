@@ -67,7 +67,7 @@ spec:
               name: skiml-secret
               key: key              
         - name: SKIMLROPEMODEL
-          value: "RopeDetection-4"
+          value: "RopeDetection-9"
         - name: SKIMLROPEID
           value: "e3ee86a8-f298-46b5-87fd-31a09f0480d7"
         - name: SKIMLSKIERID
