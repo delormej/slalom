@@ -17,7 +17,6 @@ echo "Building container::$container"
 
 if [ "$1" == "debug" ]; then
     target=" --target build "
-    github_token="-e $GITHUB_TOKEN"
 fi
 
 #
@@ -50,7 +49,6 @@ docker run -it --rm \
     -e GOOGLE_STORAGE_BUCKET="$GOOGLE_STORAGE_BUCKET" \
     --name ski-console \
     --cpus="2.0" \
-    $github_token \
     $container
 
 # az acr login -n wthacr

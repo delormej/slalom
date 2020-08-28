@@ -15,16 +15,15 @@ echo "Building container::$container"
 if [ $1 == "debug" ]; then
     target=" --target build "
     dockerrun="dotnet run -p ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj"
-    github_token="-e $GITHUB_TOKEN"
 fi
 
 #
 # Build container
 #
-docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
-    --build-arg VERSION=$VERSION \
-    --force-rm $target \
-    -f ./SlalomTracker.WebApi/Dockerfile . 
+# docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
+#     --build-arg VERSION=$VERSION \
+#     --force-rm $target \
+#     -f ./SlalomTracker.WebApi/Dockerfile . 
 #
 # To just use the debug image add:
 #     --target build \
@@ -33,17 +32,16 @@ docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
 #
 # Launch debug container... not logging level overridden below to "Info"
 #
-docker run --rm --name ski-web -p 5000:5000 -it \
+docker run --rm -p 5000:5000 -it \
+    -v "$PWD":/shared \
     -e PORT=5000 \
     -e SKIBLOBS="$SKIBLOBS" \
     -e SKISB="$SKISB" \
     -e SKISIGNALR="$SKISIGNALR" \
-    $github_token \
+    -e GITHUB_TOKEN="$GITHUB_TOKEN" \
     -e Logging__LogLevel__Default="Debug" \
+    --name ski-console \
     $container $dockerrun
-    
-    
-# dotnet run --project SlalomTracker.WebApi/SlalomTracker.WebApi.csproj
 
 #
 # Tag and push the container.
