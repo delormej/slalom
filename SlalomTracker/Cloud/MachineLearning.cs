@@ -23,7 +23,7 @@ namespace SlalomTracker.Cloud
         protected IList<TrainingModels.Tag> tags;
         protected IEnumerable<SkiVideoEntity> videos;
         protected Guid ProjectId;
-        protected const int MinimumForTag = 5;
+        protected const int MinimumForTag = 10;
 
         public MachineLearning()
         {
@@ -88,12 +88,12 @@ namespace SlalomTracker.Cloud
                 // The iteration is now trained. Publish it to the prediction end point.
                 trainingApi.PublishIteration(ProjectId, iteration.Id, CustomVisionModelName, ResourceId);
 
-                Logger.Log("Done publishing iteration.");
+                Logger.Log($"Done publishing iteration {iteration.Id} of model {CustomVisionModelName}.");
 
             }
             catch (TrainingModels.CustomVisionErrorException e)
             {
-                Logger.Log("Unable to train model:\n" + e.Response.Content, e);
+                Logger.Log($"Unable to train model {CustomVisionModelName}:\n" + e.Response.Content, e);
             }            
         }
 
@@ -148,16 +148,59 @@ namespace SlalomTracker.Cloud
             return ropeTagName;
         }        
 
-        protected virtual IEnumerable<SkiVideoEntity> FilterVideos(IEnumerable<SkiVideoEntity> toFilter)
+        /// <summary>
+        /// Just select the valid videos that are valid for tagging.
+        /// </summary>
+        protected virtual IEnumerable<SkiVideoEntity> FilterVideos(IEnumerable<SkiVideoEntity> videos)
         {
-            // Just select the valid videos that are valid for tagging.
-            return toFilter.Where(v => 
-                        v.RopeLengthM > 0 && 
-                        !string.IsNullOrEmpty(v.Skier) &&
-                        !string.IsNullOrEmpty(v.ThumbnailUrl) &&
-                        !v.MarkedForDelete
-                    );
+            // Limited the scope to just the current year... this could be broader, but 
+            // limiting it because that is all that has been audited to be properly tagged.
+            var filtered = videos.ThisYear().Where(v => 
+                    !v.MarkedForDelete &&
+                    !string.IsNullOrEmpty(v.Skier) && 
+                    !string.IsNullOrEmpty(v.ThumbnailUrl) &&
+                    v.RopeLengthM > 0);
+
+            //
+            // All of this is handled by EnoughForTag
+            // 
+            
+            // var skiers = filtered.Skiers();
+            // var ropes = filtered.RopeLengths();
+
+            // // Write out the groups;
+            // foreach (var s in skiers)
+            //     Console.WriteLine($"{s.Key}: {s.Count()}");
+            // foreach (var r in ropes)
+            //     Console.WriteLine($"{r.Key}: {r.Count()}");
+
+            // // Must have at least 5 skiers, 5 ropes to be eligible to train.
+            // var excludeSkiers = skiers.Where(s => s.Count() <= 5).Select(s => s.Key);
+            // var excludeRopes = ropes.Where(s => s.Count() <= 5).Select(s => s.Key);
+
+            // LogExcluded(excludeSkiers, excludeRopes);
+
+            // var included = filtered.Where(v => 
+            //     !excludeSkiers.Contains(v.Skier) &&
+            //     !excludeRopes.Contains(v.RopeLengthM) );
+
+            Logger.Log($"Original {videos.Count()}, filtered {filtered.Count()}");
+
+            return filtered;
         }
+
+        private void LogExcluded(IEnumerable<string> excludeSkiers, IEnumerable<double> excludeRopes)
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            foreach(var s in excludeSkiers)
+                sb.AppendLine($"\t{s}");
+            foreach(var s in excludeRopes)
+                sb.AppendLine($"\t{s}");
+
+            Logger.Log("Filtered out these tags:\n" + sb.ToString());            
+        }
+
+
 
         private IList<Guid> GetTagIds(SkiVideoEntity video)
         {
@@ -206,7 +249,7 @@ namespace SlalomTracker.Cloud
         {
             try
             {
-                Logger.Log($"Sending batch of {entries.Count} urls to train.");
+                Logger.Log($"Sending batch of {entries.Count} urls to train {CustomVisionModelName}.");
                 var batch = new TrainingModels.ImageUrlCreateBatch(entries);
                 trainingApi.CreateImagesFromUrls(ProjectId, batch);        
             }
