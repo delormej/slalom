@@ -35,7 +35,7 @@ namespace SlalomTracker.Cloud
             ResourceId = "/subscriptions/40a293b5-bd26-47ef-acc3-c001a5bfce82/resourceGroups/ski/providers/Microsoft.CognitiveServices/accounts/SlalomDetection";
         }
 
-        public void Train(List<SkiVideoEntity> allVideos)
+        public void Train(IEnumerable<SkiVideoEntity> allVideos)
         {
             trainingApi = new CustomVisionTrainingClient()
             {

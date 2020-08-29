@@ -104,8 +104,16 @@ namespace SlalomTracker.Cloud
             return null;
         }
 
-        public Task<List<SkiVideoEntity>> GetAllMetdataAsync()
+        public async Task<IEnumerable<SkiVideoEntity>> GetAllMetdataAsync()
         {
+            FirestoreDb db = FirestoreDb.Create(_projectId);
+            Query query = db.CollectionGroup("videos");
+            QuerySnapshot querySnapshot = await query.GetSnapshotAsync();
+            foreach (DocumentSnapshot documentSnapshot in querySnapshot.Documents)
+            {
+                Console.WriteLine("Document {0} returned by query", documentSnapshot.Id);
+            }
+
             return null;
         }
 

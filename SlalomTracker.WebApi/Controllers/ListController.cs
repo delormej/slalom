@@ -48,7 +48,7 @@ namespace SlalomTracker.WebApi.Controllers
         private async Task<IOrderedEnumerable<SkiVideoEntity>> GetAllMetadataAsync()
         {
             Storage storage = new Storage();
-            List<SkiVideoEntity> list = await storage.GetAllMetdataAsync();
+            IEnumerable<SkiVideoEntity> list = await storage.GetAllMetdataAsync();
             var filtered = list.Where(s => s.MarkedForDelete == false);
             var newestFirst = filtered.OrderByDescending(s => s.RecordedTime).ThenBy(s => s.Timestamp);   
 

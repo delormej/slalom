@@ -252,7 +252,7 @@ namespace SkiConsole
         private static async Task TrainAsync()
         {
             Console.WriteLine("Loading videos to train.");
-            List<SkiVideoEntity> videos = await LoadVideosAsync();
+            IEnumerable<SkiVideoEntity> videos = await LoadVideosAsync();
             
             var ropeTask = Task.Run( () => {
                 Logger.Log("Training rope length detection.");
@@ -332,9 +332,9 @@ namespace SkiConsole
             }
         }
 
-        private static Task<List<SkiVideoEntity>> LoadVideosAsync()
+        private static Task<IEnumerable<SkiVideoEntity>> LoadVideosAsync()
         {
-            Storage storage = new Storage();
+            IStorage storage = new Storage();
             return storage.GetAllMetdataAsync();
         }        
 
@@ -360,7 +360,7 @@ namespace SkiConsole
             TimeZoneInfo videoTimeZone = TimeZoneInfo.FindSystemTimeZoneById(
                 VideoTasks.DefaultVideoRecordingTimeZone);
             Storage storage = new Storage();
-            List<SkiVideoEntity> entities = await storage.GetAllMetdataAsync();
+            IEnumerable<SkiVideoEntity> entities = await storage.GetAllMetdataAsync();
             var list = entities.Where(e => e.RecordedTime > DateTime.Today.AddMonths(-3));
             foreach (SkiVideoEntity entity in list)
             {
@@ -435,7 +435,7 @@ namespace SkiConsole
         {
             var videos = await LoadVideosAsync();
             var sortedVideos = SortVideos(videos);
-            Logger.Log($"Found {videos.Count} videos.");
+            Logger.Log($"Found {videos.Count()} videos.");
 
             GoogleStorage gStore = new GoogleStorage();
             Storage storage = new Storage();
@@ -543,7 +543,7 @@ namespace SkiConsole
         private static async Task UpdateThumbnailsAsync()
         {
             Storage storage = new Storage();
-            List<SkiVideoEntity> videos = await storage.GetAllMetdataAsync();
+            IEnumerable<SkiVideoEntity> videos = await storage.GetAllMetdataAsync();
             var selectedVideos = videos.OrderByDescending(v => v.RecordedTime).Take(5);
 
             foreach(var video in selectedVideos)
