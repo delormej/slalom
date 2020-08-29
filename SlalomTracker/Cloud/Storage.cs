@@ -104,15 +104,6 @@ namespace SlalomTracker.Cloud
             return UploadVideo(localFile, creationTime);
         }
 
-        public bool BlobNameExists(string blobName)
-        {
-            // NOTE: this is not the full URL, only the name, i.e. 2018-08-24/GOPRO123.MP4
-            CloudBlockBlob blob = GetBlobReference(blobName);
-            Task<bool> t = blob.ExistsAsync();
-            t.Wait();
-            return t.Result;
-        }
-
         public static string DownloadVideo(string videoUrl)
         {
             string path = GetLocalPath(videoUrl);
@@ -145,14 +136,6 @@ namespace SlalomTracker.Cloud
             return path;
         }       
 
-        public List<String> GetAllBlobUris()
-        {
-            return BlobRestApi.GetBlobs(
-                _account.Credentials.AccountName, 
-                GetAccountKey(),
-                SKICONTAINER);
-        } 
-
         public void AddToQueue(string blobName, string videoUrl)
         {
             _queue.Add(blobName, videoUrl);
@@ -176,35 +159,7 @@ namespace SlalomTracker.Cloud
             return path;
         }
 
-        private static string GetAccountKey()
-        {
-            string connection = GetConnectionString();
-            string pattern = @"AccountKey=([^;]+)";
-            string accountKey = "";
-            var match = Regex.Match(connection, pattern);
-            if (match != null && match.Groups.Count > 0)
-                accountKey = match.Groups[1].Value;
-
-            return accountKey;
-        }
-
-        /* Checks to see if it's a valid File or Directory.  
-            returns True if File, False if Directory, exception if neither.
-        */
-        private bool IsFilePath(string localFile)
-        {
-            if (!File.Exists(localFile))
-            {
-                if (!Directory.Exists(localFile))
-                    throw new FileNotFoundException("Invalid file or directory: " + localFile);
-                else
-                    return false;
-            }         
-            else 
-                return true;
-        }
-
-        public static string GetBlobName(string localFile, DateTime creationTime)
+        private static string GetBlobName(string localFile, DateTime creationTime)
         {
             string dir = GetBlobDirectory(creationTime);
             string blob = dir + Path.GetFileName(localFile);
