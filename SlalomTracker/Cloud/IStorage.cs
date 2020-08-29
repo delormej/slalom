@@ -6,6 +6,9 @@ namespace SlalomTracker.Cloud
 {
     public interface IStorage
     {
+        // QueueStorage
+        void AddToQueue(string blobName, string videoUrl);
+
         // VideoStorage
         string DownloadVideo(string videoUrl);
         string UploadVideo(string localFile, DateTime creationTime);

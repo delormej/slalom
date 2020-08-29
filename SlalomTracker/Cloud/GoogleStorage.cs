@@ -31,6 +31,11 @@ namespace SlalomTracker.Cloud
             _storage = StorageClient.Create();
         }
 
+        public void AddToQueue(string blobName, string videoUrl)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<string> UploadVideoAsync(string localFile, DateTime creationTime)
         {
             string directory = StorageHelper.GetBlobDirectory(creationTime);
