@@ -7,7 +7,7 @@ namespace SlalomTracker.Video
 {
     public class SkiVideoProcessor : IProcessor
     {
-        Storage _storage;
+        AzureStorage _storage;
         GoogleStorage _googleStorage;
         CoursePassFactory _factory;
         VideoTasks _videoTasks;
@@ -19,7 +19,7 @@ namespace SlalomTracker.Video
         public SkiVideoProcessor(string videoUrl)
         {
             _sourceVideoUrl = videoUrl;
-            _storage = new Storage();
+            _storage = new AzureStorage();
             _googleStorage = new GoogleStorage();
             _factory = new CoursePassFactory();
             _processedNotifer = new VideoProcessedNotifier();
@@ -81,7 +81,7 @@ namespace SlalomTracker.Video
 
         private async Task<string> DownloadVideoAsync()
         {
-            IStorage storage = new Storage();
+            IStorage storage = new AzureStorage();
             string localPath = null;
             await Task.Run( () => {
                 Logger.Log($"Downloading video {_sourceVideoUrl}...");
@@ -179,7 +179,7 @@ namespace SlalomTracker.Video
             try 
             {
                 await Task.Run( () => {
-                    IStorage storage = new Storage();
+                    IStorage storage = new AzureStorage();
                     string jsonOverrideUrl = VideoTime.GetVideoJsonUrl(_sourceVideoUrl);
                     string jsonPath = storage.DownloadVideo(jsonOverrideUrl);
                     if (jsonPath != null)

@@ -25,7 +25,7 @@ namespace SlalomTracker.WebApi.Controllers
             string vttContent;
             try
             {
-                Storage storage = new Storage();
+                AzureStorage storage = new AzureStorage();
                 SkiVideoEntity entity = storage.GetSkiVideoEntity(recordedDate, mp4Filename);
                 if (entity == null)
                     throw new ApplicationException($"Unable to load SkiVideo {recordedDate}, {mp4Filename}");

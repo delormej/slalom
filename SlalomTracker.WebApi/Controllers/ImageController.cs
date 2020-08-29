@@ -20,12 +20,12 @@ namespace SlalomTracker.WebApi.Controllers
     public class ImageController : Controller
     {
         ILogger<ImageController> _logger;
-        Storage _storage;
+        AzureStorage _storage;
 
         public ImageController(ILogger<ImageController> logger, IConfiguration config)
         {
             _logger = logger;
-            _storage = new Storage();
+            _storage = new AzureStorage();
         }
 
         [HttpGet]

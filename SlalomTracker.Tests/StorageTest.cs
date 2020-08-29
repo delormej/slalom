@@ -17,7 +17,7 @@ namespace SlalomTracker.Cloud.Tests
         [TestMethod]
         public void TestDownloadVideo()
         {
-            string localPath = Storage.DownloadVideo(URL);
+            string localPath = AzureStorage.DownloadVideo(URL);
             Assert.AreEqual(localPath, TESTPATH);
         }
 
@@ -29,14 +29,14 @@ namespace SlalomTracker.Cloud.Tests
             CoursePass pass = factory.FromJson(json);
             SkiVideoEntity entity = new SkiVideoEntity(URL, new DateTime(2018,08,24));
 
-            Storage storage = new Storage();
+            AzureStorage storage = new AzureStorage();
             storage.AddMetadata(entity, json);
         }
 
         [TestMethod]
         public void TestUploadVideo()
         {
-            Storage storage = new Storage();
+            AzureStorage storage = new AzureStorage();
             if (!storage.BlobNameExists(TESTPATH))
                 storage.UploadVideo(TESTPATH, new DateTime(2018,08,24));
             Assert.IsTrue(storage.BlobNameExists(BLOBNAME), "Blob is missing: " + URL);

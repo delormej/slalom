@@ -13,7 +13,7 @@ using Logger = jasondel.Tools.Logger;
 
 namespace SlalomTracker.Cloud
 {
-    public class Storage : IStorage
+    public class AzureStorage : IStorage
     {
         const string SKICONTAINER = "ski";
         const string INGEST_SKICONTAINER = "ski-ingest";
@@ -32,7 +32,7 @@ namespace SlalomTracker.Cloud
             }
         }
 
-        public Storage()
+        public AzureStorage()
         {
             Connect();
             ConnectToQueue();

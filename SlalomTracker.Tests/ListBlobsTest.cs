@@ -10,7 +10,7 @@ namespace SlalomTracker.Cloud.Tests
         [TestMethod]
         public void TestListBlobs()
         {  
-            Storage storage = new Storage();
+            AzureStorage storage = new AzureStorage();
             var result = storage.GetAllBlobUris();
 
             Assert.IsTrue(result.Count > 1);

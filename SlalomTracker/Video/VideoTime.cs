@@ -24,7 +24,7 @@ namespace SlalomTracker.Video
         {
             try 
             {
-                IStorage storage = new Storage();
+                IStorage storage = new AzureStorage();
                 string localJson = storage.DownloadVideo(_videoJsonUrl);
             
                 Logger.Log($"Found override json: {_videoJsonUrl}");

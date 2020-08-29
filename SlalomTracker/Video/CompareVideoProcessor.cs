@@ -28,7 +28,7 @@ namespace SlalomTracker.Video
                 
                 Logger.Log($"Video {videos[0]} combined with {videos[1]} into {output}");
 
-                Storage storage = new Storage();
+                AzureStorage storage = new AzureStorage();
                 string url = storage.UploadVideo(output, DateTime.Now);
 
                 ComparedVideoEntity entity = new ComparedVideoEntity(url, DateTime.Now) {
@@ -46,7 +46,7 @@ namespace SlalomTracker.Video
 
         private async Task<string[]> DownloadVideosAsync()
         {
-            IStorage storage = new Storage();
+            IStorage storage = new AzureStorage();
             Task<string> download1 = Task.Run( () => { return storage.DownloadVideo(_videoUrl1); });
             Task<string> download2 = Task.Run( () => { return storage.DownloadVideo(_videoUrl2); });
             await Task.WhenAll(download1, download2);

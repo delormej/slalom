@@ -209,7 +209,7 @@ namespace SkiConsole
 
         private static string DownloadAndCreateImage(string url)
         {
-            IStorage storage = new Storage();
+            IStorage storage = new AzureStorage();
             string localPath = storage.DownloadVideo(url);
             string json = Extract.ExtractMetadata(localPath);
             CoursePass pass = new CoursePassFactory().FromJson(json);
@@ -231,7 +231,7 @@ namespace SkiConsole
 
         private static string DownloadVideo(string url)
         {
-            IStorage storage = new Storage();
+            IStorage storage = new AzureStorage();
             string localPath = storage.DownloadVideo(url);
             Console.WriteLine("Downloaded to:\n\t" + localPath);
             return localPath;
@@ -334,7 +334,7 @@ namespace SkiConsole
 
         private static Task<IEnumerable<SkiVideoEntity>> LoadVideosAsync()
         {
-            IStorage storage = new Storage();
+            IStorage storage = new AzureStorage();
             return storage.GetAllMetdataAsync();
         }        
 
@@ -359,7 +359,7 @@ namespace SkiConsole
         {
             TimeZoneInfo videoTimeZone = TimeZoneInfo.FindSystemTimeZoneById(
                 VideoTasks.DefaultVideoRecordingTimeZone);
-            Storage storage = new Storage();
+            AzureStorage storage = new AzureStorage();
             IEnumerable<SkiVideoEntity> entities = await storage.GetAllMetdataAsync();
             var list = entities.Where(e => e.RecordedTime > DateTime.Today.AddMonths(-3));
             foreach (SkiVideoEntity entity in list)
@@ -438,7 +438,7 @@ namespace SkiConsole
             Logger.Log($"Found {videos.Count()} videos.");
 
             GoogleStorage gStore = new GoogleStorage();
-            Storage storage = new Storage();
+            AzureStorage storage = new AzureStorage();
             List<Task<string>> uploadTasks = new List<Task<string>>();
 
             foreach (var e in sortedVideos)
@@ -478,7 +478,7 @@ namespace SkiConsole
         private static async Task<int> DeleteOldestAsync(int count)
         {
             GoogleStorage gstore = new GoogleStorage();
-            Storage storage = new Storage();
+            AzureStorage storage = new AzureStorage();
             var videos = await LoadVideosAsync();
             var sortedVideos = SortVideos(videos);
 
@@ -506,7 +506,7 @@ namespace SkiConsole
         {
             int deleted = 0;
             GoogleStorage gstore = new GoogleStorage();
-            Storage storage = new Storage();
+            AzureStorage storage = new AzureStorage();
             var videos = await LoadVideosAsync();
             var largest = gstore.GetLargest().Take(Math.Abs(count));
 
@@ -531,7 +531,7 @@ namespace SkiConsole
                 System.Console.WriteLine("{0}, {1:,0.0}", o.Name, (o.Size / 1024F*1024F));
         }
 
-        private static async Task DeleteGoogleVideoAsync(GoogleStorage gstore, Storage storage, SkiVideoEntity video)
+        private static async Task DeleteGoogleVideoAsync(GoogleStorage gstore, AzureStorage storage, SkiVideoEntity video)
         {
             Logger.Log($"Deleting {video.HotUrl} recorded @ {video.RecordedTime}.");
             await gstore.DeleteAsync(video.HotUrl);
@@ -542,7 +542,7 @@ namespace SkiConsole
 
         private static async Task UpdateThumbnailsAsync()
         {
-            Storage storage = new Storage();
+            AzureStorage storage = new AzureStorage();
             IEnumerable<SkiVideoEntity> videos = await storage.GetAllMetdataAsync();
             var selectedVideos = videos.OrderByDescending(v => v.RecordedTime).Take(5);
 

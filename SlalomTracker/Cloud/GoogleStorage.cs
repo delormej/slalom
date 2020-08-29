@@ -32,7 +32,7 @@ namespace SlalomTracker.Cloud
 
         public async Task<string> UploadVideoAsync(string localFile, DateTime creationTime)
         {
-            string directory = Storage.GetBlobDirectory(creationTime);
+            string directory = AzureStorage.GetBlobDirectory(creationTime);
             string objectName = directory + System.IO.Path.GetFileName(localFile);
             
             Google.Apis.Storage.v1.Data.Object storageObject = null;
@@ -52,7 +52,7 @@ namespace SlalomTracker.Cloud
         public string DownloadVideo(string videoUrl)
         {
             // Todo: Refactor this one out.
-            Storage storage = new Storage();
+            AzureStorage storage = new AzureStorage();
             return storage.DownloadVideo(videoUrl);
         }
         

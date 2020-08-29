@@ -10,7 +10,7 @@ namespace SlalomTracker.Cloud.Tests
         [TestMethod]
         public void TestAdd()
         {
-            Storage storage = new Storage();
+            AzureStorage storage = new AzureStorage();
             string blobName = "2018-08-24/GOPR0565.MP4";
             string url = "https://skivideostorage.blob.core.windows.net/ski/2018-08-24/GOPR0565.MP4";
             storage.Queue.Add(blobName, url);

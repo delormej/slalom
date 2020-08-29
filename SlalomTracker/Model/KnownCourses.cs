@@ -10,12 +10,12 @@ namespace SlalomTracker
     public class KnownCourses
     {       
         private static List<Course> _knownCourses;
-        private Storage _storage;
+        private AzureStorage _storage;
 
         public KnownCourses() 
         {
             // Initialize storage object to be used for loading / saving courses.
-            _storage = new Storage();
+            _storage = new AzureStorage();
             if (_knownCourses == null)
                 LoadKnownCourses();
         }

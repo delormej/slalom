@@ -32,7 +32,7 @@ namespace SlalomTracker.WebApi.Controllers
             try
             {
                 string videoUrl = GetVideoUrlFromRequest();
-                Storage storage = new Storage();
+                AzureStorage storage = new AzureStorage();
                 string blobName = GetBlobName(videoUrl);
                 storage.AddToQueue(blobName, videoUrl);
                 
@@ -87,7 +87,7 @@ namespace SlalomTracker.WebApi.Controllers
                     string message = $"Error reading video instance from payload:\n{json}";
                     throw new ApplicationException(message);
                 }
-                Storage storage = new Storage();
+                AzureStorage storage = new AzureStorage();
                 storage.UpdateMetadata(video);             
                 return StatusCode(200);
             }

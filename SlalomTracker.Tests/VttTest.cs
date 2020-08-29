@@ -13,7 +13,7 @@ namespace SlalomTracker.Cloud.Tests
         [TestMethod]
         public void TestCreateVtt()
         {
-            Storage storage = new Storage();
+            AzureStorage storage = new AzureStorage();
             SkiVideoEntity entity = storage.GetSkiVideoEntity(RECORDED_DATE, VIDEO_FILE);
             WebVtt vtt = new WebVtt(entity);
             string vttContent = vtt.Create();
