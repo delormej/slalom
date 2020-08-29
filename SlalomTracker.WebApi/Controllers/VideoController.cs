@@ -34,7 +34,7 @@ namespace SlalomTracker.WebApi.Controllers
                 string videoUrl = GetVideoUrlFromRequest();
                 Storage storage = new Storage();
                 string blobName = GetBlobName(videoUrl);
-                storage.Queue.Add(blobName, videoUrl);
+                storage.AddToQueue(blobName, videoUrl);
                 
                 _logger.LogInformation($"Queued video: {videoUrl}");
                 return StatusCode(200);

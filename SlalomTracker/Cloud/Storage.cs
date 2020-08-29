@@ -21,6 +21,8 @@ namespace SlalomTracker.Cloud
         const string COURSETABLE = "courses";
         public const string ENV_SKIBLOBS = "SKIBLOBS";
         const string BLOB_QUEUE = "skiqueue";
+        private CloudStorageAccount _account;
+        private Queue _queue;
 
         public string BlobStorageUri 
         {
@@ -30,17 +32,11 @@ namespace SlalomTracker.Cloud
             }
         }
 
-        CloudStorageAccount _account;
-        Queue _queue;
-
         public Storage()
         {
             Connect();
             ConnectToQueue();
         }
-
-        public CloudStorageAccount Account { get { return _account; } }
-        public Queue Queue { get { return _queue; } }
 
         public void AddMetadata(SkiVideoEntity entity, string json)
         {
@@ -157,16 +153,9 @@ namespace SlalomTracker.Cloud
                 SKICONTAINER);
         } 
 
-        private static string GetAccountKey()
+        public void AddToQueue(string blobName, string videoUrl)
         {
-            string connection = GetConnectionString();
-            string pattern = @"AccountKey=([^;]+)";
-            string accountKey = "";
-            var match = Regex.Match(connection, pattern);
-            if (match != null && match.Groups.Count > 0)
-                accountKey = match.Groups[1].Value;
-
-            return accountKey;
+            _queue.Add(blobName, videoUrl);
         }
 
         public static string GetLocalPath(string videoUrl)
@@ -185,6 +174,18 @@ namespace SlalomTracker.Cloud
                 path = videoUrl.Substring(dirMarker + 1, videoUrl.Length - dirMarker - 1);
             }
             return path;
+        }
+
+        private static string GetAccountKey()
+        {
+            string connection = GetConnectionString();
+            string pattern = @"AccountKey=([^;]+)";
+            string accountKey = "";
+            var match = Regex.Match(connection, pattern);
+            if (match != null && match.Groups.Count > 0)
+                accountKey = match.Groups[1].Value;
+
+            return accountKey;
         }
 
         /* Checks to see if it's a valid File or Directory.  
@@ -280,11 +281,6 @@ namespace SlalomTracker.Cloud
             Task task = queue.CreateIfNotExistsAsync();
             task.Wait();
             _queue = new Queue(queue);
-        }
-
-        private void QueueNewVideo(string blobName, string url)
-        {
-            _queue.Add(blobName, url);
         }
 
         private void AddTableEntity(SkiVideoEntity entity)
