@@ -46,8 +46,9 @@ namespace SlalomTracker.Video
 
         private async Task<string[]> DownloadVideosAsync()
         {
-            Task<string> download1 = Task.Run( () => { return Storage.DownloadVideo(_videoUrl1); });
-            Task<string> download2 = Task.Run( () => { return Storage.DownloadVideo(_videoUrl2); });
+            IStorage storage = new Storage();
+            Task<string> download1 = Task.Run( () => { return storage.DownloadVideo(_videoUrl1); });
+            Task<string> download2 = Task.Run( () => { return storage.DownloadVideo(_videoUrl2); });
             await Task.WhenAll(download1, download2);
 
             return new string[] { download1.Result, download2.Result };

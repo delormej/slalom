@@ -81,10 +81,11 @@ namespace SlalomTracker.Video
 
         private async Task<string> DownloadVideoAsync()
         {
+            IStorage storage = new Storage();
             string localPath = null;
             await Task.Run( () => {
                 Logger.Log($"Downloading video {_sourceVideoUrl}...");
-                localPath = Cloud.Storage.DownloadVideo(_sourceVideoUrl);
+                localPath = storage.DownloadVideo(_sourceVideoUrl);
             });
             return localPath;
         }
@@ -178,8 +179,9 @@ namespace SlalomTracker.Video
             try 
             {
                 await Task.Run( () => {
+                    IStorage storage = new Storage();
                     string jsonOverrideUrl = VideoTime.GetVideoJsonUrl(_sourceVideoUrl);
-                    string jsonPath = Cloud.Storage.DownloadVideo(jsonOverrideUrl);
+                    string jsonPath = storage.DownloadVideo(jsonOverrideUrl);
                     if (jsonPath != null)
                     {
                         overrides = VideoTime.FromJsonFile(jsonPath);

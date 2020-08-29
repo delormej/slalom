@@ -24,7 +24,8 @@ namespace SlalomTracker.Video
         {
             try 
             {
-                string localJson = Storage.DownloadVideo(_videoJsonUrl);
+                IStorage storage = new Storage();
+                string localJson = storage.DownloadVideo(_videoJsonUrl);
             
                 Logger.Log($"Found override json: {_videoJsonUrl}");
                 VideoTime obj = FromJsonFile(localJson);

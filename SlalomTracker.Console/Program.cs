@@ -209,7 +209,8 @@ namespace SkiConsole
 
         private static string DownloadAndCreateImage(string url)
         {
-            string localPath = Storage.DownloadVideo(url);
+            IStorage storage = new Storage();
+            string localPath = storage.DownloadVideo(url);
             string json = Extract.ExtractMetadata(localPath);
             CoursePass pass = new CoursePassFactory().FromJson(json);
             if (pass == null)
@@ -230,7 +231,8 @@ namespace SkiConsole
 
         private static string DownloadVideo(string url)
         {
-            string localPath = Storage.DownloadVideo(url);
+            IStorage storage = new Storage();
+            string localPath = storage.DownloadVideo(url);
             Console.WriteLine("Downloaded to:\n\t" + localPath);
             return localPath;
         }
@@ -557,12 +559,12 @@ namespace SkiConsole
             }
         }
 
-        private static async Task UpdateThumbnailAsync(Storage storage, SkiVideoEntity video)
+        private static async Task UpdateThumbnailAsync(IStorage storage, SkiVideoEntity video)
         {
             Logger.Log($"Updating thumbnail for {video.PartitionKey}, {video.RowKey}");
             double thumbnailAtSeconds = 0; // video.EntryTime;
 
-            string localVideoPath = Storage.DownloadVideo(video.HotUrl ?? video.Url);
+            string localVideoPath = storage.DownloadVideo(video.HotUrl ?? video.Url);
             VideoTasks _videoTasks = new VideoTasks(localVideoPath);
 
             string localThumbnailPath = await _videoTasks.GetThumbnailAsync(thumbnailAtSeconds);

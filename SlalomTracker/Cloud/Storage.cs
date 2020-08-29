@@ -13,7 +13,7 @@ using Logger = jasondel.Tools.Logger;
 
 namespace SlalomTracker.Cloud
 {
-    public class Storage
+    public class Storage : IStorage
     {
         const string SKICONTAINER = "ski";
         const string INGEST_SKICONTAINER = "ski-ingest";
@@ -104,7 +104,7 @@ namespace SlalomTracker.Cloud
             return UploadVideo(localFile, creationTime);
         }
 
-        public static string DownloadVideo(string videoUrl)
+        public string DownloadVideo(string videoUrl)
         {
             string path = GetLocalPath(videoUrl);
             if (File.Exists(path)) 
