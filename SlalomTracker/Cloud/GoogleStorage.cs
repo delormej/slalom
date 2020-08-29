@@ -51,28 +51,37 @@ namespace SlalomTracker.Cloud
 
         public string DownloadVideo(string videoUrl)
         {
-            return null;
+            // Todo: Refactor this one out.
+            Storage storage = new Storage();
+            return storage.DownloadVideo(videoUrl);
         }
         
         public string UploadVideo(string localFile, DateTime creationTime) 
         {
-            return null;
+            var task = UploadVideoAsync(localFile, creationTime);
+            task.Wait();
+            
+            return task.Result;
         }
         
         public string UploadThumbnail(string localFile, DateTime creationTime)
         {
-            return null;
+            return UploadVideo(localFile, creationTime);
         }
 
         public void DeleteIngestedBlob(string url)
-        {}
+        {
+            throw new NotImplementedException();
+        }
 
         // VideoMetadataStorage
         public void AddMetadata(SkiVideoEntity entity, string json)
         {}
         
         public void UpdateMetadata(SkiVideoEntity entity)
-        {}
+        {
+            AddTableEntityAsync(entity).Wait();
+        }
         
         public async Task AddTableEntityAsync(BaseVideoEntity entity, string tableName = null)
         {
