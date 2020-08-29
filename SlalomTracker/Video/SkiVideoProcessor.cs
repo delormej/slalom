@@ -258,7 +258,7 @@ namespace SlalomTracker.Video
             // This currently mutates the entity before persisting, so requires some changes to
             // avoid side-effects.
             _storage.AddMetadata(entity, _json);
-            await _googleStorage.AddSkiVideoEntityAsync(entity);
+            await _googleStorage.AddTableEntityAsync(entity);
             
             await _processedNotifer.NotifyAsync(entity.Skier, entity.RowKey);
         }   

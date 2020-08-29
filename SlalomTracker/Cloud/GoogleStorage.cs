@@ -9,17 +9,23 @@ using Logger = jasondel.Tools.Logger;
 
 namespace SlalomTracker.Cloud
 {
-    public class GoogleStorage
+    public class GoogleStorage : IStorage
     {
         private string _bucketName;
+        private string _projectId;
         public string BaseUrl { get; private set; }
 
         StorageClient _storage;
 
         public GoogleStorage()
         {
+            _projectId = Environment.GetEnvironmentVariable("GOOGLE_PROJECT_ID");
             _bucketName = Environment.GetEnvironmentVariable("GOOGLE_STORAGE_BUCKET") 
                 ?? "skivideo";
+            
+            if (_projectId == null || _bucketName == null)
+                throw new ApplicationException("GOOGLE_PROJECT_ID and GOOGLE_STORAGE_BUCKET env variables missing.");
+
             BaseUrl = $"https://storage.googleapis.com/{_bucketName}/";
             _storage = StorageClient.Create();
         }
@@ -43,24 +49,75 @@ namespace SlalomTracker.Cloud
             return $"{BaseUrl}{objectName}";      
         }
 
-        public async Task AddSkiVideoEntityAsync(SkiVideoEntity entity)
+        public string DownloadVideo(string videoUrl)
         {
+            return null;
+        }
+        
+        public string UploadVideo(string localFile, DateTime creationTime) 
+        {
+            return null;
+        }
+        
+        public string UploadThumbnail(string localFile, DateTime creationTime)
+        {
+            return null;
+        }
+
+        public void DeleteIngestedBlob(string url)
+        {}
+
+        // VideoMetadataStorage
+        public void AddMetadata(SkiVideoEntity entity, string json)
+        {}
+        
+        public void UpdateMetadata(SkiVideoEntity entity)
+        {}
+        
+        public async Task AddTableEntityAsync(BaseVideoEntity entity, string tableName = null)
+        {
+            await AddTableEntityAsync(entity as SkiVideoEntity);
+        }
+
+        public async Task AddTableEntityAsync(SkiVideoEntity entity)
+        {
+            const string tableName = "videos";
             try
             {
-                string projectId = Environment.GetEnvironmentVariable("GOOGLE_PROJECT_ID");
-                FirestoreDb db = FirestoreDb.Create(projectId);
+                FirestoreDb db = FirestoreDb.Create(_projectId);
 
-                DocumentReference doc = db.Collection("videos").
-                    Document(entity.PartitionKey);
-                await doc.Collection("videos").Document(entity.RowKey).SetAsync(entity);
+                DocumentReference doc = db.Collection(tableName)
+                    .Document(entity.PartitionKey);
+                await doc.Collection(tableName).Document(entity.RowKey)
+                    .SetAsync(entity);
 
                 Logger.Log($"Added Firestore metadata for {entity.Url}");
             }
             catch (Exception e)
             {
                 Logger.Log($"Unable to add Firestore metadata for {entity.Url}", e);
-            }
+            }            
         }
+        
+        public SkiVideoEntity GetSkiVideoEntity(string recordedDate, string mp4Filename)
+        {
+            return null;
+        }
+
+        public Task<List<SkiVideoEntity>> GetAllMetdataAsync()
+        {
+            return null;
+        }
+
+        // CourseMetadataStorage
+        public List<Course> GetCourses()
+        {
+            return null;
+        }
+        
+        public void UpdateCourse(Course course)
+        {}
+ 
 
         public Task<float> GetBucketSizeAsync()
         {

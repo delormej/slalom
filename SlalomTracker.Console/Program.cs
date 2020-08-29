@@ -649,11 +649,11 @@ namespace SkiConsole
         private static async Task FirestoreMigrateAsync()
         {
             IEnumerable<SkiVideoEntity> metadata = await LoadVideosAsync();
-            GoogleStorage storage = new GoogleStorage();
+            IStorage storage = new GoogleStorage();
 
             var tasks = metadata
                 .Where(v => v.ThumbnailUrl != null && v.JsonUrl != null)
-                .Select(v => storage.AddSkiVideoEntityAsync(v));
+                .Select(v => storage.AddTableEntityAsync(v));
             await Task.WhenAll(tasks);
 
             System.Console.WriteLine("Done");

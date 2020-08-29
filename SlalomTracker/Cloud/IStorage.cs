@@ -16,6 +16,7 @@ namespace SlalomTracker.Cloud
         void AddMetadata(SkiVideoEntity entity, string json);
         void UpdateMetadata(SkiVideoEntity entity);
         Task AddTableEntityAsync(BaseVideoEntity entity, string tableName);
+        Task AddTableEntityAsync(SkiVideoEntity entity);
         SkiVideoEntity GetSkiVideoEntity(string recordedDate, string mp4Filename);
         Task<List<SkiVideoEntity>> GetAllMetdataAsync();
 

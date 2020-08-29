@@ -243,6 +243,11 @@ namespace SlalomTracker.Cloud
             AddTableEntityAsync(entity, SKITABLE).Wait();
         }
 
+        public async Task AddTableEntityAsync(SkiVideoEntity entity)
+        {
+            await AddTableEntityAsync(entity, SKITABLE);
+        }
+
         public async Task AddTableEntityAsync(BaseVideoEntity entity, string tableName)
         {
             CloudTableClient client = _account.CreateCloudTableClient();
