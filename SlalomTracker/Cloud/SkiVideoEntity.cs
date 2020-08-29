@@ -6,10 +6,7 @@ namespace SlalomTracker.Cloud
     [FirestoreData]
     public class SkiVideoEntity : BaseVideoEntity
     {
-        public SkiVideoEntity()
-        {
-            
-        }
+        public SkiVideoEntity() {}
 
         public SkiVideoEntity(string videoUrl, DateTime creationTime) : 
             base(videoUrl, creationTime)
@@ -68,5 +65,11 @@ namespace SlalomTracker.Cloud
 
         [FirestoreProperty]  
         public bool Starred { get; set; } = false;
+
+        [FirestoreProperty("PartitionKey")]
+        public string Date { get { return PartitionKey; } set { PartitionKey = value; } }
+        
+        [FirestoreProperty("RowKey")]        
+        public string VideoFile { get { return RowKey; } set { RowKey = value; } }
     }
 }

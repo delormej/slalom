@@ -17,12 +17,6 @@ namespace SlalomTracker.Cloud
         [FirestoreProperty]        
         public string SlalomTrackerVersion { get; set; }
 
-        [FirestoreProperty("PartitionKey")]
-        public string Date { get { return PartitionKey; } set {  } }
-        
-        [FirestoreProperty("RowKey")]
-        public string VideoFile { get { return RowKey; } set {  } }
-
         [JsonIgnore] // This avoids an error with JSON Serialization Name Collision.  This should be removed when TableEntity base class is removed.
         [FirestoreDocumentUpdateTimestamp]
         public new DateTimeOffset? Timestamp 

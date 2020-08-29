@@ -107,14 +107,13 @@ namespace SlalomTracker.Cloud
         public async Task<IEnumerable<SkiVideoEntity>> GetAllMetdataAsync()
         {
             FirestoreDb db = FirestoreDb.Create(_projectId);
-            Query query = db.CollectionGroup("videos");
+            Query query = db.CollectionGroup("videos"); // .WhereEqualTo("MarkedForDelete", false); // <-- This requires an index which doesn't exist.
             QuerySnapshot querySnapshot = await query.GetSnapshotAsync();
-            foreach (DocumentSnapshot documentSnapshot in querySnapshot.Documents)
-            {
-                Console.WriteLine("Document {0} returned by query", documentSnapshot.Id);
-            }
 
-            return null;
+            IEnumerable<SkiVideoEntity> videos = querySnapshot.Documents
+                .Select(d => d.ConvertTo<SkiVideoEntity>());
+
+            return videos.Where(v => v.MarkedForDelete == false);
         }
 
         // CourseMetadataStorage

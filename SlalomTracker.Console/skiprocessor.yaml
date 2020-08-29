@@ -33,7 +33,7 @@ spec:
           secretName: gcloud-key
       containers:
       - name: skiprocessor
-        image: wthacr.azurecr.io/skiconsole:v2.9.3
+        image: wthacr.azurecr.io/skiconsole:v2.9.4
         # Interestingly requests have to equal limits with virtualnode: https://github.com/virtual-kubelet/azure-aci/issues/17
         resources:
           requests:
@@ -67,13 +67,13 @@ spec:
               name: skiml-secret
               key: key              
         - name: SKIMLROPEMODEL
-          value: "RopeDetection-9"
+          value: "RopeDetection-10"
         - name: SKIMLROPEID
           value: "e3ee86a8-f298-46b5-87fd-31a09f0480d7"
         - name: SKIMLSKIERID
           value: "c38bd611-86ee-43ff-ad76-20d339665e34"
         - name: SKIMLSKIERMODEL
-          value: "SkierDetection-2"
+          value: "SkierDetection-4"
         - name: GOOGLE_PROJECT_ID
           value: "gke-ski"
         - name: GOOGLE_STORAGE_BUCKET
