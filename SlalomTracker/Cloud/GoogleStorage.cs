@@ -31,6 +31,11 @@ namespace SlalomTracker.Cloud
             _storage = StorageClient.Create();
         }
 
+        public string BlobStorageUri 
+        {
+            get { return _storage.Service.BaseUri; }
+        }
+
         public void AddToQueue(string blobName, string videoUrl)
         {
             throw new NotImplementedException();
