@@ -11,6 +11,7 @@ namespace SlalomTracker.Cloud
 {
     public class GoogleStorage : IStorage
     {
+        const string CollectionName = "videos";
         private string _bucketName;
         private string _projectId;
         public string BaseUrl { get; private set; }
@@ -32,7 +33,7 @@ namespace SlalomTracker.Cloud
 
         public async Task<string> UploadVideoAsync(string localFile, DateTime creationTime)
         {
-            string directory = AzureStorage.GetBlobDirectory(creationTime);
+            string directory = StorageHelper.GetBlobDirectory(creationTime);
             string objectName = directory + System.IO.Path.GetFileName(localFile);
             
             Google.Apis.Storage.v1.Data.Object storageObject = null;
@@ -51,9 +52,7 @@ namespace SlalomTracker.Cloud
 
         public string DownloadVideo(string videoUrl)
         {
-            // Todo: Refactor this one out.
-            AzureStorage storage = new AzureStorage();
-            return storage.DownloadVideo(videoUrl);
+            return StorageHelper.DownloadVideo(videoUrl);
         }
         
         public string UploadVideo(string localFile, DateTime creationTime) 
@@ -71,7 +70,7 @@ namespace SlalomTracker.Cloud
 
         public void DeleteIngestedBlob(string url)
         {
-            throw new NotImplementedException();
+            DeleteAsync(url).Wait();
         }
 
         // VideoMetadataStorage
@@ -90,14 +89,13 @@ namespace SlalomTracker.Cloud
 
         public async Task AddTableEntityAsync(SkiVideoEntity entity)
         {
-            const string tableName = "videos";
             try
             {
                 FirestoreDb db = FirestoreDb.Create(_projectId);
 
-                DocumentReference doc = db.Collection(tableName)
+                DocumentReference doc = db.Collection(CollectionName)
                     .Document(entity.PartitionKey);
-                await doc.Collection(tableName).Document(entity.RowKey)
+                await doc.Collection(CollectionName).Document(entity.RowKey)
                     .SetAsync(entity);
 
                 Logger.Log($"Added Firestore metadata for {entity.Url}");
@@ -110,13 +108,35 @@ namespace SlalomTracker.Cloud
         
         public SkiVideoEntity GetSkiVideoEntity(string recordedDate, string mp4Filename)
         {
-            return null;
+            SkiVideoEntity entity = null;
+            try 
+            {
+                DateTime date = DateTime.Parse(recordedDate);
+                string rowKey = StorageHelper.GetBlobDirectory(date);
+
+                FirestoreDb db = FirestoreDb.Create(_projectId);
+                var videoRef = db.Collection(CollectionName).Document(rowKey).Collection(CollectionName)
+                    .Document(mp4Filename);
+
+                var snapshotTask = videoRef.GetSnapshotAsync();
+                snapshotTask.Wait();
+                var snapshot = snapshotTask.Result;
+
+                if (snapshot != null)
+                    entity = snapshot.ConvertTo<SkiVideoEntity>();
+            }
+            catch (Exception e)
+            {
+                Logger.Log($"Unable to get video {recordedDate}/{mp4Filename}.", e);
+            }
+
+            return entity;
         }
 
         public async Task<IEnumerable<SkiVideoEntity>> GetAllMetdataAsync()
         {
             FirestoreDb db = FirestoreDb.Create(_projectId);
-            Query query = db.CollectionGroup("videos"); // .WhereEqualTo("MarkedForDelete", false); // <-- This requires an index which doesn't exist.
+            Query query = db.CollectionGroup(CollectionName); // .WhereEqualTo("MarkedForDelete", false); // <-- This requires an index which doesn't exist.
             QuerySnapshot querySnapshot = await query.GetSnapshotAsync();
 
             IEnumerable<SkiVideoEntity> videos = querySnapshot.Documents
@@ -128,12 +148,13 @@ namespace SlalomTracker.Cloud
         // CourseMetadataStorage
         public List<Course> GetCourses()
         {
-            return null;
+            throw new NotImplementedException();
         }
         
         public void UpdateCourse(Course course)
-        {}
- 
+        {
+            throw new NotImplementedException();
+        }
 
         public Task<float> GetBucketSizeAsync()
         {
