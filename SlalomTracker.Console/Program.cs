@@ -70,7 +70,9 @@ namespace SkiConsole
                 "Listen to service bus queue for new videos uploaded.\n\t\t" +
                 "ski -l [optional]queueName\n\t\t" +
                 "Republish videos currently in upload folder to service bus queue for new videos uploaded.\n\t\t" +
-                "ski -r\n\t\t"                     
+                "ski -r\n\t\t" +
+                "Migrate metadata to Firestore.\n\t\t" +
+                "ski --migrate\n\t\t"                                     
             );
         }
 
@@ -159,6 +161,10 @@ namespace SkiConsole
             else if (args[0] == "-r")
             {
                 RepublishStorageEventsAsync().Wait();
+            }
+            else if (args[0] == "--migrate")
+            {
+                FirestoreMigrateAsync().Wait();
             }
             else
                 ShowUsage();
@@ -636,6 +642,19 @@ namespace SkiConsole
             
             await queueClient.SendAsync(messages);
             System.Console.WriteLine($"Resent {blobs.Count()} message(s).");
+        }
+
+        private static async Task FirestoreMigrateAsync()
+        {
+            IEnumerable<SkiVideoEntity> metadata = await LoadVideosAsync();
+            GoogleStorage storage = new GoogleStorage();
+
+            var tasks = metadata
+                .Where(v => v.ThumbnailUrl != null && v.JsonUrl != null)
+                .Select(v => storage.AddSkiVideoEntityAsync(v));
+            await Task.WhenAll(tasks);
+
+            System.Console.WriteLine("Done");
         }
     }
 }
