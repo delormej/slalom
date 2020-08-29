@@ -334,7 +334,7 @@ namespace SkiConsole
 
         private static Task<IEnumerable<SkiVideoEntity>> LoadVideosAsync()
         {
-            IStorage storage = new GoogleStorage();
+            IStorage storage = new Storage();
             return storage.GetAllMetdataAsync();
         }        
 
