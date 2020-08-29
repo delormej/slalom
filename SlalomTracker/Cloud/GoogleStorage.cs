@@ -35,19 +35,13 @@ namespace SlalomTracker.Cloud
         {
             string directory = StorageHelper.GetBlobDirectory(creationTime);
             string objectName = directory + System.IO.Path.GetFileName(localFile);
+            string contentType = localFile.ToUpper().EndsWith("MP4") ? "video/mp4" : null;
             
-            Google.Apis.Storage.v1.Data.Object storageObject = null;
-            
+            string url = null;
             using (var f = File.OpenRead(localFile))
-            {
-                string contentType = localFile.ToUpper().EndsWith("MP4") ? "video/mp4" : null;
-                storageObject = await _storage.UploadObjectAsync(_bucketName, objectName, contentType, f);
-            }
-
-            if (storageObject == null)
-                throw new ApplicationException($"Unable to upload Video {localFile} to Google storage.");
-
-            return $"{BaseUrl}{objectName}";      
+                url = await UploadAsync(localFile, creationTime, contentType, f);
+            
+            return url;
         }
 
         public string DownloadVideo(string videoUrl)
@@ -75,7 +69,11 @@ namespace SlalomTracker.Cloud
 
         // VideoMetadataStorage
         public void AddMetadata(SkiVideoEntity entity, string json)
-        {}
+        {
+            entity.JsonUrl = UploadMetadata(entity, json);
+            AddTableEntityAsync(entity).Wait();
+            Logger.Log("Uploaded metadata for video:" + entity.Url);            
+        }
         
         public void UpdateMetadata(SkiVideoEntity entity)
         {
@@ -187,6 +185,36 @@ namespace SlalomTracker.Cloud
         {
             return videoUrl.Replace(BaseUrl, "");
         }
+
+        private string UploadMetadata(SkiVideoEntity entity, string json)
+        {
+            string blobName = StorageHelper.GetBlobName(entity.Url, entity.RecordedTime);
+            if (!blobName.EndsWith(".MP4"))
+                throw new ApplicationException("Path to video must end with .MP4");
+
+            string fileName = blobName.Replace(".MP4", ".json");
+
+            byte[] byteArray = System.Text.Encoding.ASCII.GetBytes(json);
+            MemoryStream stream = new MemoryStream(byteArray);
+            var task = UploadAsync(fileName, entity.RecordedTime, "application/json", stream);
+            task.Wait();
+            
+            return task.Result;
+        }
+
+        private async Task<string> UploadAsync(string fileName, DateTime creationTime, string contentType, Stream stream)
+        {
+            string directory = StorageHelper.GetBlobDirectory(creationTime);
+            string objectName = directory + fileName;
+            
+            Google.Apis.Storage.v1.Data.Object storageObject = null;
+            storageObject = await _storage.UploadObjectAsync(_bucketName, objectName, contentType, stream);
+
+            if (storageObject == null)
+                throw new ApplicationException($"Unable to upload Video {objectName} to Google storage.");
+
+            return $"{BaseUrl}{objectName}";      
+        }        
 
         public class GoogleStorageObject
         {
