@@ -35,6 +35,7 @@ docker run --rm -p 5000:5000 -it \
     -e SKISB="$SKISB" \
     -e SKISIGNALR="$SKISIGNALR" \
     -e GITHUB_TOKEN="$GITHUB_TOKEN" \
+    -e GOOGLE_APPLICATION_CREDENTIALS="/ski/key.json" \
     -e GOOGLE_PROJECT_ID="$GOOGLE_PROJECT_ID" \
     -e GOOGLE_STORAGE_BUCKET="$GOOGLE_STORAGE_BUCKET" \
     -e Logging__LogLevel__Default="Debug" \
