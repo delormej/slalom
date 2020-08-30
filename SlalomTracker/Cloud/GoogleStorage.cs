@@ -33,7 +33,7 @@ namespace SlalomTracker.Cloud
 
         public string BlobStorageUri 
         {
-            get { return _storage.Service.BaseUri; }
+            get { return BaseUrl; }
         }
 
         public void AddToQueue(string blobName, string videoUrl)
@@ -119,11 +119,8 @@ namespace SlalomTracker.Cloud
             SkiVideoEntity entity = null;
             try 
             {
-                DateTime date = DateTime.Parse(recordedDate);
-                string rowKey = StorageHelper.GetBlobDirectory(date);
-
                 FirestoreDb db = FirestoreDb.Create(_projectId);
-                var videoRef = db.Collection(CollectionName).Document(rowKey).Collection(CollectionName)
+                var videoRef = db.Collection(CollectionName).Document(recordedDate).Collection(CollectionName)
                     .Document(mp4Filename);
 
                 var snapshotTask = videoRef.GetSnapshotAsync();
