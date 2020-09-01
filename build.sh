@@ -1,10 +1,8 @@
 # Builds the base docker image used for all builds & debug.
-REGISTRY=wthacr
+REGISTRY=gcr.io/gke-ski
 BUILDER_VERSION=1.0
 
-docker build --force-rm --no-cache -t $REGISTRY.azurecr.io/skibuild:$BUILDER_VERSION \
+docker build --force-rm --no-cache -t $REGISTRY/skibuild:$BUILDER_VERSION \
  - < skibuild.Dockerfile  
 
-az acr login -n $REGISTRY
-
-docker push $REGISTRY.azurecr.io/skibuild:$BUILDER_VERSION
+docker push $REGISTRY/skibuild:$BUILDER_VERSION

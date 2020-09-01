@@ -1,6 +1,8 @@
 #!/bin/bash
 #source prebuild.sh
 
+registry=gcr.io/gke-ski
+
 # CI/CD could override this version.
 if [ -z "$VERSION" ]
 then 
@@ -12,7 +14,7 @@ echo "skiblobs::$SKIBLOBS"
 echo "github_token::$GITHUB_TOKEN"
 echo "Building container::$container"
 
-if [ $1 == "debug" ]; then
+if [ "$1" == "debug" ]; then
     target=" --target build "
     dockerrun="dotnet run -p ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj"
 fi
@@ -46,7 +48,7 @@ docker run --rm -p 5000:5000 -it \
 # Tag and push the container.
 #
 
-if [ $1 != "debug" ]; then
-    docker tag $container wthacr.azurecr.io/$container
-    docker push wthacr.azurecr.io/$container
+if [ "$1" != "debug" ]; then
+    docker tag $container $registry/$container
+    docker push $registry/$container
 fi

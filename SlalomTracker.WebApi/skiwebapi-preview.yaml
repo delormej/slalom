@@ -14,10 +14,17 @@ spec:
       labels:
         app: skiwebapi-preview
     spec:
+      volumes:
+      - name: google-cloud-key
+        secret:
+          secretName: gcloud-key
       containers:
       - name: skiwebapi-preview
-        image: wthacr.azurecr.io/skiwebapi:v2.9.4
+        image: gcr.io/gke-ski/skiwebapi:v2.10.0
         imagePullPolicy: Always
+        volumeMounts:
+        - name: google-cloud-key
+          mountPath: /var/secrets/google        
         env:
         - name: PORT
           value: "8080"
@@ -37,7 +44,7 @@ spec:
               name: skisignalr-secret
               key: connectionstring
         - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: "/ski/key.json"
+          value: /var/secrets/google/key.json                            
         - name: GOOGLE_PROJECT_ID
           value: "gke-ski"
         - name: GOOGLE_STORAGE_BUCKET
