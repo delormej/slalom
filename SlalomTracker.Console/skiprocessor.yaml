@@ -58,6 +58,8 @@ spec:
             secretKeyRef:
               name: skisb-secret
               key: connectionstring
+        - name: SKIQUEUE
+          value: "skiqueue"
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /var/secrets/google/key.json                            
         #machine learning settings

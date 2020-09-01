@@ -40,6 +40,7 @@ docker run -it --rm \
     -v "$PWD":/shared \
     -e SKIBLOBS="$SKIBLOBS" \
     -e SKISB="$SKISB" \
+    -e SKIQUEUE="$SKIQUEUE" \
     -e SKIMLKEY="$SKIMLKEY" \
     -e GOOGLE_APPLICATION_CREDENTIALS="/ski/key.json" \
     -e GITHUB_TOKEN="$GITHUB_TOKEN" \
