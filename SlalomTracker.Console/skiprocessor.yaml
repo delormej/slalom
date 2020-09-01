@@ -33,7 +33,7 @@ spec:
           secretName: gcloud-key
       containers:
       - name: skiprocessor
-        image: wthacr.azurecr.io/skiconsole:v2.9.4
+        image: wthacr.azurecr.io/skiconsole:v2.9.1
         # Interestingly requests have to equal limits with virtualnode: https://github.com/virtual-kubelet/azure-aci/issues/17
         resources:
           requests:

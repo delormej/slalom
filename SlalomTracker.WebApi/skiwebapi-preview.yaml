@@ -36,6 +36,12 @@ spec:
             secretKeyRef:
               name: skisignalr-secret
               key: connectionstring
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: "/ski/key.json"
+        - name: GOOGLE_PROJECT_ID
+          value: "gke-ski"
+        - name: GOOGLE_STORAGE_BUCKET
+          value: "gke-ski-videos"
         - name: Logging__LogLevel__Default
           value: "Information"
         ports:

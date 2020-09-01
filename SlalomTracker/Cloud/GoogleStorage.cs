@@ -120,8 +120,8 @@ namespace SlalomTracker.Cloud
             try 
             {
                 FirestoreDb db = FirestoreDb.Create(_projectId);
-                var videoRef = db.Collection(CollectionName).Document(recordedDate).Collection(CollectionName)
-                    .Document(mp4Filename);
+                var videoRef = db.Collection(CollectionName).Document(recordedDate)
+                    .Collection(CollectionName).Document(mp4Filename);
 
                 var snapshotTask = videoRef.GetSnapshotAsync();
                 snapshotTask.Wait();

@@ -87,7 +87,7 @@ namespace SlalomTracker.WebApi.Controllers
                     string message = $"Error reading video instance from payload:\n{json}";
                     throw new ApplicationException(message);
                 }
-                AzureStorage storage = new AzureStorage();
+                IStorage storage = new GoogleStorage();
                 storage.UpdateMetadata(video);             
                 return StatusCode(200);
             }

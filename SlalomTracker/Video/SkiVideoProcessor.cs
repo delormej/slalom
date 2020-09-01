@@ -7,8 +7,7 @@ namespace SlalomTracker.Video
 {
     public class SkiVideoProcessor : IProcessor
     {
-        AzureStorage _storage;
-        GoogleStorage _googleStorage;
+        IStorage _storage;
         CoursePassFactory _factory;
         VideoTasks _videoTasks;
         string _sourceVideoUrl;
@@ -19,8 +18,7 @@ namespace SlalomTracker.Video
         public SkiVideoProcessor(string videoUrl)
         {
             _sourceVideoUrl = videoUrl;
-            _storage = new AzureStorage();
-            _googleStorage = new GoogleStorage();
+            _storage = new GoogleStorage();
             _factory = new CoursePassFactory();
             _processedNotifer = new VideoProcessedNotifier();
         }
@@ -58,15 +56,13 @@ namespace SlalomTracker.Video
                     var uploadThumbnail = UploadThumbnailAsync(createThumbnail, pass.EntryTime);
                     var trimAndSilence = TrimAndSilenceAsync(videoTime); 
                     var uploadVideo = UploadVideoAsync(trimAndSilence, pass.EntryTime);
-                    var uploadHotVideo = UploadGoogleVideoAsync(trimAndSilence, pass.EntryTime);
                     
                     // Some challenges with fit right now, so avoid till resolved.
                     // await FitCenterLineAsync(pass);
                     await CreateAndUploadMetadataAsync(
                         pass,
                         uploadThumbnail,
-                        uploadVideo,
-                        uploadHotVideo
+                        uploadVideo
                     );
                 } while (!hasTimeOverride && (pass = HasAnotherPass(in pass)) != null);
 
@@ -135,25 +131,6 @@ namespace SlalomTracker.Video
 
             return videoUrl;
         }
-
-        private async Task<string> UploadGoogleVideoAsync(Task<string> trimAndSilence, DateTime entryTime)
-        {
-            string videoUrl = "";
-            try 
-            {
-                string processedVideoPath = await trimAndSilence;
-
-                Logger.Log($"Uploading video to Google {processedVideoPath}...");
-                videoUrl = await _googleStorage.UploadVideoAsync(processedVideoPath, entryTime);
-                Logger.Log($"Video uploaded to Google: {videoUrl}");
-            }
-            catch (Exception e)
-            {
-                Logger.Log($"Failed to upload to google, but ignoring.", e);
-            }
-            
-            return videoUrl;
-        }        
 
         private async Task<CoursePass> CreateCoursePassAsync()
         {
@@ -230,8 +207,7 @@ namespace SlalomTracker.Video
 
         private async Task CreateAndUploadMetadataAsync(CoursePass pass,
                         Task<string> uploadThumbnail,
-                        Task<string> uploadVideo,
-                        Task<string> uploadHotVideo)
+                        Task<string> uploadVideo)
         {
             // Wait until thumbnail is uploaded
             string thumbnailUrl = await uploadThumbnail; 
@@ -242,7 +218,6 @@ namespace SlalomTracker.Video
             
             // Wait until the video has uploaded
             string videoUrl = await uploadVideo;
-            string hotVideoUrl = await uploadHotVideo;
             
             // Create the table entity and wait for predictions to come back
             SkiVideoEntity entity = CreateSkiVideoEntity(pass, videoUrl);
@@ -250,15 +225,11 @@ namespace SlalomTracker.Video
             entity.RopeLengthM = await getRopePrediction;
             entity.ThumbnailUrl = thumbnailUrl;
 
-            if (!string.IsNullOrWhiteSpace(hotVideoUrl)) 
-                entity.HotUrl = hotVideoUrl;
-
             Logger.Log($"Creating and uploading metadata for video {_localVideoPath}...");
             
             // This currently mutates the entity before persisting, so requires some changes to
             // avoid side-effects.
             _storage.AddMetadata(entity, _json);
-            await _googleStorage.AddTableEntityAsync(entity);
             
             await _processedNotifer.NotifyAsync(entity.Skier, entity.RowKey);
         }   
