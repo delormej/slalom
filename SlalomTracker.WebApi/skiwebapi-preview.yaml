@@ -20,7 +20,7 @@ spec:
           secretName: gcloud-key
       containers:
       - name: skiwebapi-preview
-        image: gcr.io/gke-ski/skiwebapi:v2.10.0
+        image: gcr.io/gke-ski/skiwebapi:v2.10.1
         imagePullPolicy: Always
         volumeMounts:
         - name: google-cloud-key
@@ -65,7 +65,7 @@ spec:
   - port: 8080
   selector:
     app: skiwebapi-preview
-  type: LoadBalancer
+  type: NodePort
 # ---
 # apiVersion: extensions/v1beta1
 # kind: Ingress
