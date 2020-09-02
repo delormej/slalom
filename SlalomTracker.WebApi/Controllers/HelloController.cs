@@ -7,6 +7,7 @@ using SlalomTracker.Cloud;
 
 namespace SlalomTracker.WebApi.Controllers
 {
+    [Route("/")]
     [Route("api/[controller]")]
     [ApiController]
     public class HelloController : Controller

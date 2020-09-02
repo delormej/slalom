@@ -625,9 +625,9 @@ namespace SkiConsole
         private static async Task RepublishStorageEventsAsync()
         {
             string accountKey = System.Environment.GetEnvironmentVariable("SKIVIDEOS_KEY");
-            string accountName = "skivideos";
+            string accountName = "skivideostorage";
 
-            var blobs = BlobRestApi.GetBlobs(accountName, accountKey, "upload");
+            var blobs = BlobRestApi.GetBlobs(accountName, accountKey, "ski-ingest");
 
             IList<Microsoft.Azure.ServiceBus.Message> messages = new List<Microsoft.Azure.ServiceBus.Message>();
 
@@ -639,7 +639,7 @@ namespace SkiConsole
             }          
 
             string serviceBusConnectionString = Environment.GetEnvironmentVariable("SKISB");
-            string queueName = "video-uploaded";
+            string queueName = Environment.GetEnvironmentVariable("SKIQUEUE");
             Microsoft.Azure.ServiceBus.QueueClient queueClient = new Microsoft.Azure.ServiceBus.QueueClient(serviceBusConnectionString, queueName);
             
             await queueClient.SendAsync(messages);
