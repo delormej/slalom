@@ -1,0 +1,25 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ski-ingress-preview
+  namespace: ski
+spec:
+  backend:
+    serviceName: skiweb-service-preview
+    servicePort: 3000
+  rules:
+  - host: skipreview.jasondel.com
+    http:
+      paths:
+      - backend:
+          serviceName: skiweb-service-preview
+          servicePort: 3000
+        path: /*
+      - backend:
+          serviceName: skiwebapi-service-preview
+          servicePort: 8080
+        path: /api/*
+status:
+  loadBalancer:
+    ingress:
+    - ip: 34.120.48.53
