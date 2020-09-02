@@ -13,6 +13,6 @@ spec:
   triggers:
   - type: azure-servicebus
     metadata:
-      queueName: video-uploaded
+      queueName: skiqueue
       connection: SKISB # This is the ENV variable in the skiprocessor deployment which has the connection string.
       queueLength: "1" 
