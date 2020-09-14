@@ -63,6 +63,8 @@ namespace SkiConsole
                 await processor.ProcessAsync();
                 
                 _subscriber.Acknowledge(_subscriptionName, new string[] { received.AckId });
+                
+                Logger.Log($"Acknowledged message id:{message.MessageId}, AckId:{received.AckId}.");
             }
             catch (Exception e)
             {
