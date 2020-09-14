@@ -50,6 +50,7 @@ docker run -it --rm \
     -e SKIMLSKIERMODEL="SkierDetection-2" \
     -e GOOGLE_PROJECT_ID="$GOOGLE_PROJECT_ID" \
     -e GOOGLE_STORAGE_BUCKET="$GOOGLE_STORAGE_BUCKET" \
+    -e SKICROPURL="$SKICROPURL" \
     --name ski-console \
     --cpus="2.0" \
     $container

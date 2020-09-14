@@ -12,6 +12,7 @@ namespace SlalomTracker.Cloud
     public abstract class MachineLearning
     {
         public const string ENV_MLKEY = "SKIMLKEY";
+        public const string ENV_CROPURL = "SKICROPURL";
         protected string CropThumbnailUrl;
         protected string CustomVisionEndPoint;
         protected string CustomVisionKey;
@@ -27,10 +28,10 @@ namespace SlalomTracker.Cloud
 
         public MachineLearning()
         {
+            // TODO: All of this needs to be moved to configuration file.            
             CustomVisionKey = Environment.GetEnvironmentVariable(ENV_MLKEY);
-
-            // TODO: All of this needs to be moved to configuration file.
-            CropThumbnailUrl = "https://ski.jasondel.com/api/crop?width=1600&thumbnailUrl=";
+            CropThumbnailUrl = Environment.GetEnvironmentVariable(ENV_CROPURL) ?? 
+                "https://ski.jasondel.com/api/crop?width=1600&thumbnailUrl=";
             CustomVisionEndPoint = "https://eastus.api.cognitive.microsoft.com/";    
             ResourceId = "/subscriptions/40a293b5-bd26-47ef-acc3-c001a5bfce82/resourceGroups/ski/providers/Microsoft.CognitiveServices/accounts/SlalomDetection";
         }

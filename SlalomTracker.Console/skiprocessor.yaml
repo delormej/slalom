@@ -80,6 +80,8 @@ spec:
           value: "gke-ski"
         - name: GOOGLE_STORAGE_BUCKET
           value: "gke-ski-videos"
+        - name: SKICROPURL
+          value: "http://skipreview.jasondel.com/api/crop?width=1600&thumbnailUrl="
       imagePullSecrets:
         - name: acr-secret
       nodeSelector:
