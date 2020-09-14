@@ -166,6 +166,10 @@ namespace SkiConsole
             {
                 FirestoreMigrateAsync().Wait();
             }
+            else if (args[0] == "--pubsub")
+            {
+                PubSub().Wait();
+            }
             else
                 ShowUsage();
         }
@@ -657,6 +661,13 @@ namespace SkiConsole
             await Task.WhenAll(tasks);
 
             System.Console.WriteLine("Done");
+        }
+
+        private static async Task PubSub()
+        {
+            PullMessagesAsyncSample pull = new PullMessagesAsyncSample();
+            int messages = await pull.PullMessagesAsync("gke-ski", "video-uploaded-sub", false);
+            System.Console.WriteLine($"Messages: {0}");
         }
     }
 }
