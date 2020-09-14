@@ -20,7 +20,10 @@ namespace SlalomTracker.Cloud
             else if (msg.mediaLink != null)
                 videoUrl = msg.mediaLink.ToString();
             
-            if (videoUrl == null || !(videoUrl.ToUpper().Contains(".MP4")))
+            if (!(videoUrl.ToUpper().Contains(".MP4")))
+                videoUrl = null;
+
+            if (videoUrl == null)
                 Logger.Log($"WARNING: Valid video url not found: {message}");
             else 
                 Logger.Log($"Received this videoUrl: {videoUrl}");

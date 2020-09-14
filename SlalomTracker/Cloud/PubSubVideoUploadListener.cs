@@ -66,21 +66,8 @@ namespace SkiConsole
             }
             catch (Exception e)
             {
-                if (message?.GetDeliveryAttempt() <= 2)
-                {
-                    Logger.Log($"Abandoned message.", e);
-//TODO:
-                    // abandon and allow another to try in case of transient errors
-                    //await _queueClient.AbandonAsync(message.SystemProperties.LockToken); 
-                    
-                }
-                else
-                {
-                    Logger.Log($"Dead lettering message.", e);
-//TODO:
-                    // await _queueClient.DeadLetterAsync(message.SystemProperties.LockToken,
-                    //     e.Message, e.InnerException?.Message);
-                }
+                int? attempt = message?.GetDeliveryAttempt().Value ?? 0;
+                Logger.Log($"ERROR: Attempt #{attempt} for message.", e);
             }
             finally
             {

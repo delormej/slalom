@@ -74,7 +74,14 @@ namespace SlalomTracker.Cloud
 
         public void DeleteIngestedBlob(string url)
         {
-            DeleteAsync(url).Wait();
+            try
+            {
+                DeleteAsync(url).Wait();
+            }
+            catch (Exception e)
+            {
+                Logger.Log("WARNING: Unable to delete ingested blob.", e);
+            }
         }
 
         // VideoMetadataStorage
