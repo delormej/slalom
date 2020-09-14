@@ -9,20 +9,10 @@ namespace SlalomTracker.Cloud
     {
         public static string GetLocalPath(string videoUrl)
         {
-            string path = "";
-            // Get second to last directory seperator.
-            int dirMarker = videoUrl.LastIndexOf('/');
-            if (dirMarker > 0)
-                dirMarker = videoUrl.LastIndexOf('/', dirMarker-1, dirMarker-1);
-            if (dirMarker < 0)
-            {
-                path = Path.GetFileName(videoUrl);
-            }
-            else
-            {
-                path = videoUrl.Substring(dirMarker + 1, videoUrl.Length - dirMarker - 1);
-            }
-            return path;
+            var uri = new UriBuilder(videoUrl);
+            string filename = Path.GetFileName(uri.Path);
+
+            return filename;
         }
 
         public static string GetBlobName(string localFile, DateTime creationTime)
@@ -52,19 +42,6 @@ namespace SlalomTracker.Cloud
             else 
             {
                 Logger.Log("Requesting video: " + videoUrl + " ...");
-
-                string directory = Path.GetDirectoryName(path);
-                if (directory != String.Empty && !Directory.Exists(directory))
-                {
-                    // Edge case! Ensure a file doesn't also exist already with that name.
-                    if (File.Exists(directory))
-                    {
-                        const string prefix = "_tmp_";
-                        directory = prefix + directory;
-                        path = prefix + path;
-                    }
-                    Directory.CreateDirectory(directory);
-                }
                     
                 WebClient client = new WebClient();
                 client.DownloadFile(videoUrl, path);

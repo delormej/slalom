@@ -33,7 +33,7 @@ namespace SlalomTracker.Video
             try
             {
                 var download = DownloadVideoAsync();
-                var timeOverride = GetPassOverrideAsync();
+                var timeOverride = Task.FromResult<VideoTime>(null); // GetPassOverrideAsync(); // this isn't working with the mediaLink for a message in Google Event... need to figure this out.
                 
                 await Task.WhenAll(download, timeOverride);
 
