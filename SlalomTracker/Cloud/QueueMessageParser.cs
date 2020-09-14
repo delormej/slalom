@@ -17,8 +17,10 @@ namespace SlalomTracker.Cloud
                 videoUrl = GetUrlFromAzureStorageEvent(msg);
             else if (msg.message != null)
                 videoUrl = GetUrlFromGoogleStorageEvent(msg);
-
-            if (videoUrl == null || !(videoUrl.ToUpper().EndsWith("MP4")))
+            else if (msg.mediaLink != null)
+                videoUrl = msg.mediaLink.ToString();
+            
+            if (videoUrl == null || !(videoUrl.ToUpper().Contains(".MP4")))
                 Logger.Log($"WARNING: Valid video url not found: {message}");
             else 
                 Logger.Log($"Received this videoUrl: {videoUrl}");
@@ -69,7 +71,7 @@ namespace SlalomTracker.Cloud
 
             string url = string.Format("https://storage.googleapis.com/{0}/{1}", bucketId, objectId);
             return url;
-        }        
+        }            
     }
 }
 

@@ -9,7 +9,7 @@ using SlalomTracker.Cloud;
 
 namespace SkiConsole
 {
-    public class VideoUploadListener
+    public class VideoUploadListener : IUploadListener
     {
         const string ENV_VIDEOQUEUE = "SKIQUEUE";
         const string ENV_SERVICEBUS = "SKISB";

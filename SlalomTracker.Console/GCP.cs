@@ -19,6 +19,7 @@ namespace SkiConsole
             Task startTask = subscriber.StartAsync((PubsubMessage message, CancellationToken cancel) =>
             {
                 string text = Encoding.UTF8.GetString(message.Data.ToArray());
+                Console.WriteLine($"Running with a message {DateTime.Now}");
                 Console.WriteLine($"Message {message.MessageId}: {text}");
                 Interlocked.Increment(ref messageCount);
                 System.Console.WriteLine("Sleeping for 12 minutes.");
@@ -27,6 +28,7 @@ namespace SkiConsole
             });
             // Run for 5 seconds.
             await Task.Delay(60000 * 13);
+            Console.WriteLine($"Stopping {DateTime.Now}");
             await subscriber.StopAsync(CancellationToken.None);
             // Lets make sure that the start task finished successfully after the call to stop.
             await startTask;

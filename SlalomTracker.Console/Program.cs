@@ -592,7 +592,7 @@ namespace SkiConsole
         /// </summary>
         private static void Listen(string queueName, bool openDeadLetter)
         {
-            VideoUploadListener listener = new VideoUploadListener(queueName, openDeadLetter);
+            IUploadListener listener = new PubSubVideoUploadListener(queueName, openDeadLetter);
             EventWaitHandle ewh = new EventWaitHandle(false, EventResetMode.ManualReset);
             EventHandler Reset = (o, e) => {
                 listener.Stop();
