@@ -595,6 +595,7 @@ namespace SkiConsole
             IUploadListener listener = new PubSubVideoUploadListener(queueName, openDeadLetter);
             EventWaitHandle ewh = new EventWaitHandle(false, EventResetMode.ManualReset);
             EventHandler Reset = (o, e) => {
+                Logger.Log("Signaling stop.");
                 listener.Stop();
                 ewh.Set();
             };

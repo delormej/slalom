@@ -46,18 +46,22 @@ namespace SkiConsole
 
         public void Stop()
         {
-            _subscriber.StopAsync(CancellationToken.None).Wait();
+            Logger.Log("Stopping...");
+            bool stopped = _subscriber.StopAsync(TimeSpan.FromMilliseconds(500)).Wait(1000);
+            Logger.Log($"StopAsync() called... and returned {stopped}");
             _processor?.Wait(500);
             Logger.Log("Stopped listening for events.");
         }
 
         private async Task<SubscriberClient.Reply> ProcessMessageAsync(PubsubMessage message, CancellationToken cancel)
         {
+            int? attempt = message?.GetDeliveryAttempt().Value ?? 0;
+
             try
             {               
                 // Process the message.
                 string json = Encoding.UTF8.GetString(message.Data.ToArray());
-                Logger.Log($"Received message id:{message.MessageId} Body:{json}");
+                Logger.Log($"Received message id:{message.MessageId}, attempt:{attempt} Body:{json}");
 
                 IProcessor processor = QueueMessageParser.GetProcessor(json);               
                 await processor.ProcessAsync();
@@ -68,7 +72,6 @@ namespace SkiConsole
             }
             catch (Exception e)
             {
-                int? attempt = message?.GetDeliveryAttempt().Value ?? 0;
                 Logger.Log($"ERROR: Attempt #{attempt} for message.", e);
 
                 return SubscriberClient.Reply.Nack;
