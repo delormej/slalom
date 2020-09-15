@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Google.Cloud.PubSub.V1;
+using Google.Api.Gax;
 using SlalomTracker.Cloud;
 using SlalomTracker.Video;
 using Logger = jasondel.Tools.Logger;
@@ -16,47 +17,44 @@ namespace SkiConsole
         
         static string _projectId = Environment.GetEnvironmentVariable("GOOGLE_PROJECT_ID");
 
-        SubscriberServiceApiClient _subscriber;
+        SubscriberClient _subscriber;
         SubscriptionName _subscriptionName;
-        CancellationTokenSource _cancel;
+        Task _processor;
         
         public PubSubVideoUploadListener(string subscriptionId, bool readDeadLetter = false)
         {
             if (string.IsNullOrEmpty(_projectId))
                 throw new ApplicationException("GOOGLE_PROJECT_ID env variable must be set.");
 
-            _cancel = new CancellationTokenSource();
             _subscriptionName = SubscriptionName.FromProjectSubscription(_projectId, subscriptionId);
-            _subscriber = SubscriberServiceApiClient.Create();
+
+            Task<SubscriberClient> task = SubscriberClient.CreateAsync(_subscriptionName,
+                settings: new SubscriberClient.Settings()
+                {
+                    // AckExtensionWindow = TimeSpan.FromSeconds(4),
+                    // AckDeadline = TimeSpan.FromSeconds(10),
+                    FlowControlSettings = new FlowControlSettings(maxOutstandingElementCount: 1, maxOutstandingByteCount: null)
+                });
+            task.Wait();
+            _subscriber = task.Result;
         }
 
         public void Start()
         {
-            Task.Run( () => ProcessMessageAsync(), _cancel.Token );
+            _processor = _subscriber.StartAsync(ProcessMessageAsync);
         }
 
         public void Stop()
         {
-            _subscriber = null;
-            SubscriberServiceApiClient.ShutdownDefaultChannelsAsync();
-            _cancel.Cancel();
+            _subscriber.StopAsync(CancellationToken.None);
+            _processor?.Wait(500);
+            Logger.Log("Stopped listening for events.");
         }
 
-        private async Task ProcessMessageAsync()
+        private async Task<SubscriberClient.Reply> ProcessMessageAsync(PubsubMessage message, CancellationToken cancel)
         {
-            PubsubMessage message = null;
-
             try
-            {
-                PullResponse response = null;
-                do {
-                    Logger.Log($"Attempting to pull 1 message for subscription: {_subscriptionName}");
-                    response = _subscriber.Pull(_subscriptionName, returnImmediately: false, maxMessages: 1);
-                } while (response.ReceivedMessages.Count == 0);
-                
-                var received = response.ReceivedMessages.FirstOrDefault();                
-                message = received.Message;
-                
+            {               
                 // Process the message.
                 string json = Encoding.UTF8.GetString(message.Data.ToArray());
                 Logger.Log($"Received message id:{message.MessageId} Body:{json}");
@@ -64,14 +62,16 @@ namespace SkiConsole
                 IProcessor processor = QueueMessageParser.GetProcessor(json);               
                 await processor.ProcessAsync();
                 
-                _subscriber.Acknowledge(_subscriptionName, new string[] { received.AckId });
-                
-                Logger.Log($"Acknowledged message id:{message.MessageId}, AckId:{received.AckId}.");
+                Logger.Log($"Returning Ack for message id:{message.MessageId}");
+
+                return SubscriberClient.Reply.Ack;
             }
             catch (Exception e)
             {
                 int? attempt = message?.GetDeliveryAttempt().Value ?? 0;
                 Logger.Log($"ERROR: Attempt #{attempt} for message.", e);
+
+                return SubscriberClient.Reply.Nack;
             }
             finally
             {
