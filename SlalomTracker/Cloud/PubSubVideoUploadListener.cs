@@ -46,7 +46,7 @@ namespace SkiConsole
 
         public void Stop()
         {
-            _subscriber.StopAsync(CancellationToken.None);
+            _subscriber.StopAsync(CancellationToken.None).Wait();
             _processor?.Wait(500);
             Logger.Log("Stopped listening for events.");
         }
