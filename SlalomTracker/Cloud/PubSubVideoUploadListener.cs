@@ -37,6 +37,8 @@ namespace SkiConsole
 
         public void Stop()
         {
+            _subscriber = null;
+            SubscriberServiceApiClient.ShutdownDefaultChannelsAsync();
             _cancel.Cancel();
         }
 
