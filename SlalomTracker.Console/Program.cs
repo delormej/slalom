@@ -604,14 +604,14 @@ namespace SkiConsole
             
             if (Console.WindowHeight > 0)
             {
-                Logger.Log("Press any key to cancel.");
-                Console.ReadKey();
-                ewh.Set();
+                Task.Run( () => {
+                    Logger.Log("Press any key to cancel.");
+                    Console.ReadKey();
+                    ewh.Set();
+                });
             }
-            else
-            {
-                Logger.Log("Waiting until signaled to close.");
-            }
+
+            Logger.Log("Waiting until signaled to close.");
 
             // Wait until signalled.
             ewh.WaitOne();
