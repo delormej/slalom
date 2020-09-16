@@ -13,6 +13,8 @@ namespace SkiConsole
 {
     public class PubSubVideoUploadListener : IUploadListener
     {
+        const int AckDeadlineExtensionMilliseconds = 9 * 60 * 1000;
+
         public event EventHandler Completed;
         
         static string _projectId = Environment.GetEnvironmentVariable("GOOGLE_PROJECT_ID");
@@ -34,36 +36,48 @@ namespace SkiConsole
 
         public void Start()
         {
-            _processor = Task.Run( async () => {
-                try
-                {
-                    ReceivedMessage received = null;
-                    while (received == null && !_cancel.IsCancellationRequested)
-                        received = PullMessage();
-
-                    PubsubMessage message = received.Message;
-
-                    if (await ProcessMessageAsync(message) == SubscriberClient.Reply.Ack)
-                    {
-                        _subscriber.Acknowledge(_subscriptionName, new string[] {received.AckId});
-                        Logger.Log($"Acknowledged message id:{message.MessageId}");
-                    }
-                }
-                catch (Exception e)
-                {
-                    Logger.Log("Error pulling message.", e);
-                }
-
-                if (Completed != null)
-                    Completed(this, null);
-                    
-            }, _cancel.Token);
+            // can we eliminate _processor variable? Serves no purpose?
+            _processor = Task.Run(ListenAsync, _cancel.Token);
         }
 
         public void Stop()
         {
             Logger.Log("Stopping...");
             _cancel.Cancel();
+        }
+
+        private async Task ListenAsync()
+        {
+            ReceivedMessage received = null;
+            Timer extendAck = null;
+
+            try
+            {
+                while (received == null && !_cancel.IsCancellationRequested)
+                    received = PullMessage();
+
+                extendAck = new Timer(ExtendAckDeadline, received.AckId, 
+                    AckDeadlineExtensionMilliseconds, AckDeadlineExtensionMilliseconds);
+                
+                PubsubMessage message = received.Message;
+
+                if (await ProcessMessageAsync(message) == SubscriberClient.Reply.Ack)
+                {
+                    _subscriber.Acknowledge(_subscriptionName, new string[] {received.AckId});
+                    Logger.Log($"Acknowledged message id:{message.MessageId}");
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Log("Error pulling message.", e);
+            }
+            finally 
+            {
+                extendAck?.Dispose();
+            }
+
+            if (Completed != null)
+                Completed(this, null);            
         }
 
         private ReceivedMessage PullMessage()
@@ -74,6 +88,15 @@ namespace SkiConsole
             ReceivedMessage received = response.ReceivedMessages.FirstOrDefault();
             
             return received;
+        }
+
+        private void ExtendAckDeadline(object state)
+        {
+            string[] ackId = new string[] { state.ToString() };
+            _subscriber.ModifyAckDeadline(_subscriptionName, ackId, 
+                AckDeadlineExtensionMilliseconds / 1000);                
+            
+            Logger.Log($"Extended {_subscriptionName} ackId:{state} by {(AckDeadlineExtensionMilliseconds / 1000)} seconds.");
         }
 
         private async Task<SubscriberClient.Reply> ProcessMessageAsync(PubsubMessage message)
