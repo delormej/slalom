@@ -42,7 +42,7 @@ namespace SkiConsole
                         received = PullMessage();
 
                     PubsubMessage message = received.Message;
-                    int? attempt = message?.GetDeliveryAttempt().Value ?? 0;
+                    int? attempt = message.GetDeliveryAttempt() ?? 0;
 
                     if (await ProcessMessageAsync(message) == SubscriberClient.Reply.Ack)
                         _subscriber.Acknowledge(_subscriptionName, new string[] {received.AckId});
@@ -72,7 +72,7 @@ namespace SkiConsole
         private async Task<SubscriberClient.Reply> ProcessMessageAsync(PubsubMessage message)
         {
             int? attempt = message.GetDeliveryAttempt() ?? 0;
-            
+
             try
             {               
                 // Process the message.
