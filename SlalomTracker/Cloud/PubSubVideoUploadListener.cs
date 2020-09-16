@@ -17,7 +17,8 @@ namespace SkiConsole
         
         static string _projectId = Environment.GetEnvironmentVariable("GOOGLE_PROJECT_ID");
 
-        SubscriberClient _subscriber;
+        CancellationTokenSource _cancel;
+        SubscriberServiceApiClient _subscriber;
         SubscriptionName _subscriptionName;
         Task _processor;
         
@@ -27,36 +28,51 @@ namespace SkiConsole
                 throw new ApplicationException("GOOGLE_PROJECT_ID env variable must be set.");
 
             _subscriptionName = SubscriptionName.FromProjectSubscription(_projectId, subscriptionId);
-
-            Task<SubscriberClient> task = SubscriberClient.CreateAsync(_subscriptionName,
-                settings: new SubscriberClient.Settings()
-                {
-                    // AckExtensionWindow = TimeSpan.FromSeconds(4),
-                    // AckDeadline = TimeSpan.FromSeconds(10),
-                    FlowControlSettings = new FlowControlSettings(maxOutstandingElementCount: 1, maxOutstandingByteCount: null)
-                });
-            task.Wait();
-            _subscriber = task.Result;
+            _subscriber = SubscriberServiceApiClient.Create();
+            _cancel = new CancellationTokenSource();
         }
 
         public void Start()
         {
-            _processor = _subscriber.StartAsync(ProcessMessageAsync);
+            _processor = Task.Run( async () => {
+                try
+                {
+                    ReceivedMessage received = null;
+                    while (received == null)
+                        received = PullMessage();
+
+                    PubsubMessage message = received.Message;
+                    int? attempt = message?.GetDeliveryAttempt().Value ?? 0;
+
+                    if (await ProcessMessageAsync(message) == SubscriberClient.Reply.Ack)
+                        _subscriber.Acknowledge(_subscriptionName, new string[] {received.AckId});
+                }
+                catch (Exception e)
+                {
+                    Logger.Log("Error pulling message.", e);
+                }
+            }, _cancel.Token);
         }
 
         public void Stop()
         {
             Logger.Log("Stopping...");
-            bool stopped = _subscriber.StopAsync(TimeSpan.FromMilliseconds(500)).Wait(1000);
-            Logger.Log($"StopAsync() called... and returned {stopped}");
-            _processor?.Wait(500);
-            Logger.Log("Stopped listening for events.");
+            _cancel.Cancel();
         }
 
-        private async Task<SubscriberClient.Reply> ProcessMessageAsync(PubsubMessage message, CancellationToken cancel)
+        private ReceivedMessage PullMessage()
         {
-            int? attempt = message?.GetDeliveryAttempt().Value ?? 0;
+            PullResponse response = _subscriber.Pull(_subscriptionName, 
+                returnImmediately: false, maxMessages: 1);
+            ReceivedMessage received = response.ReceivedMessages.FirstOrDefault();
+            
+            return received;
+        }
 
+        private async Task<SubscriberClient.Reply> ProcessMessageAsync(PubsubMessage message)
+        {
+            int? attempt = message.GetDeliveryAttempt() ?? 0;
+            
             try
             {               
                 // Process the message.
