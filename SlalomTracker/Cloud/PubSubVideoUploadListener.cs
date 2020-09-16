@@ -38,19 +38,25 @@ namespace SkiConsole
                 try
                 {
                     ReceivedMessage received = null;
-                    while (received == null)
+                    while (received == null && !_cancel.IsCancellationRequested)
                         received = PullMessage();
 
                     PubsubMessage message = received.Message;
-                    int? attempt = message.GetDeliveryAttempt() ?? 0;
 
                     if (await ProcessMessageAsync(message) == SubscriberClient.Reply.Ack)
+                    {
                         _subscriber.Acknowledge(_subscriptionName, new string[] {received.AckId});
+                        Logger.Log($"Acknowledged message id:{message.MessageId}");
+                    }
                 }
                 catch (Exception e)
                 {
                     Logger.Log("Error pulling message.", e);
                 }
+
+                if (Completed != null)
+                    Completed(this, null);
+                    
             }, _cancel.Token);
         }
 
@@ -62,6 +68,7 @@ namespace SkiConsole
 
         private ReceivedMessage PullMessage()
         {
+            Logger.Log("Attempting to pull message.");
             PullResponse response = _subscriber.Pull(_subscriptionName, 
                 returnImmediately: false, maxMessages: 1);
             ReceivedMessage received = response.ReceivedMessages.FirstOrDefault();
@@ -71,6 +78,9 @@ namespace SkiConsole
 
         private async Task<SubscriberClient.Reply> ProcessMessageAsync(PubsubMessage message)
         {
+
+            SubscriberClient.Reply reply = SubscriberClient.Reply.Nack;
+
             int? attempt = message.GetDeliveryAttempt() ?? 0;
 
             try
@@ -81,24 +91,17 @@ namespace SkiConsole
 
                 IProcessor processor = QueueMessageParser.GetProcessor(json);               
                 await processor.ProcessAsync();
-                
-                Logger.Log($"Returning Ack for message id:{message.MessageId}");
 
-                return SubscriberClient.Reply.Ack;
+                reply = SubscriberClient.Reply.Ack;
             }
             catch (Exception e)
             {
-                Logger.Log($"ERROR: Attempt #{attempt} for message.", e);
-
-                return SubscriberClient.Reply.Nack;
+                Logger.Log($"ERROR: Attempt #{attempt} for message {message.MessageId}.", e);
             }
-            finally
-            {
-                Logger.Log($"Message handler completed.");
-
-                if (Completed != null)
-                    Completed(this, null);                       
-            }
+            
+            Logger.Log($"Message handler completed with {reply} for {message.MessageId}.");
+            
+            return reply;
         }
     }
 }
