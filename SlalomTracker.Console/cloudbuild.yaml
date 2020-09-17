@@ -12,8 +12,9 @@ steps:
     - -c
     - |
       VERSION=$TAG_NAME.$SHORT_SHA &&
-      IMAGE_NAME=gcr.io/$PROJECT_ID/skiconsole:$VERSION
+      IMAGE_NAME=gcr.io/$PROJECT_ID/skiconsole:$VERSION &&
       source GITHUB_TOKEN.txt &&
+      echo 'Building $IMAGE_NAME' &&
       docker build -t $IMAGE_NAME &&
       --build-arg VERSION=$VERSION &&
       --build-arg GITHUB_TOKEN=$GITHUB_TOKEN &&
