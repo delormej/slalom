@@ -11,7 +11,7 @@ steps:
   args: 
     - -c
     - |
-      VERSION=$TAG_NAME.$SHORT_SHA &&
+      VERSION=v$TAG_NAME.$SHORT_SHA &&
       IMAGE_NAME=gcr.io/$PROJECT_ID/skiconsole:$VERSION &&
       source GITHUB_TOKEN.txt &&
       echo 'Building $IMAGE_NAME' &&
