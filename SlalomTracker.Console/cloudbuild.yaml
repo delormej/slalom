@@ -1,0 +1,19 @@
+steps:
+- name: gcr.io/cloud-builders/gcloud
+  entrypoint: 'bash'
+  args: 
+    - c
+    - | 
+      GITHUB_TOKEN=$(gcloud secrets versions access latest --secret=GITHUB_TOKEN --format='get(payload.data)' | tr '_-' '/+' | base64 -d) &&
+      echo "GITHUB_TOKEN=$GITHUB_TOKEN" > GITHUB_TOKEN.txt
+- name: gcr.io/cloud-builders/docker
+  entrypoint: 'bash'
+  args: 
+    - c
+    - |
+      VERSION=$TAG_NAME.$SHORT_SHA &&
+      source GITHUB_TOKEN.txt &&
+      docker build -t gcr.io/$PROJECT_ID/skiconsole:$VERSION &&
+      --build-arg VERSION=$VERSION &&
+      --build-arg GITHUB_TOKEN=$GITHUB_TOKEN &&
+      -f ./SlalomTracker.Console/Dockerfile . 

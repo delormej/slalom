@@ -1,7 +1,7 @@
 # Publish storage events to pub/sub topic.
-TOPIC_NAME=video-uploads-topic
 BUCKET_NAME=gke-ski-video-uploads
-SUBSCRIPTION_ID=video-uploads-subscription
+TOPIC_NAME=video-uploads-topic5
+SUBSCRIPTION_ID=video-uploads-subscription5
 
 #
 # Create a topic for new objects written to the bucket.
@@ -14,6 +14,12 @@ gcloud pubsub subscriptions create $SUBSCRIPTION_ID \
   --topic=$TOPIC_NAME \
   --dead-letter-topic=$TOPIC_NAME-deadletter \
   --max-delivery-attempts=5 
+
+#
+# Create a subscription for the dead-letter queue.
+#
+gcloud pubsub subscriptions create $SUBSCRIPTION_ID-deadletter \
+  --topic=$TOPIC_NAME-deadletter 
 
 #
 # Assign permissions for pubsub to forward to deadletter topic.
@@ -29,9 +35,3 @@ gcloud pubsub topics add-iam-policy-binding $TOPIC_NAME-deadletter \
 gcloud pubsub subscriptions add-iam-policy-binding $SUBSCRIPTION_ID \
     --member="serviceAccount:$PUBSUB_SERVICE_ACCOUNT"\
     --role="roles/pubsub.subscriber"
-
-#
-# Create a subscription for the dead-letter queue.
-#
-gcloud pubsub subscriptions create $SUBSCRIPTION_ID-deadletter \
-  --topic=$TOPIC_NAME-deadletter 
