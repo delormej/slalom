@@ -11,12 +11,12 @@ steps:
   args: 
     - -c
     - |
-      VERSION=v${_TAG_NAME}.${_SHORT_SHA} &&
-      IMAGE_NAME=gcr.io/$PROJECT_ID/skiconsole:${_VERSION} &&
+      VERSION=v$TAG_NAME.$SHORT_SHA &&
+      IMAGE='gcr.io/$PROJECT_ID/skiconsole:$VERSION' &&
       source GITHUB_TOKEN.txt &&
-      echo 'Building ${_IMAGE_NAME}' &&
-      docker build -t ${_IMAGE_NAME} &&
-      --build-arg VERSION=${_VERSION} &&
-      --build-arg GITHUB_TOKEN=${_GITHUB_TOKEN} &&
+      echo 'Building $IMAGE' &&
+      docker build -t $IMAGE &&
+      --build-arg VERSION=$VERSION &&
+      --build-arg GITHUB_TOKEN=$GITHUB_TOKEN &&
       -f ./SlalomTracker.Console/Dockerfile . &&
-      docker push ${_IMAGE_NAME}
+      docker push $IMAGE
