@@ -1,24 +1,28 @@
 steps:
-- name: gcr.io/cloud-builders/gcloud
+- name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: 'bash'
-  args: 
-    - -c
-    - | 
-      GITHUB_TOKEN=$(gcloud secrets versions access latest --secret=GITHUB_TOKEN --format='get(payload.data)' | tr '_-' '/+' | base64 -d) &&
-      VERSION=v$TAG_NAME.$SHORT_SHA &&
-      IMAGE=gcr.io/$PROJECT_ID/skiconsole:$VERSION && 
-      echo "GITHUB_TOKEN=$GITHUB_TOKEN" > variables.txt &&
-      echo "VERSION=$VERSION" >> variables.txt &&
-      echo "IMAGE=$IMAGE" >> variables.txt
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    GITHUB_TOKEN=$(gcloud secrets versions access latest --secret=GITHUB_TOKEN --format='get(payload.data)' | tr '_-' '/+' | base64 -d) &&
+    VERSION=v$TAG_NAME.$SHORT_SHA &&
+    IMAGE=gcr.io/$PROJECT_ID/skiconsole:$VERSION && 
+    echo "GITHUB_TOKEN=$GITHUB_TOKEN" > variables.txt &&
+    echo "VERSION=$VERSION" >> variables.txt &&
+    echo "IMAGE=$IMAGE" >> variables.txt
 - name: gcr.io/cloud-builders/docker
   entrypoint: 'bash'
-  args: 
-    - -c
-    - |
-      source variables.txt &&
-      echo 'Building $IMAGE' &&
-      docker build -t $IMAGE &&
-      --build-arg VERSION=$VERSION &&
-      --build-arg GITHUB_TOKEN=$GITHUB_TOKEN &&
-      -f ./SlalomTracker.Console/Dockerfile . &&
-      docker push $IMAGE
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    source variables.txt &&
+    echo 'Building $IMAGE' &&
+    docker build -t $IMAGE &&
+    --build-arg VERSION=$VERSION &&
+    --build-arg GITHUB_TOKEN=$GITHUB_TOKEN &&
+    -f ./SlalomTracker.Console/Dockerfile . &&
+    docker push $IMAGE
