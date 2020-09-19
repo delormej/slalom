@@ -26,3 +26,5 @@ steps:
     --build-arg GITHUB_TOKEN=$GITHUB_TOKEN &&
     -f ./SlalomTracker.Console/Dockerfile . &&
     docker push $IMAGE
+
+    
