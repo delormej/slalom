@@ -7,11 +7,8 @@ steps:
   - '-c'
   - |-
     echo "GITHUB_TOKEN=$(gcloud secrets versions access latest --secret=GITHUB_TOKEN --format='get(payload.data)' | tr '_-' '/+' | base64 -d)" > variables.txt
-    VERSION=v$TAG_NAME.$SHORT_SHA 
-    IMAGE=gcr.io/$PROJECT_ID/skiconsole:$VERSION 
-    #echo "GITHUB_TOKEN=$GITHUB_TOKEN" > variables.txt 
-    echo "VERSION=$VERSION" >> variables.txt
-    echo "IMAGE=$IMAGE" >> variables.txt
+    echo "VERSION=v$TAG_NAME.$SHORT_SHA" >> variables.txt 
+    echo "IMAGE=gcr.io/$PROJECT_ID/skiconsole:$VERSION" >> variables.txt 
 - name: gcr.io/cloud-builders/docker
   entrypoint: 'bash'
   args:
@@ -22,7 +19,7 @@ steps:
     echo "Printing variables"
     cat variables.txt
     source variables.txt
-    echo 'Building $IMAGE'
+    echo "Building $IMAGE with $GITHUB_TOKEN"
     docker build -t $IMAGE
     --build-arg VERSION=$VERSION
     --build-arg GITHUB_TOKEN=$GITHUB_TOKEN
