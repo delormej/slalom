@@ -6,10 +6,10 @@ steps:
   - 'pipefail'
   - '-c'
   - |-
-    GITHUB_TOKEN=$(gcloud secrets versions access latest --secret=GITHUB_TOKEN --format='get(payload.data)' | tr '_-' '/+' | base64 -d) 
+    echo "GITHUB_TOKEN=$(gcloud secrets versions access latest --secret=GITHUB_TOKEN --format='get(payload.data)' | tr '_-' '/+' | base64 -d)" > variables.txt
     VERSION=v$TAG_NAME.$SHORT_SHA 
     IMAGE=gcr.io/$PROJECT_ID/skiconsole:$VERSION 
-    echo "GITHUB_TOKEN=$GITHUB_TOKEN" > variables.txt 
+    #echo "GITHUB_TOKEN=$GITHUB_TOKEN" > variables.txt 
     echo "VERSION=$VERSION" >> variables.txt
     echo "IMAGE=$IMAGE" >> variables.txt
 - name: gcr.io/cloud-builders/docker
@@ -19,6 +19,8 @@ steps:
   - 'pipefail'
   - '-c'
   - |-
+    echo "Printing variables"
+    cat variables.txt
     source variables.txt
     echo 'Building $IMAGE'
     docker build -t $IMAGE
