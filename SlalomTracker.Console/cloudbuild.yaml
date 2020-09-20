@@ -6,9 +6,9 @@ steps:
   - 'pipefail'
   - '-c'
   - |-
-    echo "export GITHUB_TOKEN=$(gcloud secrets versions access latest --secret=GITHUB_TOKEN --format='get(payload.data)' | tr '_-' '/+' | base64 -d)" > variables.txt
-    echo "export VERSION=$TAG_NAME" >> variables.txt 
-    echo "export IMAGE=gcr.io/$PROJECT_ID/skiconsole:v$TAG_NAME.$SHORT_SHA" >> variables.txt 
+    echo "export $_GITHUB_TOKEN=$(gcloud secrets versions access latest --secret=GITHUB_TOKEN --format='get(payload.data)' | tr '_-' '/+' | base64 -d)" > variables.txt
+    echo "export $_VERSION=$TAG_NAME" >> variables.txt 
+    echo "export $_IMAGE=gcr.io/$PROJECT_ID/skiconsole:v$TAG_NAME.$SHORT_SHA" >> variables.txt 
 - name: gcr.io/cloud-builders/docker
   entrypoint: 'bash'
   args:
@@ -20,7 +20,7 @@ steps:
     cat variables.txt
     set -a
     source variables.txt
-    echo "Building $IMAGE with $GITHUB_TOKEN"
-    docker build -t $IMAGE --build-arg VERSION=$VERSION --build-arg GITHUB_TOKEN=$GITHUB_TOKEN -f ./SlalomTracker.Console/Dockerfile .
-    docker push $IMAGE
+    echo "Building $_IMAGE with $_GITHUB_TOKEN"
+    docker build -t $_IMAGE --build-arg VERSION=$_VERSION --build-arg GITHUB_TOKEN=$_GITHUB_TOKEN -f ./SlalomTracker.Console/Dockerfile .
+    docker push $_IMAGE
 
