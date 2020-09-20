@@ -6,9 +6,9 @@ steps:
   - 'pipefail'
   - '-c'
   - |-
-    echo "GITHUB_TOKEN=$(gcloud secrets versions access latest --secret=GITHUB_TOKEN --format='get(payload.data)' | tr '_-' '/+' | base64 -d)" > variables.txt
-    echo "VERSION=v$TAG_NAME.$SHORT_SHA" >> variables.txt 
-    echo "IMAGE=gcr.io/$PROJECT_ID/skiconsole:$VERSION" >> variables.txt 
+    echo "export GITHUB_TOKEN=$(gcloud secrets versions access latest --secret=GITHUB_TOKEN --format='get(payload.data)' | tr '_-' '/+' | base64 -d)" > variables.txt
+    echo "export VERSION=$TAG_NAME" >> variables.txt 
+    echo "export IMAGE=gcr.io/$PROJECT_ID/skiconsole:v$TAG_NAME.$SHORT_SHA" >> variables.txt 
 - name: gcr.io/cloud-builders/docker
   entrypoint: 'bash'
   args:
