@@ -18,11 +18,9 @@ steps:
   - |-
     echo "Printing variables"
     cat variables.txt
+    set -a
     source variables.txt
     echo "Building $IMAGE with $GITHUB_TOKEN"
-    docker build -t $IMAGE
-    --build-arg VERSION=$VERSION
-    --build-arg GITHUB_TOKEN=$GITHUB_TOKEN
-    -f ./SlalomTracker.Console/Dockerfile .
+    docker build -t $IMAGE --build-arg VERSION=$VERSION --build-arg GITHUB_TOKEN=$GITHUB_TOKEN -f ./SlalomTracker.Console/Dockerfile .
     docker push $IMAGE
 
