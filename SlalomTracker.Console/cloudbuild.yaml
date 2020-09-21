@@ -11,6 +11,8 @@ steps:
     echo "export _IMAGE=gcr.io/$PROJECT_ID/skiconsole:v$TAG_NAME.$SHORT_SHA" >> variables.txt 
 - name: gcr.io/cloud-builders/docker
   entrypoint: 'bash'
+  env:
+    - 'GITHUB_TOKEN=${_GITHUB_TOKEN}'
   args:
   - '-eEuo'
   - 'pipefail'
@@ -18,9 +20,8 @@ steps:
   - |-
     echo "Printing variables"
     cat variables.txt
-    set -a
     source variables.txt
-    echo "Building $_IMAGE with $_GITHUB_TOKEN"
+    echo "Building $_IMAGE with $GITHUB_TOKEN"
     docker build -t $_IMAGE --build-arg VERSION=$_VERSION --build-arg GITHUB_TOKEN=$_GITHUB_TOKEN -f ./SlalomTracker.Console/Dockerfile .
     docker push $_IMAGE
 
