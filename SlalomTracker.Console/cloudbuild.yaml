@@ -13,17 +13,17 @@ steps:
 - name: gcr.io/cloud-builders/docker
   entrypoint: 'bash'
   env:
-  - 'GITHUB_TOKEN=$(cat github_token.txt)'
+  - '_GITHUB_TOKEN=$(cat github_token.txt)'
   args:
   - '-eEuo'
   - 'pipefail'
   - '-c'
   - |-
     echo "Printing variables"
-    echo "GH: $GITHUB_TOKEN"
+    echo "GH: $_GITHUB_TOKEN"
     cat variables.txt
     source variables.txt
-    echo "Building $_IMAGE with $GITHUB_TOKEN"
+    echo "Building $_IMAGE with $_GITHUB_TOKEN"
     docker build -t $_IMAGE --build-arg VERSION=$_VERSION --build-arg GITHUB_TOKEN=$_GITHUB_TOKEN -f ./SlalomTracker.Console/Dockerfile .
     docker push $_IMAGE
 
