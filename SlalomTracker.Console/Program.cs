@@ -590,35 +590,43 @@ namespace SkiConsole
         /// <summary>
         /// Listens to service bus queue and processes videos as they arrive.
         /// </summary>
-        private static void Listen(string queueName, bool openDeadLetter)
+        private static void Listen(string subscriptionId, bool openDeadLetter)
         {
-            IUploadListener listener = new PubSubVideoUploadListener(queueName, openDeadLetter);
-            EventWaitHandle ewh = new EventWaitHandle(false, EventResetMode.ManualReset);
-            EventHandler Reset = (o, e) => {
-                Logger.Log("Signaling stop.");
-                listener.Stop();
-                ewh.Set();
-            };
-            AppDomain.CurrentDomain.ProcessExit += Reset;           
-            listener.Completed += Reset;  // Force to only listen for 1 message, then exit.
-            listener.Start();
-            
-            if (Console.WindowHeight > 0)
+            try 
             {
-                Task.Run( () => {
-                    Logger.Log("Press any key to cancel.");
-                    Console.ReadKey();
+                IUploadListener listener = new PubSubVideoUploadListener(subscriptionId, openDeadLetter);
+                EventWaitHandle ewh = new EventWaitHandle(false, EventResetMode.ManualReset);
+                EventHandler Reset = (o, e) => {
+                    Logger.Log("Signaling stop.");
+                    listener.Stop();
                     ewh.Set();
-                });
-            }
+                };
+                AppDomain.CurrentDomain.ProcessExit += Reset;           
+                listener.Completed += Reset;  // Force to only listen for 1 message, then exit.
+                listener.Start();
+                
+                if (Console.WindowHeight > 0)
+                {
+                    Task.Run( () => {
+                        Logger.Log("Press any key to cancel.");
+                        Console.ReadKey();
+                        ewh.Set();
+                    });
+                }
 
-            Logger.Log("Waiting until signaled to close.");
+                Logger.Log("Waiting until signaled to close.");
 
-            // Wait until signalled.
-            ewh.WaitOne();
+                // Wait until signalled.
+                ewh.WaitOne();
             
-            Logger.Log($"Done listening for events.");
-            AppDomain.CurrentDomain.ProcessExit -= Reset;
+                Logger.Log($"Done listening for events.");
+                AppDomain.CurrentDomain.ProcessExit -= Reset;
+            }
+            catch (Exception e)
+            {
+                Logger.Log("Error while listening to queue.", e);
+                Logger.Log("\tInner Exception.", e.InnerException);
+            }
         }
 
         private static void Notify()

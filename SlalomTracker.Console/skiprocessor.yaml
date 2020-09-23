@@ -33,8 +33,7 @@ spec:
           secretName: gcloud-key
       containers:
       - name: skiprocessor
-        image: gcr.io/gke-ski/skiconsole:v2.10.0
-        # Interestingly requests have to equal limits with virtualnode: https://github.com/virtual-kubelet/azure-aci/issues/17
+        image: gcr.io/gke-ski/skiconsole:v2.10.30
         resources:
           requests:
             cpu: "1000m"
@@ -43,7 +42,7 @@ spec:
             cpu: "2000m"
             memory: "3.0Gi"
         command: ["./ski"]
-        args: ["-l"]
+        args: ["-l", "video-uploads-subscription5"]
         volumeMounts:
         - name: google-cloud-key
           mountPath: /var/secrets/google        
@@ -61,7 +60,12 @@ spec:
         - name: SKIQUEUE
           value: "skiqueue"
         - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /var/secrets/google/key.json                            
+          value: /var/secrets/google/key.json
+        - name: GOOGLE_APPLICATION_CREDENTIALS_JSON
+          valueFrom:
+            secretKeyRef:
+              name: gcloud-key
+              key: key.json
         #machine learning settings
         - name: SKIMLKEY
           valueFrom:

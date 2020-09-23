@@ -26,6 +26,9 @@ namespace SkiConsole
         
         public PubSubVideoUploadListener(string subscriptionId, bool readDeadLetter = false)
         {
+            if (string.IsNullOrEmpty(subscriptionId))
+                throw new ArgumentNullException("subscriptionId", "Must provide a subscription Id as parameter.");
+
             if (string.IsNullOrEmpty(_projectId))
                 throw new ApplicationException("GOOGLE_PROJECT_ID env variable must be set.");
 

@@ -9,10 +9,10 @@ spec:
   pollingInterval: 15 # seconds
   cooldownPeriod:  5 # seconds
   minReplicaCount: 0
-  maxReplicaCount: 15
+  maxReplicaCount: 30
   triggers:
-  - type: azure-servicebus
+  - type: gcp-pubsub
     metadata:
-      queueName: skiqueue
-      connection: SKISB # This is the ENV variable in the skiprocessor deployment which has the connection string.
-      queueLength: "1" 
+      subscriptionSize: "1"
+      subscriptionName: "video-uploads-subscription5"
+      credentialsFromEnv: GOOGLE_APPLICATION_CREDENTIALS_JSON
