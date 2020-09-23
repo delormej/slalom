@@ -8,12 +8,13 @@ steps:
 - name: gcr.io/cloud-builders/docker
   entrypoint: 'bash'
   env:
-  - '_GITHUB_TOKEN=$$(cat github_token.txt)'
+  - '_GITHUB_TOKEN=$(cat github_token.txt)'
   - '_IMAGE=gcr.io/$PROJECT_ID/skiconsole:v$TAG_NAME.$SHORT_SHA'
   - '_VERSION=$TAG_NAME'  
   args:
   - '-c'
   - |-
+    _GITHUB_TOKEN=$(cat github_token.txt)
     echo "Printing variables"
     echo "Building $$_IMAGE with $$_GITHUB_TOKEN"
     docker build -t $$_IMAGE --build-arg VERSION=$$_VERSION --build-arg GITHUB_TOKEN=$$_GITHUB_TOKEN -f ./SlalomTracker.Console/Dockerfile .
