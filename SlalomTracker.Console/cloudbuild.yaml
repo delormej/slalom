@@ -8,7 +8,7 @@ steps:
 - name: gcr.io/cloud-builders/docker
   entrypoint: 'bash'
   env:
-  - '_GITHUB_TOKEN=$(cat github_token.txt)'
+  - '_GITHUB_TOKEN=$$(cat github_token.txt)'
   - '_IMAGE=gcr.io/$PROJECT_ID/skiconsole:v$TAG_NAME.$SHORT_SHA'
   - '_VERSION=$TAG_NAME'  
   args:
