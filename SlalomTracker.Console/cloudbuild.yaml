@@ -15,9 +15,9 @@ steps:
   - '-c'
   - |-
     echo "Printing variables"
-    echo "GH: $_GITHUB_TOKEN"
+    echo "GH: $$_GITHUB_TOKEN"
     _GITHUB_TOKEN=$(cat github_token.txt)
     echo "GH: $$_GITHUB_TOKEN"
-    echo "Building $_IMAGE with $_GITHUB_TOKEN"
-    docker build -t $_IMAGE --build-arg VERSION=$_VERSION --build-arg GITHUB_TOKEN=$_GITHUB_TOKEN -f ./SlalomTracker.Console/Dockerfile .
-    docker push $_IMAGE
+    echo "Building $$_IMAGE with $$_GITHUB_TOKEN"
+    docker build -t $$_IMAGE --build-arg VERSION=$$_VERSION --build-arg GITHUB_TOKEN=$$_GITHUB_TOKEN -f ./SlalomTracker.Console/Dockerfile .
+    docker push $$_IMAGE
