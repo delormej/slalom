@@ -1,4 +1,4 @@
-FROM wthacr.azurecr.io/skibuild:1.0 AS build
+FROM gcr.io/gke-ski/skibuild:1.0 AS build
 
 ARG GITHUB_TOKEN
 ARG VERSION
