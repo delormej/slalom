@@ -1,4 +1,13 @@
 steps:
+- name: 'gcr.io/cloud-builders/git'
+  entrypoint: '/bin/sh'
+  args:
+  - '-c'
+  - |
+    # Get the gpmf git submodule
+    SUBMODULE_URL=$(git config -f .gitmodules --get-regexp '^submodule\..*\.url$' | awk '{ print $2 }')
+    SUBMODULE_DIR=$(git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | awk '{ print $2 }')
+    git clone $$SUBMODULE_URL $$SUBMODULE_DIR
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: 'bash'
   args:
