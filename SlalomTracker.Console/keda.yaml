@@ -15,4 +15,5 @@ spec:
     metadata:
       subscriptionSize: "1"
       subscriptionName: "video-uploads-subscription5"
-      credentialsFromEnv: GOOGLE_APPLICATION_CREDENTIALS_JSON
+      credentials: GOOGLE_APPLICATION_CREDENTIALS_JSON
+
