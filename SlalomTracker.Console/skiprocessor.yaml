@@ -61,11 +61,18 @@ spec:
           value: "skiqueue"
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /var/secrets/google/key.json
+        # testing
         - name: GOOGLE_APPLICATION_CREDENTIALS_JSON
           valueFrom:
             secretKeyRef:
-              name: gcloud-key
-              key: key.json
+              name: gcloud-pubsub-secret
+              key: GOOGLE_APPLICATION_CREDENTIALS_JSON
+        - name: PROJECT_ID
+          valueFrom:
+            secretKeyRef:
+              name: gcloud-pubsub-secret
+              key: PROJECT_ID
+        # end-testing
         #machine learning settings
         - name: SKIMLKEY
           valueFrom:
