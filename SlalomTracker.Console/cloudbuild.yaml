@@ -27,6 +27,5 @@ steps:
     _GITHUB_TOKEN=$(cat github_token.txt)
     docker build -t $$_CONSOLE_IMAGE --build-arg VERSION=$$_VERSION --build-arg GITHUB_TOKEN=$$_GITHUB_TOKEN -f ./SlalomTracker.Console/Dockerfile .
     docker build -t $$_WEBAPI_IMAGE --build-arg VERSION=$$_VERSION --build-arg GITHUB_TOKEN=$$_GITHUB_TOKEN -f ./SlalomTracker.WebApi/Dockerfile .
-images:
-  - $_CONSOLE_IMAGE
-  - $_WEBAPI_IMAGE
+    docker push $$_CONSOLE_IMAGE
+    docker push $$_WEBAPI_IMAGE
