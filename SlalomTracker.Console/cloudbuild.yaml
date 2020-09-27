@@ -18,13 +18,15 @@ steps:
   entrypoint: 'bash'
   env:
   - '_GITHUB_TOKEN=$(cat github_token.txt)'
-  - '_IMAGE=gcr.io/$PROJECT_ID/skiconsole:v$TAG_NAME'
+  - '_CONSOLE_IMAGE=gcr.io/$PROJECT_ID/skiconsole:v$TAG_NAME'
+  - '_WEBAPI_IMAGE=gcr.io/$PROJECT_ID/skiwebapi:v$TAG_NAME'  
   - '_VERSION=$TAG_NAME'  
   args:
   - '-c'
   - |-
     _GITHUB_TOKEN=$(cat github_token.txt)
-    echo "Printing variables"
-    echo "Building $$_IMAGE with $$_GITHUB_TOKEN"
-    docker build -t $$_IMAGE --build-arg VERSION=$$_VERSION --build-arg GITHUB_TOKEN=$$_GITHUB_TOKEN -f ./SlalomTracker.Console/Dockerfile .
-    docker push $$_IMAGE
+    docker build -t $$_CONSOLE_IMAGE --build-arg VERSION=$$_VERSION --build-arg GITHUB_TOKEN=$$_GITHUB_TOKEN -f ./SlalomTracker.Console/Dockerfile .
+    docker build -t $$_WEBAPI_IMAGE --build-arg VERSION=$$_VERSION --build-arg GITHUB_TOKEN=$$_GITHUB_TOKEN -f ./SlalomTracker.WebApi/Dockerfile .
+images:
+  - $_CONSOLE_IMAGE
+  - $_WEBAPI_IMAGE
