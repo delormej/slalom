@@ -66,28 +66,3 @@ spec:
   selector:
     app: skiwebapi
   type: NodePort
----
-apiVersion: networking.k8s.io/v1beta1
-kind: Ingress
-metadata:
-  annotations:
-    kubernetes.io/ingress.global-static-ip-name: jasondel-pip
-    networking.gke.io/managed-certificates: jasondel-certificate
-  name: ski-ingress
-  namespace: ski
-spec:
-  backend:
-    serviceName: skiweb-service
-    servicePort: 3000
-  rules:
-  - host: ski.jasondel.com
-    http:
-      paths:
-      - backend:
-          serviceName: skiweb-service
-          servicePort: 3000
-        path: /*
-      - backend:
-          serviceName: skiwebapi-service
-          servicePort: 8080
-        path: /api/*
