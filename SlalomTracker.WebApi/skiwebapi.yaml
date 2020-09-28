@@ -14,10 +14,17 @@ spec:
       labels:
         app: skiwebapi
     spec:
+      volumes:
+      - name: google-cloud-key
+        secret:
+          secretName: gcloud-key
       containers:
       - name: skiwebapi-preview
-        image: wthacr.azurecr.io/skiwebapi:v2.5.8.1
+        image: gcr.io/gke-ski/skiwebapi:v2.10.33
         imagePullPolicy: Always
+        volumeMounts:
+        - name: google-cloud-key
+          mountPath: /var/secrets/google           
         env:
         - name: PORT
           value: "8080"
@@ -36,6 +43,12 @@ spec:
             secretKeyRef:
               name: skisignalr-secret
               key: connectionstring
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /var/secrets/google/key.json                            
+        - name: GOOGLE_PROJECT_ID
+          value: "gke-ski"
+        - name: GOOGLE_STORAGE_BUCKET
+          value: "gke-ski-videos"              
         - name: Logging__LogLevel__Default
           value: "Information"
         ports:
@@ -52,24 +65,29 @@ spec:
   - port: 8080
   selector:
     app: skiwebapi
-  type: ClusterIP
+  type: NodePort
 ---
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
-  name: skiwebapi-ingress
   annotations:
-    nginx.ingress.kubernetes.io/enable-cors: "true"
+    kubernetes.io/ingress.global-static-ip-name: jasondel-pip
+    networking.gke.io/managed-certificates: jasondel-certificate
+  name: ski-ingress
+  namespace: ski
 spec:
-  tls:
-  - hosts:
-    - jasondel.com
-    secretName: jasondel-com-tls
+  backend:
+    serviceName: skiweb-service
+    servicePort: 3000
   rules:
-    - host: ski.jasondel.com
-      http:
-        paths:
-          - backend:
-              serviceName: skiwebapi-service
-              servicePort: 8080
-            path: /api
+  - host: ski.jasondel.com
+    http:
+      paths:
+      - backend:
+          serviceName: skiweb-service
+          servicePort: 3000
+        path: /*
+      - backend:
+          serviceName: skiwebapi-service
+          servicePort: 8080
+        path: /api/*

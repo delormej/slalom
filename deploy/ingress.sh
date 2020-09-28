@@ -5,7 +5,10 @@
 # helm repo add stable https://kubernetes-charts.storage.googleapis.com
 
 # Install ingress
-helm install ski-ingress stable/nginx-ingress
+#helm install ski-ingress stable/nginx-ingress
 
 # To delete:
 # helm delete ski-ingress
+
+gcloud compute addresses create jasondel-pip --global
+pip=$(gcloud compute addresses describe jasondel-pip --global --format="value([address])")

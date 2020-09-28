@@ -1,0 +1,8 @@
+apiVersion: networking.gke.io/v1beta2
+kind: ManagedCertificate
+metadata:
+  name: jasondel-certificate
+spec:
+  domains:
+    - ski.jasondel.com
+    - skipreview.jasondel.com
