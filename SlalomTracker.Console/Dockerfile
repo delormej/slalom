@@ -1,4 +1,4 @@
-FROM gcr.io/gke-ski/skibuild:1.0 AS build
+FROM gcr.io/gke-ski/skibuild:2.0 AS build
 
 ARG GITHUB_TOKEN
 ARG VERSION
@@ -25,7 +25,7 @@ RUN dotnet clean /ski/SlalomTracker.Console/SkiConsole.csproj && \
 
 # Alpline looks like smallest, but gpmfdemo needs to be rebuilt for it
 #apk add build-base
-FROM mcr.microsoft.com/dotnet/core/runtime-deps:3.1 AS runtime
+FROM mcr.microsoft.com/dotnet/runtime-deps:5.0 AS runtime
 # Opt out of globalization: https://github.com/dotnet/core/blob/master/Documentation/self-contained-linux-apps.md
 #ENV CORECLR_GLOBAL_INVARIANT=1
 
