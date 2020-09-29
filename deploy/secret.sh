@@ -23,3 +23,6 @@ kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "wthacr"
 # https://certbot.eff.org/docs/using.html?highlight=renew#manual
 #
 sudo kubectl create secret tls jasondel-com-tls --key="/etc/letsencrypt/live/jasondel.com/privkey.pem" --cert="/etc/letsencrypt/live/jasondel.com/cert.pem"
+
+# How to get json file for GCP from a previously stored secret:
+#kubectl get secret -n ski gcloud-key -o jsonpath='{.data.key\.json}' | base64 -d > key.json
