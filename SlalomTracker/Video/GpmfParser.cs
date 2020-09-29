@@ -169,7 +169,7 @@ namespace MetadataExtractor
 
         private string ParseMetadata(string mp4Path)
         {
-            string exePath = Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location) + "/";
+            string exePath = System.AppContext.BaseDirectory + "/";
 
             if (!File.Exists(mp4Path))
                 throw new FileNotFoundException("MP4 file does not exist at: " + mp4Path);

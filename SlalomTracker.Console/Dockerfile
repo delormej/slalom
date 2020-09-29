@@ -21,7 +21,8 @@ RUN dotnet clean /ski/SlalomTracker.Console/SkiConsole.csproj && \
     dotnet publish /ski/SlalomTracker.Console/SkiConsole.csproj \
         -p:Version=$VERSION -c Release --self-contained true \
         --configfile /ski/NuGet.Config \
-        -r linux-x64 -o /ski/bin  
+        -r linux-x64 -o /ski/bin  \
+        /p:PublishSingleFile=true /p:IncludeNativeLibrariesInSingleFile=true
 
 # Alpline looks like smallest, but gpmfdemo needs to be rebuilt for it
 #apk add build-base
