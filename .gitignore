@@ -271,3 +271,4 @@ dev.env
 dot.env
 .env
 gcloud.json
+key.json
