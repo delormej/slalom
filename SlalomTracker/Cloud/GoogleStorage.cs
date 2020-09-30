@@ -155,6 +155,18 @@ namespace SlalomTracker.Cloud
             return videos.Where(v => v.MarkedForDelete == false);
         }
 
+        /// <summary>
+        /// Returns urls of videos sitting in the uploaded (staging) video bucket.
+        /// </summary>
+        public IEnumerable<string> ListUploaded(string uploadBucket = null)
+        {
+            uploadBucket ??= _bucketName;
+            var list = _storage.ListObjects(uploadBucket);
+
+            foreach (var item in list)
+                yield return item.MediaLink;
+        }
+
         // CourseMetadataStorage
         public List<Course> GetCourses()
         {
