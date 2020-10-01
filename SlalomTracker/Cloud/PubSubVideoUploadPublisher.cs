@@ -19,7 +19,7 @@ namespace SkiConsole
         {
             PublisherClient publisher = await PublisherClient.CreateAsync(_topicName);
             // PublishAsync() has various overloads. Here we're using the string overload.
-            string message = "{url: \"" + videoUrl + "\"}";
+            string message = "{Url: \"" + videoUrl + "\"}";
             string messageId = await publisher.PublishAsync(message);
             Logger.Log($"Republished {videoUrl}");
         }
