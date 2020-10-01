@@ -640,8 +640,8 @@ namespace SkiConsole
             GoogleStorage storage = new GoogleStorage();
             PubSubVideoUploadPublisher publisher = new PubSubVideoUploadPublisher("video-uploads-topic5");
             var uploaded = storage.ListUploaded("gke-ski-video-uploads");
-            
             var tasks = uploaded.Select(u => publisher.PublishAsync(u));
+            
             await Task.WhenAll(tasks);
         }
 

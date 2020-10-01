@@ -23,9 +23,12 @@ namespace SkiConsole
         SubscriberServiceApiClient _subscriber;
         SubscriptionName _subscriptionName;
         Task _processor;
+        bool _deadLetter;
         
         public PubSubVideoUploadListener(string subscriptionId, bool readDeadLetter = false)
         {
+            _deadLetter = readDeadLetter;
+
             if (string.IsNullOrEmpty(subscriptionId))
                 throw new ArgumentNullException("subscriptionId", "Must provide a subscription Id as parameter.");
 
@@ -115,8 +118,11 @@ namespace SkiConsole
                 string json = Encoding.UTF8.GetString(message.Data.ToArray());
                 Logger.Log($"Received message id:{message.MessageId}, attempt:{attempt} Body:{json}");
 
-                IProcessor processor = QueueMessageParser.GetProcessor(json);               
-                await processor.ProcessAsync();
+                if (!_deadLetter)
+                {
+                    IProcessor processor = QueueMessageParser.GetProcessor(json);               
+                    await processor.ProcessAsync();
+                }
 
                 reply = SubscriberClient.Reply.Ack;
             }
