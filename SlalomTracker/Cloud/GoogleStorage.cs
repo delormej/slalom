@@ -43,8 +43,6 @@ namespace SlalomTracker.Cloud
 
         public async Task<string> UploadVideoAsync(string localFile, DateTime creationTime)
         {
-            string directory = StorageHelper.GetBlobDirectory(creationTime);
-            string objectName = directory + System.IO.Path.GetFileName(localFile);
             string contentType = localFile.ToUpper().EndsWith("MP4") ? "video/mp4" : null;
             
             string url = null;
@@ -157,6 +155,18 @@ namespace SlalomTracker.Cloud
             return videos.Where(v => v.MarkedForDelete == false);
         }
 
+        /// <summary>
+        /// Returns urls of videos sitting in the uploaded (staging) video bucket.
+        /// </summary>
+        public IEnumerable<string> ListUploaded(string uploadBucket = null)
+        {
+            uploadBucket ??= _bucketName;
+            var list = _storage.ListObjects(uploadBucket);
+
+            foreach (var item in list)
+                yield return item.MediaLink;
+        }
+
         // CourseMetadataStorage
         public List<Course> GetCourses()
         {
@@ -218,8 +228,7 @@ namespace SlalomTracker.Cloud
 
         private async Task<string> UploadAsync(string fileName, DateTime creationTime, string contentType, Stream stream)
         {
-            string directory = StorageHelper.GetBlobDirectory(creationTime);
-            string objectName = directory + fileName;
+            string objectName = StorageHelper.GetBlobName(fileName, creationTime);
             
             Google.Apis.Storage.v1.Data.Object storageObject = null;
             storageObject = await _storage.UploadObjectAsync(_bucketName, objectName, contentType, stream);
