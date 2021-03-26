@@ -1,3 +1,6 @@
+# build with:
+# docker build -f skibuild.Dockerfile -t gcr.io/$GOOGLE_PROJECT_ID/skibuild:2.0 .
+
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS skibuild
 # Install Video Processing Libraries in FFMPEG and gcc to compile gpmf.
 RUN apt-get update \
