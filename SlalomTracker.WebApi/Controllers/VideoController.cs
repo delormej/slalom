@@ -9,7 +9,6 @@ using SlalomTracker.Cloud;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
-using SlalomTracker.WebApi.Services;
 
 namespace SlalomTracker.WebApi.Controllers
 {
