@@ -18,12 +18,16 @@ namespace SlalomTracker.Cloud
 
         StorageClient _storage;
 
-        public GoogleStorage()
+        public GoogleStorage() :
+            this(Environment.GetEnvironmentVariable("GOOGLE_PROJECT_ID"), 
+                Environment.GetEnvironmentVariable("GOOGLE_STORAGE_BUCKET") )
+        {}
+
+        public GoogleStorage(string dbProjectId, string bucketName = "skivideo")
         {
-            _projectId = Environment.GetEnvironmentVariable("GOOGLE_PROJECT_ID");
-            _bucketName = Environment.GetEnvironmentVariable("GOOGLE_STORAGE_BUCKET") 
-                ?? "skivideo";
-            
+            _projectId = dbProjectId;
+            _bucketName = bucketName;
+
             if (_projectId == null || _bucketName == null)
                 throw new ApplicationException("GOOGLE_PROJECT_ID and GOOGLE_STORAGE_BUCKET env variables missing.");
 
