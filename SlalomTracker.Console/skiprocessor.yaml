@@ -33,7 +33,7 @@ spec:
           secretName: gcloud-key
       containers:
       - name: skiprocessor
-        image: gcr.io/gke-ski/skiconsole:v3.0.2
+        image: gcr.io/gke-ski/skiconsole:v2.11.0
         resources:
           requests:
             cpu: "1000m"

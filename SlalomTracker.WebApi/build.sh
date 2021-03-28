@@ -1,7 +1,19 @@
 #!/bin/bash
 #source prebuild.sh
+#source dot.env
 
-registry=gcr.io/gke-ski
+#
+# Execute this script from the project root!
+#
+
+
+# if ["${PWD##*/}" == "SlalomTracker.WebApi"]
+# then
+#     echo "ERROR"
+    
+# fi
+
+REGISTRY=gcr.io/$GOOGLE_PROJECT_ID
 
 # CI/CD could override this version.
 if [ -z "$VERSION" ]
@@ -22,7 +34,9 @@ fi
 #
 # Build container
 #
-docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
+docker build -t $container \
+    --build-arg REGISTRY=$REGISTRY \
+    --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
     --build-arg VERSION=$VERSION \
     --force-rm $target \
     -f ./SlalomTracker.WebApi/Dockerfile . 
@@ -39,6 +53,7 @@ docker run --rm -p 5000:5000 -it \
     -e GITHUB_TOKEN="$GITHUB_TOKEN" \
     -e GOOGLE_APPLICATION_CREDENTIALS="/ski/key.json" \
     -e GOOGLE_PROJECT_ID="$GOOGLE_PROJECT_ID" \
+    -e FIRESTORE_PROJECT_ID="$FIRESTORE_PROJECT_ID" \
     -e GOOGLE_STORAGE_BUCKET="$GOOGLE_STORAGE_BUCKET" \
     -e Logging__LogLevel__Default="Debug" \
     --name ski-web \
@@ -49,6 +64,6 @@ docker run --rm -p 5000:5000 -it \
 #
 
 if [ "$1" != "debug" ]; then
-    docker tag $container $registry/$container
-    docker push $registry/$container
+    docker tag $container $REGISTRY/$container
+    docker push $REGISTRY/$container
 fi

@@ -637,26 +637,12 @@ namespace SkiConsole
 
         private static async Task RepublishStorageEventsAsync()
         {
-            string accountKey = System.Environment.GetEnvironmentVariable("SKIVIDEOS_KEY");
-            string accountName = "skivideostorage";
-
-            var blobs = BlobRestApi.GetBlobs(accountName, accountKey, "ski-ingest");
-
-            IList<Microsoft.Azure.ServiceBus.Message> messages = new List<Microsoft.Azure.ServiceBus.Message>();
-
-            foreach (var uri in blobs)
-            {
-                string messageBody = "{ \"eventType\":\"Microsoft.Storage.BlobCreated\", \"data\":{\"url\":\"" + uri + "\"} }";
-                var message = new Microsoft.Azure.ServiceBus.Message(System.Text.Encoding.UTF8.GetBytes(messageBody));
-                messages.Add(message);
-            }          
-
-            string serviceBusConnectionString = Environment.GetEnvironmentVariable("SKISB");
-            string queueName = Environment.GetEnvironmentVariable("SKIQUEUE");
-            Microsoft.Azure.ServiceBus.QueueClient queueClient = new Microsoft.Azure.ServiceBus.QueueClient(serviceBusConnectionString, queueName);
+            GoogleStorage storage = new GoogleStorage();
+            PubSubVideoUploadPublisher publisher = new PubSubVideoUploadPublisher("video-uploads-topic5");
+            var uploaded = storage.ListUploaded("gke-ski-video-uploads");
+            var tasks = uploaded.Select(u => publisher.PublishAsync(u));
             
-            await queueClient.SendAsync(messages);
-            System.Console.WriteLine($"Resent {blobs.Count()} message(s).");
+            await Task.WhenAll(tasks);
         }
 
         private static async Task FirestoreMigrateAsync()

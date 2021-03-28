@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using SlalomTracker.Cloud;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 
 namespace SlalomTracker.WebApi.Controllers
 {
@@ -11,6 +13,16 @@ namespace SlalomTracker.WebApi.Controllers
     [ApiController]
     public class ListController : Controller
     {
+        ILogger<ListController> _logger;
+        IStorage _storage;
+
+        public ListController(ILogger<ListController> logger, IConfiguration config)
+        {
+            _logger = logger;
+            _storage = new GoogleStorage(config["FIRESTORE_PROJECT_ID"]);
+        }
+
+
         [Route("api/[controller]")]
         [HttpGet]
         public async Task<IActionResult> Get()
@@ -47,8 +59,7 @@ namespace SlalomTracker.WebApi.Controllers
 
         private async Task<IOrderedEnumerable<SkiVideoEntity>> GetAllMetadataAsync()
         {
-            IStorage storage = new GoogleStorage();
-            IEnumerable<SkiVideoEntity> list = await storage.GetAllMetdataAsync();
+            IEnumerable<SkiVideoEntity> list = await _storage.GetAllMetdataAsync();
             var filtered = list.Where(s => s.MarkedForDelete == false);
             var newestFirst = filtered.OrderByDescending(s => s.RecordedTime).ThenBy(s => s.Timestamp);   
 
