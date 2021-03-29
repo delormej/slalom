@@ -25,7 +25,7 @@ namespace SlalomTracker.WebApi.Controllers
         public ImageController(ILogger<ImageController> logger, IConfiguration config)
         {
             _logger = logger;
-            _storage = new GoogleStorage();
+            _storage = new GoogleStorage(config["FIRESTORE_PROJECT_ID"]);
         }
 
         [HttpGet]
