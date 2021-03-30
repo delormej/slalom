@@ -93,7 +93,11 @@ namespace SkiConsole
             if (args[0] == "-d" && args.Length >= 2)
             {
                 // eg. ski -d https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4
-                DownloadVideo(args[1]);
+                // DownloadVideo(args[1]);
+                StorageMaintenance maint = new StorageMaintenance();
+                Task<int> moved = maint.MoveFromGcpToAzureAsync();
+                moved.Wait();
+                Console.WriteLine("Moved: " + moved.Result);
             }
             else if (args[0] == "-e" && args.Length >= 3)
             {
