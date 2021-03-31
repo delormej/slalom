@@ -1,13 +1,13 @@
 #!/bin/bash
 #source prebuild.sh
 
-registry=gcr.io/gke-ski
+REGISTRY=gcr.io/$(gcloud config list --format 'value(core.project)' 2>/dev/null)
 
 # CI/CD could override this version.
 # This will get the latest short commit hash: $(git rev-parse --short HEAD)
 if [ -z "$VERSION" ]
 then 
-    VERSION=$(git describe --abbrev=1 --tags)
+    VERSION=$(git describe --abbrev=0 --tags)
 fi
 container=skiconsole:v$VERSION
 
@@ -25,7 +25,9 @@ fi
 # Build container
 #
 echo "Building container."
-docker build -t $container --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
+docker build -t $container \
+    --build-arg REGISTRY=$REGISTRY \
+    --build-arg GITHUB_TOKEN=$GITHUB_TOKEN \
     --build-arg VERSION=$VERSION \
       --force-rm $target \
     -f ./SlalomTracker.Console/Dockerfile .
@@ -57,8 +59,8 @@ docker run -it --rm \
 
 # az acr login -n wthacr
 if [ "$1" != "debug" ]; then
-    docker tag $container $registry/$container
-    docker push $registry/$container
+    docker tag $container $REGISTRY/$container
+    docker push $REGISTRY/$container
 fi
 
 #

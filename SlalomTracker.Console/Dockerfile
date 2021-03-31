@@ -1,4 +1,5 @@
-FROM gcr.io/gke-ski/skibuild:2.0 AS build
+ARG  REGISTRY
+FROM ${REGISTRY}/skibuild:2.0 AS build
 
 ARG GITHUB_TOKEN
 ARG VERSION
