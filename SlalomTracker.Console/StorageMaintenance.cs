@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
+using Logger = jasondel.Tools.Logger;
 
 namespace SkiConsole
 {
@@ -41,7 +42,7 @@ namespace SkiConsole
 
         private async Task MoveVideoAsync(SkiVideoEntity video) 
         {
-            Console.WriteLine($"Moving {video.Date}\t{video.Url}");
+            Logger.Log($"Moving {video.Date}\t{video.Url}");
             try
             {
                 VideoFiles localFiles = await DownloadFromGoogleAsync(video);
@@ -49,20 +50,20 @@ namespace SkiConsole
                 string gcpUrl = video.Url;
                 
                 await Task.WhenAll(
-                    UpdateMetadataAsync(video, azureUrls),
-                    DeleteFromGoogleAsync(gcpUrl)                
+                    UpdateMetadataAsync(video, azureUrls)
+                    // DeleteFromGoogleAsync(gcpUrl)                
                 );
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Unable to move {video.Url}, error:\n\t{e.Message}");
+                Logger.Log($"Unable to move {video.Url}", e);
             }
-            Console.WriteLine($"Moved {video.Date}\t{video.Url}");
+            Logger.Log($"Moved {video.Date}\t{video.Url}");
         }
 
         private async Task<VideoFiles> DownloadFromGoogleAsync(SkiVideoEntity video)
         {
-            Console.WriteLine($"Downloading {video.Date}\t{video.Url} and {video.ThumbnailUrl}");
+            Logger.Log($"Downloading {video.Date}\t{video.Url} and {video.ThumbnailUrl}");
 
             string videoPath = "", thumbnailPath = "";
 
@@ -77,7 +78,7 @@ namespace SkiConsole
 
         private async Task<VideoFiles> UploadToAzureAsync(SkiVideoEntity video, VideoFiles localFiles)
         {
-            Console.WriteLine($"Uploading to Azure {localFiles.Video} & {localFiles.Thumbnail}");
+            Logger.Log($"Uploading to Azure {localFiles.Video} & {localFiles.Thumbnail}");
             
             string videoUrl = "", thumbnailUrl = "";
             await Task.WhenAll(
@@ -97,17 +98,17 @@ namespace SkiConsole
                 throw new ApplicationException($"Azure Urls are empty for {video.Url}");
             }
 
-            Console.WriteLine($"Updating metadata {video.Date}\t{azureUrls.Video}");
+            Logger.Log($"Updating metadata {video.Date}\t{azureUrls.Video}");
             video.Url = azureUrls.Video;
             video.ThumbnailUrl = azureUrls.Thumbnail;
             video.HotUrl = null;
             
-            await Task.Run(() => _googleStore.UpdateMetadata(video));
+            await _googleStore.AddTableEntityAsync(video);
         }
 
-        private async Task DeleteFromGoogleAsync(string gcpUrl)
-        {
-            Console.WriteLine($"Deleting {gcpUrl}");
-        }
+        // private async Task DeleteFromGoogleAsync(string gcpUrl)
+        // {
+        //     Console.WriteLine($"Deleting {gcpUrl}");
+        // }
     }
 }
