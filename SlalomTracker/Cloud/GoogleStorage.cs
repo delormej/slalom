@@ -25,7 +25,7 @@ namespace SlalomTracker.Cloud
 
         public GoogleStorage(string dbProjectId, string bucketName = "skivideo")
         {
-            _projectId = dbProjectId;
+            _projectId = dbProjectId ?? Environment.GetEnvironmentVariable("GOOGLE_PROJECT_ID");
             _bucketName = bucketName;
 
             if (_projectId == null || _bucketName == null)
