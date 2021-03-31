@@ -94,8 +94,9 @@ namespace SkiConsole
             {
                 // eg. ski -d https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4
                 // DownloadVideo(args[1]);
+                int count = int.Parse(args[1]);
                 StorageMaintenance maint = new StorageMaintenance();
-                Task<int> moved = maint.MoveFromGcpToAzureAsync();
+                Task<int> moved = maint.MoveFromGcpToAzureAsync(count);
                 moved.Wait();
                 Console.WriteLine("Moved: " + moved.Result);
             }

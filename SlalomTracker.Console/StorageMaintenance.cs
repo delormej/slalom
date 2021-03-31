@@ -21,22 +21,22 @@ namespace SkiConsole
             _azureStore = new AzureStorage();
         }
 
-        public async Task<int> MoveFromGcpToAzureAsync()
+        public async Task<int> MoveFromGcpToAzureAsync(int count)
         {
-            var videos = await GetGcpVideosAsync();
+            var videos = await GetGcpVideosAsync(count);
             var tasks = videos.Select(v => MoveVideoAsync(v));
             await Task.WhenAll(tasks);
             
-            var count = tasks.Where(t => t.IsCompletedSuccessfully == true).Count();
+            var completed = tasks.Where(t => t.IsCompletedSuccessfully == true).Count();
             
-            return count;
+            return completed;
         }
 
-        private async Task<IEnumerable<SkiVideoEntity>> GetGcpVideosAsync() {
+        private async Task<IEnumerable<SkiVideoEntity>> GetGcpVideosAsync(int count) {
             var videos = await _googleStore.GetAllMetdataAsync();
             var gcpVideos = videos.Where(v => v.Url.StartsWith("https://storage.googleapis.com") );
 
-            return gcpVideos.Take(1);
+            return gcpVideos.Take(count);
         }
 
         private async Task MoveVideoAsync(SkiVideoEntity video) 
