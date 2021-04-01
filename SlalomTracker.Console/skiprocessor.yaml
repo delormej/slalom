@@ -18,7 +18,7 @@ metadata:
   labels:
     app: skiprocessor
 spec:
-  replicas: 0 # This is going to be scaled by KEDA, so defaulting to 0.
+  replicas: 1 # This is going to be scaled by KEDA, so defaulting to 0.
   selector:
     matchLabels:
       app: skiprocessor
@@ -33,7 +33,7 @@ spec:
           secretName: gcloud-key
       containers:
       - name: skiprocessor
-        image: gcr.io/gke-ski/skiconsole:v2.11.0
+        image: gcr.io/jasondel-test-project/skiconsole:v3.1.6
         resources:
           requests:
             cpu: "1000m"
@@ -42,7 +42,7 @@ spec:
             cpu: "2000m"
             memory: "3.0Gi"
         command: ["./ski"]
-        args: ["-l", "video-uploads-subscription5"]
+        args: ["-d", "5"]
         volumeMounts:
         - name: google-cloud-key
           mountPath: /var/secrets/google        
@@ -61,18 +61,6 @@ spec:
           value: "skiqueue"
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /var/secrets/google/key.json
-        # testing
-        - name: GOOGLE_APPLICATION_CREDENTIALS_JSON
-          valueFrom:
-            secretKeyRef:
-              name: gcloud-pubsub-secret
-              key: GOOGLE_APPLICATION_CREDENTIALS_JSON
-        - name: PROJECT_ID
-          valueFrom:
-            secretKeyRef:
-              name: gcloud-pubsub-secret
-              key: PROJECT_ID
-        # end-testing
         #machine learning settings
         - name: SKIMLKEY
           valueFrom:
@@ -88,17 +76,19 @@ spec:
         - name: SKIMLSKIERMODEL
           value: "SkierDetection-4"
         - name: GOOGLE_PROJECT_ID
-          value: "gke-ski"
+          value: "jasondel-test-project"
         - name: GOOGLE_STORAGE_BUCKET
           value: "gke-ski-videos"
+        - name: FIRESTORE_PROJECT_ID
+          value: "gke-ski"
         - name: SKICROPURL
           value: "http://skipreview.jasondel.com/api/crop?width=1600&thumbnailUrl="
       imagePullSecrets:
         - name: acr-secret
-      nodeSelector:
-      #   kubernetes.io/role: agent
-      #   beta.kubernetes.io/os: linux
-         nodeRole: skiprocessor
+      # nodeSelector:
+      # #   kubernetes.io/role: agent
+      # #   beta.kubernetes.io/os: linux
+      #    nodeRole: skiprocessor
       # tolerations:
       # - key: virtual-kubelet.io/provider
       #   operator: Exists
