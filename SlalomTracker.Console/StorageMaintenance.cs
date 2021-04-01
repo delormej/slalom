@@ -25,12 +25,10 @@ namespace SkiConsole
         public async Task<int> MoveFromGcpToAzureAsync(int count)
         {
             var videos = await GetGcpVideosAsync(count);
-            var tasks = videos.Select(v => MoveVideoAsync(v));
+            var tasks = videos.Select(async v => await MoveVideoAsync(v));
             await Task.WhenAll(tasks);
             
-            var completed = tasks.Where(t => t.IsCompletedSuccessfully == true).Count();
-            
-            return completed;
+            return videos.Count();
         }
 
         private async Task<IEnumerable<SkiVideoEntity>> GetGcpVideosAsync(int count) {
@@ -49,10 +47,8 @@ namespace SkiConsole
                 VideoFiles azureUrls = await UploadToAzureAsync(video, localFiles);
                 string gcpUrl = video.Url;
                 
-                await Task.WhenAll(
-                    UpdateMetadataAsync(video, azureUrls)
-                    // DeleteFromGoogleAsync(gcpUrl)                
-                );
+                await UpdateMetadataAsync(video, azureUrls);
+                //await DeleteFromGoogleAsync(gcpUrl);
             }
             catch (Exception e)
             {
