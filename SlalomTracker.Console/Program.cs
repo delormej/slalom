@@ -234,8 +234,9 @@ namespace SkiConsole
 
         private static void UploadYouTube(string localPath)
         {
-            YouTube youTube = new YouTube();
-            youTube.Upload(localPath);
+            Google.Apis.YouTube.Samples.YouTubeUploader yt = 
+                new Google.Apis.YouTube.Samples.YouTubeUploader();
+            yt.UploadVideoAsync(localPath).Wait();
         }
 
         private static string DownloadVideo(string url)
