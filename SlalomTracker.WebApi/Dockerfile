@@ -26,6 +26,12 @@ FROM mcr.microsoft.com/dotnet/aspnet:5.0-alpine as runtime
 #     &&  apt-get install -y libgdiplus \
 #     &&  apt-get install -y --no-install-recommends libc6-dev
 
+RUN wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub && \
+    wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.33-r0/glibc-2.33-r0.apk && \
+    apk add glibc-2.33-r0.apk
+
+# RUN apk update && apk add libc6-compat
+
 WORKDIR /ski
 COPY --from=build /ski/build .
 
