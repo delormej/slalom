@@ -55,6 +55,7 @@ docker run --rm -p 5000:5000 -it \
     -e GOOGLE_PROJECT_ID="$GOOGLE_PROJECT_ID" \
     -e FIRESTORE_PROJECT_ID="$FIRESTORE_PROJECT_ID" \
     -e GOOGLE_STORAGE_BUCKET="$GOOGLE_STORAGE_BUCKET" \
+    -e LD_LIBRARY_PATH=/usr/lib \
     -e Logging__LogLevel__Default="Debug" \
     --name ski-web \
     $container $dockerrun

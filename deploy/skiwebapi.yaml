@@ -20,7 +20,7 @@ spec:
           secretName: gcloud-key
       containers:
       - name: skiwebapi-preview
-        image: gcr.io/jasondel-test-project/skiwebapi:v3.1.10
+        image: gcr.io/jasondel-test-project/skiwebapi:v3.1.11
         imagePullPolicy: Always
         volumeMounts:
         - name: google-cloud-key

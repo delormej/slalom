@@ -16,13 +16,14 @@ RUN dotnet clean ./SlalomTracker.WebApi/SlalomTracker.WebApi.csproj && \
 #   ./SlalomTracker.WebApi/ $ docker build -f Dockerfile ../
 # this will allow dotnet build to pull in required relative pathed projects.
 
-FROM mcr.microsoft.com/dotnet/aspnet:5.0-alpine as runtime
+FROM mcr.microsoft.com/dotnet/aspnet:5.0-buster-slim as runtime
 
 # Environment Variables
 #ENV ASPNETCORE_URLS=http://0.0.0.0:80
 
-#Adding hack to resolve issue grpc/grpc#21446
-RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.8/main' >> /etc/apk/repositories && apk update --no-cache && apk add --no-cache bash libc6-compat=1.1.19-r11
+# Workaround, dependencies for graphics libraries, per this issue: https://github.com/dotnet/corefx/issues/25102
+RUN apt-get update \
+    &&  apt-get install -y libgdiplus
 
 WORKDIR /ski
 COPY --from=build /ski/build .
