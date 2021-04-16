@@ -27,7 +27,7 @@ namespace SlalomTracker.WebApi.Controllers
         {
             try
             {
-                AzureStorage storage = new AzureStorage();
+                GoogleStorage storage = new GoogleStorage(_config["FIRESTORE_PROJECT_ID"]);
                 SkiVideoEntity entity = storage.GetSkiVideoEntity(recordedDate, mp4Filename);
                 if (entity == null)
                     throw new ApplicationException($"Unable to load SkiVideo {recordedDate}, {mp4Filename}");

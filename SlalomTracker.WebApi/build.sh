@@ -20,7 +20,7 @@ if [ -z "$VERSION" ]
 then 
     VERSION=$(git describe --abbrev=0 --tag)
 fi
-container=skiwebapi:v$VERSION
+container=$REGISTRY/skiwebapi:v$VERSION
 
 echo "skiblobs::$SKIBLOBS"
 echo "github_token::$GITHUB_TOKEN"
@@ -64,6 +64,5 @@ docker run --rm -p 5000:5000 -it \
 #
 
 if [ "$1" != "debug" ]; then
-    docker tag $container $REGISTRY/$container
-    docker push $REGISTRY/$container
+    docker push $container
 fi

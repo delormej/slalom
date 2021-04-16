@@ -3,6 +3,7 @@ using SlalomTracker.Cloud;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Net.Http.Headers;
 
 namespace SlalomTracker.WebApi.Controllers
 {
@@ -25,7 +26,7 @@ namespace SlalomTracker.WebApi.Controllers
             string vttContent;
             try
             {
-                AzureStorage storage = new AzureStorage();
+                GoogleStorage storage = new GoogleStorage(_config["FIRESTORE_PROJECT_ID"]);
                 SkiVideoEntity entity = storage.GetSkiVideoEntity(recordedDate, mp4Filename);
                 if (entity == null)
                     throw new ApplicationException($"Unable to load SkiVideo {recordedDate}, {mp4Filename}");
@@ -34,7 +35,7 @@ namespace SlalomTracker.WebApi.Controllers
                 
                 _logger.LogInformation($"Created WebVtt for {recordedDate}, {mp4Filename}");
 
-                return Content(vttContent, new Microsoft.Net.Http.Headers.MediaTypeHeaderValue("text/vtt"));
+                return Content(vttContent, new MediaTypeHeaderValue("text/vtt"));
             }
             catch (Exception e)
             {
