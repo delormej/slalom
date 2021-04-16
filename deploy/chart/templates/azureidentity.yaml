@@ -1,8 +1,0 @@
-apiVersion: "aadpodidentity.k8s.io/v1"
-kind: AzureIdentity
-metadata:
- name: skijobs-podid
-spec:
- type: 0
- ResourceID: {{ .Values.skijobsPodIdentityResourceID | quote }}
- ClientID: {{ .Values.skijobsPodIdentityClientId | quote }}

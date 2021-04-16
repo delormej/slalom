@@ -1,7 +1,0 @@
-apiVersion: "aadpodidentity.k8s.io/v1"
-kind: AzureIdentityBinding
-metadata:
-  name: skijobs-podid-binding
-spec:
-  AzureIdentity: skijobs-podid
-  Selector: skijobs-podid
