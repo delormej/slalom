@@ -5,7 +5,7 @@ metadata:
   labels:
     app: skiwebapi
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: skiwebapi
@@ -20,7 +20,7 @@ spec:
           secretName: gcloud-key
       containers:
       - name: skiwebapi-preview
-        image: gcr.io/gke-ski/skiwebapi:v2.10.33
+        image: gcr.io/jasondel-test-project/skiwebapi:v3.1.8
         imagePullPolicy: Always
         volumeMounts:
         - name: google-cloud-key
