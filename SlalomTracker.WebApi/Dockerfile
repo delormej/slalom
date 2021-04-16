@@ -21,16 +21,8 @@ FROM mcr.microsoft.com/dotnet/aspnet:5.0-alpine as runtime
 # Environment Variables
 #ENV ASPNETCORE_URLS=http://0.0.0.0:80
 
-# Workaround, dependencies for graphics libraries, per this issue: https://github.com/dotnet/corefx/issues/25102
-# RUN apt-get update \
-#     &&  apt-get install -y libgdiplus \
-#     &&  apt-get install -y --no-install-recommends libc6-dev
-
-RUN wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub && \
-    wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.33-r0/glibc-2.33-r0.apk && \
-    apk add glibc-2.33-r0.apk
-
-# RUN apk update && apk add libc6-compat
+#Adding hack to resolve issue grpc/grpc#21446
+RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.8/main' >> /etc/apk/repositories && apk update --no-cache && apk add --no-cache bash libc6-compat=1.1.19-r11
 
 WORKDIR /ski
 COPY --from=build /ski/build .
