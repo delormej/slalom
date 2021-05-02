@@ -9,69 +9,52 @@ using Google.Apis.Services;
 using Google.Apis.Upload;
 using Google.Apis.Util.Store;
 using Google.Apis.YouTube.v3;
-using Data = Google.Apis.YouTube.v3.Data;
+using Google.Apis.YouTube.v3.Data;
+using YouTubeVideo = Google.Apis.YouTube.v3.Data.Video;
 
-namespace MetadataExtractor
+namespace SlalomTracker.Video
 {
   /// <summary>
   /// YouTube Data API v3 sample: upload a video.
   /// Relies on the Google APIs Client Library for .NET, v1.7.0 or higher.
   /// See https://developers.google.com/api-client-library/dotnet/get_started
   /// </summary>
-  public class YouTube
+  public class YouTubeHelper
   {
-    public void Upload(string localVideoPath)
+    private static readonly string[] YouTubeTags = { "3SeasonSkiClub", "Waterski" };    
+    private YouTubeService _youtubeService;
+    private YouTubeVideo _video;
+
+    public YouTubeHelper(UserCredential credential)
     {
-        Run(localVideoPath).Wait();
-    }
-
-    private async Task Run(string localVideoPath)
-    {
-      UserCredential credential;
-      if (!File.Exists("youtube_client_secret.json"))
-      {
-        Console.WriteLine($"Unable to find secrets file in current dir: {Directory.GetCurrentDirectory()}");
-        return;
-      }
-
-      string creds = File.OpenText("youtube_client_secret.json").ReadToEnd();
-      Console.WriteLine("Creds: " + creds);
-
-      using (var stream = new FileStream("youtube_client_secret.json", FileMode.Open, FileAccess.Read))
-      {
-        credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-            GoogleClientSecrets.Load(stream).Secrets,
-            // This OAuth 2.0 access scope allows an application to upload files to the
-            // authenticated user's YouTube channel, but doesn't allow other types of access.
-            new[] { YouTubeService.Scope.YoutubeUpload },
-            "user",
-            CancellationToken.None
-        );
-      }
-
-      var youtubeService = new YouTubeService(new BaseClientService.Initializer()
+      // GoogleCredential.FromAccessToken(accessToken);
+      _youtubeService = new YouTubeService(new BaseClientService.Initializer()
       {
         HttpClientInitializer = credential,
         ApplicationName = Assembly.GetExecutingAssembly().GetName().Name
-      });
+      });      
+    }
 
-      var video = new Data.Video();
-      video.Snippet = new Data.VideoSnippet();
-      video.Snippet.Title = "Ski Video";
-      //video.Snippet.Description = "Default Video Description";
-      //video.Snippet.Tags = new string[] { "tag1", "tag2" };
-      video.Snippet.CategoryId = "17"; // See https://developers.google.com/youtube/v3/docs/videoCategories/list
-      video.Status = new Data.VideoStatus();
-      video.Status.PrivacyStatus = "unlisted"; // or "private" or "public"
-      var filePath = localVideoPath; // Replace with path to actual movie file.
+    public async Task<string> UploadAsync(string filePath)
+    {
+      _video = new YouTubeVideo();
+      _video.Snippet = new VideoSnippet();
+      _video.Snippet.Title = "Ski Video";
+      // video.Snippet.Description = "Default Video Description";
+      _video.Snippet.Tags = YouTubeTags;
+      _video.Snippet.CategoryId = "17"; // See https://developers.google.com/youtube/v3/docs/videoCategories/list
+      _video.Status = new VideoStatus();
+      _video.Status.PrivacyStatus = "public"; // "unlisted" or "private" or "public"
 
       using (var fileStream = new FileStream(filePath, FileMode.Open))
       {
-        var videosInsertRequest = youtubeService.Videos.Insert(video, "snippet,status", fileStream, "video/*");
+        var videosInsertRequest = _youtubeService.Videos.Insert(_video, "snippet,status", fileStream, "video/*");
         videosInsertRequest.ProgressChanged += videosInsertRequest_ProgressChanged;
         videosInsertRequest.ResponseReceived += videosInsertRequest_ResponseReceived;
 
         await videosInsertRequest.UploadAsync();
+
+        return $"https://www.youtube.com/watch?v={_video.Id}";
       }
     }
 
@@ -89,9 +72,10 @@ namespace MetadataExtractor
       }
     }
 
-    void videosInsertRequest_ResponseReceived(Data.Video video)
+    void videosInsertRequest_ResponseReceived(YouTubeVideo video)
     {
       Console.WriteLine("Video id '{0}' was successfully uploaded.", video.Id);
+      _video = video;
     }
   }
 }

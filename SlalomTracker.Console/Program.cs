@@ -93,12 +93,12 @@ namespace SkiConsole
             if (args[0] == "-d" && args.Length >= 2)
             {
                 // eg. ski -d https://jjdelormeski.blob.core.windows.net/videos/GOPR0194.MP4
-                // DownloadVideo(args[1]);
-                int count = int.Parse(args[1]);
-                StorageMaintenance maint = new StorageMaintenance();
-                Task<int> moved = maint.MoveFromGcpToAzureAsync(count);
-                moved.Wait();
-                Console.WriteLine("Moved: " + moved.Result);
+                DownloadVideo(args[1]);
+                // int count = int.Parse(args[1]);
+                // StorageMaintenance maint = new StorageMaintenance();
+                // Task<int> moved = maint.MoveFromGcpToAzureAsync(count);
+                // moved.Wait();
+                // Console.WriteLine("Moved: " + moved.Result);
             }
             else if (args[0] == "-e" && args.Length >= 3)
             {
@@ -120,7 +120,7 @@ namespace SkiConsole
             }
             else if (args[0] == "-y")
             {
-                UploadYouTube(args[1]);
+                UploadYouTubeAsync(args[1]).Wait();
             }
             else if (args[0] == "-c" && args.Length >= 2)
             {
@@ -232,11 +232,11 @@ namespace SkiConsole
             return imagePath;
         }
 
-        private static void UploadYouTube(string localPath)
+        private static async Task UploadYouTubeAsync(string localPath)
         {
-            Google.Apis.YouTube.Samples.YouTubeUploader yt = 
-                new Google.Apis.YouTube.Samples.YouTubeUploader();
-            yt.UploadVideoAsync(localPath).Wait();
+            YouTubeHelper youtube = new YouTubeHelper(YouTubeCredentials.Create());
+            string url = await youtube.UploadAsync(localPath);
+            Console.WriteLine($"Uploaded to {url}");
         }
 
         private static string DownloadVideo(string url)
@@ -338,7 +338,7 @@ namespace SkiConsole
             Console.WriteLine("Videos available:");
             foreach (SkiVideoEntity e in metadataTask.Result)
             {
-                Console.WriteLine("\t{0}\\{1}", e.PartitionKey, e.RowKey);
+                Console.WriteLine("\t{0}\\{1}\t{2}", e.PartitionKey, e.RowKey, e.Url);
             }
         }
 
