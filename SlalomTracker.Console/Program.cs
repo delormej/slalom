@@ -120,7 +120,13 @@ namespace SkiConsole
             }
             else if (args[0] == "-y")
             {
-                UploadYouTubeAsync(args[1]).Wait();
+                // Int means upload the last n videos.  String arg is individual video.
+                string arg = args[1];
+                int count = 0;
+                if (int.TryParse(arg, out count))
+                    UploadYouTubeAsync(count).Wait();
+                else 
+                    UploadYouTubeAsync(arg).Wait();
             }
             else if (args[0] == "-c" && args.Length >= 2)
             {
@@ -239,6 +245,26 @@ namespace SkiConsole
             Console.WriteLine($"Uploaded to {url}");
         }
 
+        private static async Task UploadYouTubeAsync(int count)
+        {
+            YouTubeHelper youtube = new YouTubeHelper(YouTubeCredentials.Create());
+            var videos = await LoadVideosAsync();
+            videos = videos.OrderByDescending(v => v.RecordedTime).Take(count);
+
+            foreach (SkiVideoEntity e in videos)
+            {
+                Console.WriteLine("\t{0}\\{1}\t{2}", e.PartitionKey, e.RowKey, e.Url);
+                string localPath = DownloadVideo(e.Url);
+                string url = await youtube.UploadAsync(localPath);
+                Console.WriteLine($"Uploaded to {url}");
+
+                // Update HotUrl to youtube.
+                GoogleStorage storage = new GoogleStorage();
+                e.HotUrl = url;
+                storage.UpdateMetadata(e);
+            }
+        }
+
         private static string DownloadVideo(string url)
         {
             IStorage storage = new AzureStorage();
@@ -335,8 +361,11 @@ namespace SkiConsole
         {
             var metadataTask = LoadVideosAsync();
             metadataTask.Wait();
-            Console.WriteLine("Videos available:");
-            foreach (SkiVideoEntity e in metadataTask.Result)
+            
+            var videos = metadataTask.Result;
+            videos = videos.OrderByDescending(v => v.RecordedTime);
+
+            foreach (SkiVideoEntity e in videos)
             {
                 Console.WriteLine("\t{0}\\{1}\t{2}", e.PartitionKey, e.RowKey, e.Url);
             }
@@ -344,7 +373,7 @@ namespace SkiConsole
 
         private static Task<IEnumerable<SkiVideoEntity>> LoadVideosAsync()
         {
-            IStorage storage = new AzureStorage();
+            IStorage storage = new GoogleStorage();
             return storage.GetAllMetdataAsync();
         }        
 

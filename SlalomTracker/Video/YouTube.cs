@@ -39,7 +39,7 @@ namespace SlalomTracker.Video
     {
       _video = new YouTubeVideo();
       _video.Snippet = new VideoSnippet();
-      _video.Snippet.Title = "Ski Video";
+      _video.Snippet.Title = Path.GetFileName(filePath);
       // video.Snippet.Description = "Default Video Description";
       _video.Snippet.Tags = YouTubeTags;
       _video.Snippet.CategoryId = "17"; // See https://developers.google.com/youtube/v3/docs/videoCategories/list
