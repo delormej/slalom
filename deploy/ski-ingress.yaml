@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ski-ingress
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: jasondel-pip
+    networking.gke.io/managed-certificates: jasondel-certificate
+    kubernetes.io/ingress.class: "gce"
+spec:
+  rules:
+  - host: ski.jasondel.com
+    http:
+      paths:
+      - backend:
+          serviceName: skiweb-service
+          servicePort: 80
+        path: /*
+      - backend:
+          serviceName: skiwebapi-service
+          servicePort: 80
+        path: /api/*        

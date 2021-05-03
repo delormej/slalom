@@ -2,11 +2,13 @@ apiVersion: v1
 kind: Service
 metadata:
   name: skiwebapi-service
+  annotations:
+    cloud.google.com/backend-config: '{"ports": {"8080":"skiwebapi-backendconfig"}}'  
 spec:
   selector:
     app: skiwebapi
+  type: NodePort
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 80
-  type: ClusterIP
+      targetPort: 8080

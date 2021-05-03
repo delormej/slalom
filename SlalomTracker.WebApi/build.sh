@@ -20,7 +20,7 @@ if [ -z "$VERSION" ]
 then 
     VERSION=$(git describe --abbrev=0 --tag)
 fi
-container=skiwebapi:v$VERSION
+container=$REGISTRY/skiwebapi:v$VERSION
 
 echo "skiblobs::$SKIBLOBS"
 echo "github_token::$GITHUB_TOKEN"
@@ -51,10 +51,11 @@ docker run --rm -p 5000:5000 -it \
     -e SKISB="$SKISB" \
     -e SKISIGNALR="$SKISIGNALR" \
     -e GITHUB_TOKEN="$GITHUB_TOKEN" \
-    -e GOOGLE_APPLICATION_CREDENTIALS="/ski/key.json" \
+    -e GOOGLE_APPLICATION_CREDENTIALS="/shared/key.json" \
     -e GOOGLE_PROJECT_ID="$GOOGLE_PROJECT_ID" \
     -e FIRESTORE_PROJECT_ID="$FIRESTORE_PROJECT_ID" \
     -e GOOGLE_STORAGE_BUCKET="$GOOGLE_STORAGE_BUCKET" \
+    -e LD_LIBRARY_PATH=/usr/lib \
     -e Logging__LogLevel__Default="Debug" \
     --name ski-web \
     $container $dockerrun
@@ -64,6 +65,5 @@ docker run --rm -p 5000:5000 -it \
 #
 
 if [ "$1" != "debug" ]; then
-    docker tag $container $REGISTRY/$container
-    docker push $REGISTRY/$container
+    docker push $container
 fi

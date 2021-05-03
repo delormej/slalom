@@ -16,12 +16,10 @@ namespace SlalomTracker.WebApi.Controllers
     public class LatLngController : Controller
     {
         ILogger<ImageController> _logger;
-        AzureStorage _storage;
 
         public LatLngController(ILogger<ImageController> logger, IConfiguration config)
         {
             _logger = logger;
-            _storage = new AzureStorage();
         }
 
         

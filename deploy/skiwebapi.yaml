@@ -5,7 +5,7 @@ metadata:
   labels:
     app: skiwebapi
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: skiwebapi
@@ -20,7 +20,7 @@ spec:
           secretName: gcloud-key
       containers:
       - name: skiwebapi-preview
-        image: gcr.io/gke-ski/skiwebapi:v2.10.33
+        image: gcr.io/jasondel-test-project/skiwebapi:v3.1.11
         imagePullPolicy: Always
         volumeMounts:
         - name: google-cloud-key
@@ -53,16 +53,4 @@ spec:
           value: "Information"
         ports:
         - containerPort: 8080
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: skiwebapi-service
-  labels:
-    app: skiwebapi
-spec:
-  ports:
-  - port: 8080
-  selector:
-    app: skiwebapi
-  type: NodePort
+
