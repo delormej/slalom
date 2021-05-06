@@ -32,7 +32,7 @@ namespace SlalomTracker.WebApi
                 })
             );            
             services.AddControllers();
-            services.AddApplicationInsightsTelemetry();      
+            // services.AddApplicationInsightsTelemetry();      
             services.Configure<KestrelServerOptions>(options =>
             {
                 options.AllowSynchronousIO = true;

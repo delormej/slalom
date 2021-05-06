@@ -156,6 +156,8 @@ namespace SlalomTracker.Cloud
             IEnumerable<SkiVideoEntity> videos = querySnapshot.Documents
                 .Select(d => d.ConvertTo<SkiVideoEntity>());
 
+            Logger.Log($"Found {videos.Count()} videos.");
+
             return videos.Where(v => v.MarkedForDelete == false);
         }
 

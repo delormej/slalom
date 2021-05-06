@@ -1,9 +1,10 @@
 ﻿using System;
-using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SlalomTracker.Cloud;
 
@@ -11,19 +12,20 @@ namespace SlalomTracker.WebApi
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static Task Main(string[] args) 
         {
-            
-            var host = CreateWebHostBuilder(args).Build();
+            var host = CreateHostBuilder(args).Build();
             var logger = host.Services.GetRequiredService<ILogger<Program>>();
             logger.LogInformation($"Starting with Version: {GetVersion()}");            
-            host.Run();
-        }
+            return host.RunAsync();
+        }           
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>()
-                .UseUrls(GetUrls());
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(builder => {
+                    builder.UseStartup<Startup>();
+                    builder.UseUrls(GetUrls());
+                });                       
 
         private static string GetUrls()
         {
