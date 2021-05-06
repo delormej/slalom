@@ -19,8 +19,8 @@ spec:
         secret:
           secretName: gcloud-key
       containers:
-      - name: skiwebapi-preview
-        image: gcr.io/jasondel-test-project/skiwebapi:v3.1.11
+      - name: skiwebapi
+        image: gcr.io/jasondel-test-project/skiwebapi:v3.2.0
         imagePullPolicy: Always
         volumeMounts:
         - name: google-cloud-key
@@ -48,9 +48,7 @@ spec:
         - name: GOOGLE_PROJECT_ID
           value: "gke-ski"
         - name: GOOGLE_STORAGE_BUCKET
-          value: "gke-ski-videos"              
-        - name: Logging__LogLevel__Default
-          value: "Information"
+          value: "gke-ski-videos"
         ports:
         - containerPort: 8080
 
