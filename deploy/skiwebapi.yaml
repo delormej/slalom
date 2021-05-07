@@ -23,7 +23,7 @@ spec:
           name: appsettings-config          
       containers:
       - name: skiwebapi
-        image: gcr.io/jasondel-test-project/skiwebapi:v3.2.1
+        image: gcr.io/jasondel-test-project/skiwebapi:v3.2.2
         imagePullPolicy: Always
         volumeMounts:
         - name: google-cloud-key
