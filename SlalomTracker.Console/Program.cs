@@ -242,7 +242,7 @@ namespace SkiConsole
         {
             YouTubeHelper youtube = new YouTubeHelper(YouTubeCredentials.Create());
             string url = await youtube.UploadAsync(localPath);
-            Console.WriteLine($"Uploaded to {url}");
+            Logger.Log($"Uploaded to {url}");
         }
 
         private static async Task UploadYouTubeAsync(int count)
@@ -256,7 +256,7 @@ namespace SkiConsole
                 Console.WriteLine("\t{0}\\{1}\t{2}", e.PartitionKey, e.RowKey, e.Url);
                 string localPath = DownloadVideo(e.Url);
                 string url = await youtube.UploadAsync(localPath);
-                Console.WriteLine($"Uploaded to {url}");
+                Logger.Log($"Uploaded to {url}");
 
                 // Update HotUrl to youtube.
                 GoogleStorage storage = new GoogleStorage();
@@ -269,7 +269,7 @@ namespace SkiConsole
         {
             IStorage storage = new AzureStorage();
             string localPath = storage.DownloadVideo(url);
-            Console.WriteLine("Downloaded to:\n\t" + localPath);
+            Logger.Log("Downloaded to:\n\t" + localPath);
             return localPath;
         }
 
@@ -287,7 +287,7 @@ namespace SkiConsole
 
         private static async Task TrainAsync()
         {
-            Console.WriteLine("Loading videos to train.");
+            Logger.Log("Loading videos to train.");
             IEnumerable<SkiVideoEntity> videos = await LoadVideosAsync();
             
             var ropeTask = Task.Run( () => {
@@ -297,7 +297,7 @@ namespace SkiConsole
             });
 
             var skierTask = Task.Run( () => {
-                Console.WriteLine("Training skier detection.");
+                Logger.Log("Training skier detection.");
                 SkierMachineLearning skierMl = new SkierMachineLearning();
                 skierMl.Train(videos);
             });
@@ -347,7 +347,7 @@ namespace SkiConsole
                      
             foreach(var m in pass.Measurements) 
             {
-                Console.WriteLine($"{m.Timestamp.ToString("ss.fff")}, {m.HandleSpeedMps}");
+                Logger.Log($"{m.Timestamp.ToString("ss.fff")}, {m.HandleSpeedMps}");
             }
         }
 
@@ -367,7 +367,7 @@ namespace SkiConsole
 
             foreach (SkiVideoEntity e in videos)
             {
-                Console.WriteLine("\t{0}\\{1}\t{2}", e.PartitionKey, e.RowKey, e.Url);
+                Logger.Log($"\t{e.PartitionKey}\\{e.RowKey}\t{e.Url}");
             }
         }
 
@@ -381,13 +381,13 @@ namespace SkiConsole
         {
             VideoTasks video = new VideoTasks(inputFile);
             DateTime creation = video.GetCreationTime();
-            Console.WriteLine(
+            Logger.Log(
                 $"File: {inputFile}, video creationtime " +
                 creation.ToString("MM/dd/yyyy h:mm tt"));
 
             SkiVideoEntity entity = new SkiVideoEntity("http://localhost/TEST.MP4", creation);
             string obj = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
-            System.Console.WriteLine("Object:\n" + obj);
+            Logger.Log("Object:\n" + obj);
         }
 
         /// <summary>
@@ -409,7 +409,7 @@ namespace SkiConsole
                 DateTime utcTime = TimeZoneInfo.ConvertTimeToUtc(toConvertTime, videoTimeZone);
                 entity.RecordedTime = utcTime;
                 storage.UpdateMetadata(entity);
-                System.Console.WriteLine($"Updated {entity.RowKey} to: {entity.RecordedTime}");
+                Logger.Log($"Updated {entity.RowKey} to: {entity.RecordedTime}");
             }
         }
 
@@ -425,14 +425,14 @@ namespace SkiConsole
             KnownCourses knownCourses = new KnownCourses();
             // One time run only:
             // knownCourses.AddKnownCourses();
-            Console.WriteLine("Courses available:");
+            Logger.Log("Courses available:");
             foreach (Course c in knownCourses.List)
             {
-                Console.WriteLine("\tName:{0}, Entry(Lat/Lon):{1}\\{2}, Heading:{3}", 
+                Logger.Log(string.Format("\tName:{0}, Entry(Lat/Lon):{1}\\{2}, Heading:{3}", 
                     c.Name, 
                     c.Course55EntryCL.Latitude, 
                     c.Course55EntryCL.Longitude,
-                    c.CourseHeading);
+                    c.CourseHeading));
             }
         }
 
