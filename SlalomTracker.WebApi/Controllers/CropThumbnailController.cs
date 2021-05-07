@@ -4,6 +4,7 @@ using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using System.Drawing.Imaging;
 using System.Drawing;
+using Microsoft.Extensions.Logging;
 
 namespace SlalomTracker.WebApi.Controllers
 {
@@ -11,6 +12,13 @@ namespace SlalomTracker.WebApi.Controllers
     [ApiController]
     public class CropThumbnailController : Controller
     {
+        ILogger<CropThumbnailController> _logger;
+
+        public CropThumbnailController(ILogger<CropThumbnailController> logger)
+        {
+            _logger = logger;
+        }
+
         [HttpGet]
         public IActionResult Get(string thumbnailUrl, int width = 600, int height = 1200, int heightOffset = 0)
         {
@@ -25,7 +33,7 @@ namespace SlalomTracker.WebApi.Controllers
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine("Unable to get image. " + e.Message);
+                _logger.LogError(e, "Unable to get image.");
                 return StatusCode(500);
             }
         }

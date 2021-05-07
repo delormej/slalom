@@ -18,13 +18,18 @@ spec:
       - name: google-cloud-key
         secret:
           secretName: gcloud-key
+      - name: config-volume
+        configMap:
+          name: appsettings-config          
       containers:
       - name: skiwebapi
-        image: gcr.io/jasondel-test-project/skiwebapi:v3.2.0
+        image: gcr.io/jasondel-test-project/skiwebapi:v3.2.1
         imagePullPolicy: Always
         volumeMounts:
         - name: google-cloud-key
-          mountPath: /var/secrets/google           
+          mountPath: /var/secrets/google          
+        - name: config-volume
+          mountPath: /ski/config           
         env:
         - name: PORT
           value: "8080"

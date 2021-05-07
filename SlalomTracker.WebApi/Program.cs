@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Google.Cloud.Logging.Console;
 using SlalomTracker.Cloud;
 
 namespace SlalomTracker.WebApi
@@ -25,6 +26,10 @@ namespace SlalomTracker.WebApi
                 .ConfigureAppConfiguration(c =>
                     c.AddJsonFile("config/appsettings.json", optional: true)
                 )
+                .ConfigureLogging(loggingBuilder => loggingBuilder
+                    .AddConsoleFormatter<GoogleCloudConsoleFormatter, 
+                        GoogleCloudConsoleFormatterOptions>(options => options.IncludeScopes = true)
+                    .AddConsole(options => options.FormatterName = nameof(GoogleCloudConsoleFormatter)))                
                 .ConfigureWebHostDefaults(builder => {
                     builder.UseStartup<Startup>();
                     builder.UseUrls(GetUrls());

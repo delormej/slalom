@@ -34,7 +34,7 @@ namespace SlalomTracker.WebApi.Controllers
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine("Unable to list all blobs. " + e);
+                _logger.LogError(e, "Unable to list all blobs.");
                 return StatusCode(500);
             }
         }
