@@ -42,7 +42,7 @@ spec:
             cpu: "2000m"
             memory: "3.0Gi"
         command: ["./ski"]
-        args: ["-d", "5"]
+        args: ["-l", "skivideo-upload-subscription"]
         volumeMounts:
         - name: google-cloud-key
           mountPath: /var/secrets/google        

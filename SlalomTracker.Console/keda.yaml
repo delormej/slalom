@@ -14,6 +14,6 @@ spec:
   - type: gcp-pubsub
     metadata:
       subscriptionSize: "1"
-      subscriptionName: "video-uploads-subscription5"
+      subscriptionName: "skivideo-upload-subscription"
       credentials: GOOGLE_APPLICATION_CREDENTIALS_JSON
 
