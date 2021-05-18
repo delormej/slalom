@@ -18,7 +18,7 @@ metadata:
   labels:
     app: skiprocessor
 spec:
-  replicas: 1 # This is going to be scaled by KEDA, so defaulting to 0.
+  replicas: 0 # This is going to be scaled by KEDA, so defaulting to 0.
   selector:
     matchLabels:
       app: skiprocessor
@@ -33,7 +33,7 @@ spec:
           secretName: gcloud-key
       containers:
       - name: skiprocessor
-        image: gcr.io/jasondel-test-project/skiconsole:v3.1.6
+        image: gcr.io/jasondel-test-project/skiconsole:v3.2.3
         resources:
           requests:
             cpu: "1000m"
@@ -76,15 +76,15 @@ spec:
         - name: SKIMLSKIERMODEL
           value: "SkierDetection-4"
         - name: GOOGLE_PROJECT_ID
-          value: "jasondel-test-project"
+          value: "fluted-quasar-240821"
         - name: GOOGLE_STORAGE_BUCKET
-          value: "gke-ski-videos"
+          value: "skivideo"
         - name: FIRESTORE_PROJECT_ID
           value: "gke-ski"
         - name: SKICROPURL
-          value: "http://skipreview.jasondel.com/api/crop?width=1600&thumbnailUrl="
-      imagePullSecrets:
-        - name: acr-secret
+          value: "http://ski.jasondel.com/api/crop?width=1600&thumbnailUrl="
+      #imagePullSecrets:
+      #  - name: acr-secret
       # nodeSelector:
       # #   kubernetes.io/role: agent
       # #   beta.kubernetes.io/os: linux

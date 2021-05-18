@@ -1,7 +1,7 @@
 # Publish storage events to pub/sub topic.
-BUCKET_NAME=gke-ski-video-uploads
-TOPIC_NAME=video-uploads-topic5
-SUBSCRIPTION_ID=video-uploads-subscription5
+BUCKET_NAME=skivideo_upload
+TOPIC_NAME=skivideo-upload-topic
+SUBSCRIPTION_ID=skivideo-upload-subscription
 
 #
 # Create a topic for new objects written to the bucket.
