@@ -72,7 +72,10 @@ namespace SkiConsole
                 "Republish videos currently in upload folder to service bus queue for new videos uploaded.\n\t\t" +
                 "ski -r\n\t\t" +
                 "Migrate metadata to Firestore.\n\t\t" +
-                "ski --migrate\n\t\t"                                     
+                "ski --migrate\n\t\t" +
+                "Backup Firestore.\n\t\t" +
+                "ski --backup\n\t\t"   
+
             );
         }
 
@@ -180,6 +183,10 @@ namespace SkiConsole
             else if (args[0] == "--pubsub")
             {
                 PubSub().Wait();
+            }
+            else if (args[0] == "--backup")
+            {
+                BackupFirestoreAsync().Wait();
             }
             else
                 ShowUsage();
@@ -698,6 +705,20 @@ namespace SkiConsole
             PullMessagesAsyncSample pull = new PullMessagesAsyncSample();
             int messages = await pull.PullMessagesAsync("gke-ski", "video-uploaded-sub", false);
             System.Console.WriteLine($"Messages: {0}");
+        }
+
+        private static async Task BackupFirestoreAsync() 
+        {
+            var data = await LoadVideosAsync();
+            
+            using (var stream = System.IO.File.Create("backup.json"))
+            {
+                await System.Text.Json.JsonSerializer.SerializeAsync<IEnumerable<SkiVideoEntity>>(
+                    stream, data);
+                await stream.FlushAsync();
+            }
+
+            System.Console.WriteLine("Wrote backup.json");
         }
     }
 }
