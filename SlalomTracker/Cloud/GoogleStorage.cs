@@ -219,10 +219,10 @@ namespace SlalomTracker.Cloud
         private string UploadMetadata(SkiVideoEntity entity, string json)
         {
             string blobName = StorageHelper.GetBlobName(entity.Url, entity.RecordedTime);
-            if (!blobName.EndsWith(".MP4"))
-                throw new ApplicationException("Path to video must end with .MP4");
+            if (!blobName.ToUpper().EndsWith(".MP4"))
+                throw new ApplicationException($"Path to video must end with .MP4, provided {entity.Url}");
 
-            string fileName = blobName.Replace(".MP4", ".json");
+            string fileName = blobName.Replace(".MP4", ".json", true, null);
 
             byte[] byteArray = System.Text.Encoding.ASCII.GetBytes(json);
             MemoryStream stream = new MemoryStream(byteArray);

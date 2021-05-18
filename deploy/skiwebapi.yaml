@@ -23,7 +23,7 @@ spec:
           name: appsettings-config          
       containers:
       - name: skiwebapi
-        image: gcr.io/jasondel-test-project/skiwebapi:v3.2.2
+        image: gcr.io/jasondel-test-project/skiwebapi:v3.2.6
         imagePullPolicy: Always
         volumeMounts:
         - name: google-cloud-key
@@ -51,9 +51,9 @@ spec:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /var/secrets/google/key.json                            
         - name: GOOGLE_PROJECT_ID
-          value: "gke-ski"
+          value: "fluted-quasar-240821"
         - name: GOOGLE_STORAGE_BUCKET
-          value: "gke-ski-videos"
+          value: "skivideo"
         ports:
         - containerPort: 8080
 

@@ -126,7 +126,7 @@ namespace SlalomTracker.Video
             }
             catch (Exception e)
             {
-                Logger.Log($"Unable to upload {processedVideoPath} to Azure.", e);
+                Logger.Log($"Unable to upload {processedVideoPath}.", e);
             }
 
             return videoUrl;
@@ -231,7 +231,16 @@ namespace SlalomTracker.Video
             // avoid side-effects.
             _storage.AddMetadata(entity, _json);
             
-            await _processedNotifer.NotifyAsync(entity.Skier, entity.RowKey);
+            try 
+            {
+                await _processedNotifer.NotifyAsync(entity.Skier, entity.RowKey);
+            }
+            catch (Exception e)
+            {
+                // Not the end of the world if this fails, let's not fail the process just log it.
+                // This is where LogWarning would be helpful.
+                Logger.Log($"WARN: Unable to notify of new video {entity.Url} ", e);
+            }
         }   
 
         private Task<double> GetRopePredictionAsync(string thumbnailUrl)
