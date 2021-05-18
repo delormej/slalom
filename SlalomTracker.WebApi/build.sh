@@ -13,7 +13,7 @@
     
 # fi
 
-REGISTRY=gcr.io/$GOOGLE_PROJECT_ID
+REGISTRY=gcr.io/$(gcloud config list --format 'value(core.project)' 2>/dev/null)
 
 # CI/CD could override this version.
 if [ -z "$VERSION" ]
