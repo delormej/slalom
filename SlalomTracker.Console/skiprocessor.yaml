@@ -33,7 +33,7 @@ spec:
           secretName: gcloud-key
       containers:
       - name: skiprocessor
-        image: gcr.io/jasondel-test-project/skiconsole:v3.2.4
+        image: gcr.io/jasondel-test-project/skiconsole:v3.2.6
         resources:
           requests:
             cpu: "1000m"
@@ -81,7 +81,7 @@ spec:
         - name: GOOGLE_STORAGE_BUCKET
           value: "skivideo"
         - name: FIRESTORE_PROJECT_ID
-          value: "gke-ski"
+          value: "fluted-quasar-240821"
         - name: SKICROPURL
           value: "https://ski.jasondel.com/api/crop?width=1600&thumbnailUrl="
       #imagePullSecrets:
