@@ -74,7 +74,9 @@ namespace SkiConsole
                 "Migrate metadata to Firestore.\n\t\t" +
                 "ski --migrate\n\t\t" +
                 "Backup Firestore.\n\t\t" +
-                "ski --backup\n\t\t"   
+                "ski --backup\n\t\t"  +
+                "Restore Firestore.\n\t\t" +
+                "ski --restore backup.json\n\t\t"                   
 
             );
         }
@@ -187,6 +189,10 @@ namespace SkiConsole
             else if (args[0] == "--backup")
             {
                 BackupFirestoreAsync().Wait();
+            }
+            else if (args[0] == "--restore" && args.Length > 1)
+            {
+                RestoreFirestoreAsync(args[1]).Wait();
             }
             else
                 ShowUsage();
@@ -720,5 +726,20 @@ namespace SkiConsole
 
             System.Console.WriteLine("Wrote backup.json");
         }
+
+        private static async Task RestoreFirestoreAsync(string backupFile) 
+        {
+            GoogleStorage storage = new GoogleStorage("fluted-quasar-240821");
+            var json = await System.IO.File.ReadAllTextAsync(backupFile);
+            var entities = System.Text.Json.JsonSerializer.Deserialize<IEnumerable<SkiVideoEntity>>(json);
+
+            await Task.WhenAll(entities.Select(async entity => 
+            {
+                await storage.AddTableEntityAsync(entity);
+                System.Console.WriteLine($"Added metadata for {entity.Url}");
+            }));
+            
+            System.Console.WriteLine($"Wrote {backupFile} to Firestore");
+        }        
     }
 }
