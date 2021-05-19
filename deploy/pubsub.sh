@@ -1,3 +1,6 @@
+GOOGLE_PROJECT_ID=$(gcloud config list --format 'value(core.project)' 2>/dev/null)
+PROJECT_NUMBER=gcloud projects describe $GOOGLE_PROJECT_ID --format 'value(projectNumber)' 2>/dev/null
+
 # Publish storage events to pub/sub topic.
 BUCKET_NAME=skivideo_upload
 TOPIC_NAME=skivideo-upload-topic

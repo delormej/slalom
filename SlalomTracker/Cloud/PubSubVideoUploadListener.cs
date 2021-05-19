@@ -13,20 +13,22 @@ namespace SkiConsole
 {
     public class PubSubVideoUploadListener : IUploadListener
     {
-        const int AckDeadlineExtensionMilliseconds = 9 * 60 * 1000;
+        public const int UnlimitedMessages = int.MaxValue;
 
         public event EventHandler Completed;
         
         static string _projectId = Environment.GetEnvironmentVariable("GOOGLE_PROJECT_ID");
 
-        CancellationTokenSource _cancel;
-        SubscriberServiceApiClient _subscriber;
+        SubscriberClient _subscriber;
         SubscriptionName _subscriptionName;
-        Task _processor;
+        Task _processorTask;
         bool _deadLetter;
+        int _maxMessagesToProcess;
         
-        public PubSubVideoUploadListener(string subscriptionId, bool readDeadLetter = false)
+        public PubSubVideoUploadListener(string subscriptionId, bool readDeadLetter = false,
+            int maxMessagesToProcess = UnlimitedMessages)
         {
+            _maxMessagesToProcess = maxMessagesToProcess;
             _deadLetter = readDeadLetter;
 
             if (string.IsNullOrEmpty(subscriptionId))
@@ -36,79 +38,62 @@ namespace SkiConsole
                 throw new ApplicationException("GOOGLE_PROJECT_ID env variable must be set.");
 
             _subscriptionName = SubscriptionName.FromProjectSubscription(_projectId, subscriptionId);
-            _subscriber = SubscriberServiceApiClient.Create();
-            _cancel = new CancellationTokenSource();
+            _subscriber = CreateSubscriber();
         }
 
         public void Start()
         {
-            // can we eliminate _processor variable? Serves no purpose?
-            _processor = Task.Run(ListenAsync, _cancel.Token);
+            _processorTask = _subscriber.StartAsync(ProcessMessageAsync);
         }
 
         public void Stop()
         {
+            if (!_processorTask.IsCompleted)
+                Logger.Log("Waiting for processor to complete.");
+            _processorTask.Wait();
+            
+            Logger.Log("Stopped");
+        }
+
+        private void InternalStop()
+        {
             Logger.Log("Stopping...");
-            _cancel.Cancel();
+            // Subscriber will stop when the last message is fully processed.
+            _subscriber.StopAsync(CancellationToken.None).ContinueWith(_ =>
+            {
+                if (Completed != null)
+                    Completed(this, null);
+                else 
+                    Stop();
+            });
         }
 
-        private async Task ListenAsync()
+        private SubscriberClient CreateSubscriber() 
         {
-            ReceivedMessage received = null;
-            Timer extendAck = null;
-
-            try
-            {
-                while (received == null && !_cancel.IsCancellationRequested)
-                    received = PullMessage();
-
-                extendAck = new Timer(ExtendAckDeadline, received.AckId, 
-                    AckDeadlineExtensionMilliseconds, AckDeadlineExtensionMilliseconds);
-                
-                PubsubMessage message = received.Message;
-
-                if (await ProcessMessageAsync(message) == SubscriberClient.Reply.Ack)
-                {
-                    _subscriber.Acknowledge(_subscriptionName, new string[] {received.AckId});
-                    Logger.Log($"Acknowledged message id:{message.MessageId}");
+            var task = SubscriberClient.CreateAsync(
+                subscriptionName: _subscriptionName,
+                settings: new SubscriberClient.Settings() {
+                    FlowControlSettings = new Google.Api.Gax.FlowControlSettings(
+                        maxOutstandingElementCount: 1,
+                        maxOutstandingByteCount: null),
+                    MaxTotalAckExtension = TimeSpan.FromHours(1) 
                 }
-            }
-            catch (Exception e)
-            {
-                Logger.Log("Error pulling message.", e);
-            }
-            finally 
-            {
-                extendAck?.Dispose();
-            }
-
-            if (Completed != null)
-                Completed(this, null);            
+            );
+            task.Wait();
+            return task.Result;
         }
 
-        private ReceivedMessage PullMessage()
+        private async Task<SubscriberClient.Reply> ProcessMessageAsync(PubsubMessage message, 
+            CancellationToken cancel)
         {
-            Logger.Log("Attempting to pull message.");
-            PullResponse response = _subscriber.Pull(_subscriptionName, 
-                returnImmediately: false, maxMessages: 1);
-            ReceivedMessage received = response.ReceivedMessages.FirstOrDefault();
-            
-            return received;
-        }
-
-        private void ExtendAckDeadline(object state)
-        {
-            string[] ackId = new string[] { state.ToString() };
-            _subscriber.ModifyAckDeadline(_subscriptionName, ackId, 
-                AckDeadlineExtensionMilliseconds / 1000);                
-            
-            Logger.Log($"Extended {_subscriptionName} ackId:{state} by {(AckDeadlineExtensionMilliseconds / 1000)} seconds.");
-        }
-
-        private async Task<SubscriberClient.Reply> ProcessMessageAsync(PubsubMessage message)
-        {
-
+            int messagesProcessed = 0;
             SubscriberClient.Reply reply = SubscriberClient.Reply.Nack;
+
+            if (cancel.IsCancellationRequested)
+            {
+                InternalStop();
+                return reply;
+            }
 
             int? attempt = message.GetDeliveryAttempt() ?? 0;
 
@@ -133,6 +118,9 @@ namespace SkiConsole
             
             Logger.Log($"Message handler completed with {reply} for {message.MessageId}.");
             
+            if (++messagesProcessed >= _maxMessagesToProcess)
+                InternalStop();
+
             return reply;
         }
     }

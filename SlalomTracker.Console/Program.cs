@@ -638,11 +638,12 @@ namespace SkiConsole
         /// <summary>
         /// Listens to service bus queue and processes videos as they arrive.
         /// </summary>
-        private static void Listen(string subscriptionId, bool openDeadLetter)
+        private static void Listen(string subscriptionId, bool openDeadLetter = false)
         {
             try 
             {
-                IUploadListener listener = new PubSubVideoUploadListener(subscriptionId, openDeadLetter);
+                IUploadListener listener = new PubSubVideoUploadListener(subscriptionId, openDeadLetter, 
+                    PubSubVideoUploadListener.UnlimitedMessages);
                 EventWaitHandle ewh = new EventWaitHandle(false, EventResetMode.ManualReset);
                 EventHandler Reset = (o, e) => {
                     Logger.Log("Signaling stop.");
