@@ -9,7 +9,7 @@ if [ -z "$VERSION" ]
 then 
     VERSION=$(git describe --abbrev=0 --tags)
 fi
-container=skiconsole:v$VERSION
+container=$REGISTRY/skiconsole:v$VERSION
 
 echo "skisb::$SKISB"
 echo "skiblobs::$SKIBLOBS"
@@ -60,8 +60,7 @@ docker run -it --rm \
 
 # az acr login -n wthacr
 if [ "$1" != "debug" ]; then
-    docker tag $container $REGISTRY/$container
-    docker push $REGISTRY/$container
+    docker push $container
 fi
 
 #

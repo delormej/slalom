@@ -33,7 +33,7 @@ spec:
           secretName: gcloud-key
       containers:
       - name: skiprocessor
-        image: gcr.io/jasondel-test-project/skiconsole:v3.2.6
+        image: gcr.io/jasondel-test-project/skiconsole:v3.3.3
         resources:
           requests:
             cpu: "1000m"
@@ -41,7 +41,7 @@ spec:
           limits:
             cpu: "2000m"
             memory: "3.0Gi"
-            ephemeral-storage: "3.0Gi"
+            ephemeral-storage: "4.0Gi"
         command: ["./ski"]
         args: ["-l", "skivideo-upload-subscription"]
         volumeMounts:
