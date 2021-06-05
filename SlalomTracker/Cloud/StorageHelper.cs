@@ -1,12 +1,16 @@
 using System;
 using System.IO;
 using System.Net;
-using Logger = jasondel.Tools.Logger;
+using SlalomTracker.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace SlalomTracker.Cloud
 {
     public class StorageHelper
     {
+        static ILogger<StorageHelper> _log = 
+            SkiLogger.Factory.CreateLogger<StorageHelper>();        
+
         public static string GetLocalPath(string videoUrl)
         {
             var uri = new UriBuilder(videoUrl);
@@ -37,17 +41,17 @@ namespace SlalomTracker.Cloud
             string path = StorageHelper.GetLocalPath(videoUrl);
             if (File.Exists(path)) 
             {
-                Logger.Log("File already exists.");
+                _log.LogInformation("File already exists.");
             }
             else 
             {
-                Logger.Log("Requesting video: " + videoUrl + " ...");
+                _log.LogInformation($"Requesting video: {videoUrl}.");
                     
                 WebClient client = new WebClient();
                 client.DownloadFile(videoUrl, path);
             }
 
-            Logger.Log("File is here: " + path);
+            _log.LogInformation($"File is here: {path}");
             return path;
         }
     }

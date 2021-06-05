@@ -2,12 +2,16 @@ using System;
 using System.IO;
 using SlalomTracker.Cloud;
 using Newtonsoft.Json;
-using Logger = jasondel.Tools.Logger;
+using SlalomTracker.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace SlalomTracker.Video 
 {
     public class VideoTime
     {
+        private ILogger<VideoTime> _log = 
+            SkiLogger.Factory.CreateLogger<VideoTime>();        
+
         private string _videoJsonUrl;
 
         public double Start { get; set; }
@@ -27,14 +31,14 @@ namespace SlalomTracker.Video
                 IStorage storage = new AzureStorage();
                 string localJson = storage.DownloadVideo(_videoJsonUrl);
             
-                Logger.Log($"Found override json: {_videoJsonUrl}");
+                _log.LogInformation($"Found override json: {_videoJsonUrl}");
                 VideoTime obj = FromJsonFile(localJson);
                 this.Start = obj.Start;
                 this.Duration = obj.Duration;
             }
             catch (System.Net.WebException)
             {
-                Logger.Log("No json override found for " + _videoJsonUrl);
+                _log.LogDebug("No json override found for " + _videoJsonUrl);
                 return false;
             }
 

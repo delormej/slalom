@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Text;
-using Logger = jasondel.Tools.Logger;
 
 namespace SlalomTracker.Cloud
 { 
