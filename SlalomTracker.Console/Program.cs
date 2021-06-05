@@ -9,12 +9,16 @@ using System.Drawing;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Logger = jasondel.Tools.Logger;
+using Microsoft.Extensions.Logging;
+using SlalomTracker.Logging;
 
 namespace SkiConsole
 {
     class Program
-    {
+    {               
+        private static ILogger<Program> _log = 
+            SkiLogger.Factory.CreateLogger<Program>();
+
         const int Fail = -1;
         const int Success = 0;
 
@@ -34,7 +38,7 @@ namespace SkiConsole
             }
             catch (Exception e)
             {
-                Logger.Log("Failed", e);
+                _log.LogError("Failed", e);
                 return Fail;
             }
 
@@ -255,7 +259,7 @@ namespace SkiConsole
         {
             YouTubeHelper youtube = new YouTubeHelper(YouTubeCredentials.Create());
             string url = await youtube.UploadAsync(localPath);
-            Logger.Log($"Uploaded to {url}");
+            _log.LogInformation($"Uploaded to {url}");
         }
 
         private static async Task UploadYouTubeAsync(int count)
@@ -266,10 +270,10 @@ namespace SkiConsole
 
             foreach (SkiVideoEntity e in videos)
             {
-                Console.WriteLine("\t{0}\\{1}\t{2}", e.PartitionKey, e.RowKey, e.Url);
+                // Console.WriteLine("\t{0}\\{1}\t{2}", e.PartitionKey, e.RowKey, e.Url);
                 string localPath = DownloadVideo(e.Url);
                 string url = await youtube.UploadAsync(localPath);
-                Logger.Log($"Uploaded to {url}");
+                _log.LogInformation($"Uploaded to {url}");
 
                 // Update HotUrl to youtube.
                 GoogleStorage storage = new GoogleStorage();
@@ -282,7 +286,7 @@ namespace SkiConsole
         {
             IStorage storage = new AzureStorage();
             string localPath = storage.DownloadVideo(url);
-            Logger.Log("Downloaded to:\n\t" + localPath);
+            _log.LogInformation($"Downloaded to: {localPath}");
             return localPath;
         }
 
@@ -300,23 +304,23 @@ namespace SkiConsole
 
         private static async Task TrainAsync()
         {
-            Logger.Log("Loading videos to train.");
+            _log.LogInformation("Loading videos to train.");
             IEnumerable<SkiVideoEntity> videos = await LoadVideosAsync();
             
             var ropeTask = Task.Run( () => {
-                Logger.Log("Training rope length detection.");
+                _log.LogInformation("Training rope length detection.");
                 RopeMachineLearning ropeMl = new RopeMachineLearning();
                 ropeMl.Train(videos);
             });
 
             var skierTask = Task.Run( () => {
-                Logger.Log("Training skier detection.");
+                _log.LogInformation("Training skier detection.");
                 SkierMachineLearning skierMl = new SkierMachineLearning();
                 skierMl.Train(videos);
             });
 
             await Task.WhenAll(ropeTask, skierTask);
-            Logger.Log("Done training.");
+            _log.LogInformation("Done training.");
         }
 
         private static string CreateImage(string jsonPath, double clOffset, double rope, 
@@ -341,8 +345,8 @@ namespace SkiConsole
             Bitmap bitmap = image.Draw();
             bitmap.Save(imagePath, ImageFormat.Png);
 
-            Logger.Log(string.Format("Gate precision == {0} for {1}", pass.GetGatePrecision(), jsonPath));
-            Logger.Log("Wrote image to: " + imagePath);
+            _log.LogInformation($"Gate precision == {pass.GetGatePrecision()} for {jsonPath}");
+            _log.LogInformation($"Wrote image to: {imagePath}");
 
             return imagePath;
         }
@@ -360,7 +364,7 @@ namespace SkiConsole
                      
             foreach(var m in pass.Measurements) 
             {
-                Logger.Log($"{m.Timestamp.ToString("ss.fff")}, {m.HandleSpeedMps}");
+                _log.LogInformation($"{m.Timestamp.ToString("ss.fff")}, {m.HandleSpeedMps}");
             }
         }
 
@@ -380,7 +384,7 @@ namespace SkiConsole
 
             foreach (SkiVideoEntity e in videos)
             {
-                Logger.Log($"\t{e.PartitionKey}\\{e.RowKey}\t{e.Url}");
+                _log.LogInformation($"\t{e.PartitionKey}\\{e.RowKey}\t{e.Url}");
             }
         }
 
@@ -394,13 +398,13 @@ namespace SkiConsole
         {
             VideoTasks video = new VideoTasks(inputFile);
             DateTime creation = video.GetCreationTime();
-            Logger.Log(
+            _log.LogInformation(
                 $"File: {inputFile}, video creationtime " +
                 creation.ToString("MM/dd/yyyy h:mm tt"));
 
             SkiVideoEntity entity = new SkiVideoEntity("http://localhost/TEST.MP4", creation);
             string obj = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
-            Logger.Log("Object:\n" + obj);
+            _log.LogInformation("Object:\n" + obj);
         }
 
         /// <summary>
@@ -422,7 +426,7 @@ namespace SkiConsole
                 DateTime utcTime = TimeZoneInfo.ConvertTimeToUtc(toConvertTime, videoTimeZone);
                 entity.RecordedTime = utcTime;
                 storage.UpdateMetadata(entity);
-                Logger.Log($"Updated {entity.RowKey} to: {entity.RecordedTime}");
+                _log.LogInformation($"Updated {entity.RowKey} to: {entity.RecordedTime}");
             }
         }
 
@@ -438,10 +442,10 @@ namespace SkiConsole
             KnownCourses knownCourses = new KnownCourses();
             // One time run only:
             // knownCourses.AddKnownCourses();
-            Logger.Log("Courses available:");
+            _log.LogInformation("Courses available:");
             foreach (Course c in knownCourses.List)
             {
-                Logger.Log(string.Format("\tName:{0}, Entry(Lat/Lon):{1}\\{2}, Heading:{3}", 
+                _log.LogInformation(string.Format("\tName:{0}, Entry(Lat/Lon):{1}\\{2}, Heading:{3}", 
                     c.Name, 
                     c.Course55EntryCL.Latitude, 
                     c.Course55EntryCL.Longitude,
@@ -487,7 +491,7 @@ namespace SkiConsole
         {
             var videos = await LoadVideosAsync();
             var sortedVideos = SortVideos(videos);
-            Logger.Log($"Found {videos.Count()} videos.");
+            _log.LogInformation($"Found {videos.Count()} videos.");
 
             GoogleStorage gStore = new GoogleStorage();
             AzureStorage storage = new AzureStorage();
@@ -500,14 +504,14 @@ namespace SkiConsole
             }
 
             Task.WaitAll(uploadTasks.ToArray());
-            Logger.Log("Upload complete.");
+            _log.LogInformation("Upload complete.");
             
             async Task<string> UploadToGoogle(SkiVideoEntity e)
             {   
                 string localPath = await Task<string>.Run(() => DownloadVideo(e.Url));
                 e.HotUrl = await gStore.UploadVideoAsync(localPath, e.RecordedTime);
                 storage.UpdateMetadata(e);
-                Logger.Log($"Google HotUrl updated {e.HotUrl}");
+                _log.LogInformation($"Google HotUrl updated {e.HotUrl}");
                 return e.HotUrl;
             }
 
@@ -585,11 +589,11 @@ namespace SkiConsole
 
         private static async Task DeleteGoogleVideoAsync(GoogleStorage gstore, AzureStorage storage, SkiVideoEntity video)
         {
-            Logger.Log($"Deleting {video.HotUrl} recorded @ {video.RecordedTime}.");
+            _log.LogInformation($"Deleting {video.HotUrl} recorded @ {video.RecordedTime}.");
             await gstore.DeleteAsync(video.HotUrl);
             video.HotUrl = "";
             storage.UpdateMetadata(video);
-            Logger.Log($"Metadata updated for video recorded @ {video.RecordedTime}.");
+            _log.LogInformation($"Metadata updated for video recorded @ {video.RecordedTime}.");
         }
 
         private static async Task UpdateThumbnailsAsync()
@@ -606,14 +610,14 @@ namespace SkiConsole
                 }
                 catch (Exception e)
                 {
-                    Logger.Log($"Unable to update thumbnail for {video.PartitionKey}, {video.RowKey}", e);
+                    _log.LogInformation($"Unable to update thumbnail for {video.PartitionKey}, {video.RowKey}", e);
                 }
             }
         }
 
         private static async Task UpdateThumbnailAsync(IStorage storage, SkiVideoEntity video)
         {
-            Logger.Log($"Updating thumbnail for {video.PartitionKey}, {video.RowKey}");
+            _log.LogInformation($"Updating thumbnail for {video.PartitionKey}, {video.RowKey}");
             double thumbnailAtSeconds = 0; // video.EntryTime;
 
             string localVideoPath = storage.DownloadVideo(video.HotUrl ?? video.Url);
@@ -624,12 +628,12 @@ namespace SkiConsole
             System.IO.File.Move(localThumbnailPath, modifiedThumbnailPath);
             string thumbnailUrl = storage.UploadThumbnail(modifiedThumbnailPath, video.RecordedTime);
 
-            Logger.Log($"New thumbnail at {thumbnailUrl}");            
+            _log.LogInformation($"New thumbnail at {thumbnailUrl}");            
         }
 
         private static async Task CombineVideosAsync(string videoUrl1, string videoUrl2)
         {
-            Logger.Log($"Combining video {videoUrl1} combined with {videoUrl2}.");
+            _log.LogInformation($"Combining video {videoUrl1} combined with {videoUrl2}.");
 
             CompareVideoProcessor processor = new CompareVideoProcessor(videoUrl1, videoUrl2);
             await processor.ProcessAsync();
@@ -646,7 +650,7 @@ namespace SkiConsole
                     PubSubVideoUploadListener.UnlimitedMessages);
                 EventWaitHandle ewh = new EventWaitHandle(false, EventResetMode.ManualReset);
                 EventHandler Reset = (o, e) => {
-                    Logger.Log("Signaling stop.");
+                    _log.LogInformation("Signaling stop.");
                     listener.Stop();
                     ewh.Set();
                 };
@@ -657,24 +661,24 @@ namespace SkiConsole
                 if (Console.WindowHeight > 0)
                 {
                     Task.Run( () => {
-                        Logger.Log("Press any key to cancel.");
+                        Console.WriteLine("Press any key to cancel.");
                         Console.ReadKey();
                         ewh.Set();
                     });
                 }
 
-                Logger.Log("Waiting until signaled to close.");
+                Console.WriteLine("Waiting until signaled to close.");
 
                 // Wait until signalled.
                 ewh.WaitOne();
             
-                Logger.Log($"Done listening for events.");
+                _log.LogInformation($"Done listening for events.");
                 AppDomain.CurrentDomain.ProcessExit -= Reset;
             }
             catch (Exception e)
             {
-                Logger.Log("Error while listening to queue.", e);
-                Logger.Log("\tInner Exception.", e.InnerException);
+                _log.LogError("Error while listening to queue.", e);
+                // Logger.Log("\tInner Exception.", e.InnerException);
             }
         }
 

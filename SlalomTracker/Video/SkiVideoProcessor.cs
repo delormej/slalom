@@ -1,12 +1,15 @@
 using System;
 using System.Threading.Tasks;
 using SlalomTracker.Cloud;
-using Logger = jasondel.Tools.Logger;
+using SlalomTracker.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace SlalomTracker.Video 
 {
     public class SkiVideoProcessor : IProcessor
     {
+        ILogger<SkiVideoProcessor> _log = 
+            SkiLogger.Factory.CreateLogger<SkiVideoProcessor>();
         IStorage _storage;
         CoursePassFactory _factory;
         VideoTasks _videoTasks;
@@ -17,6 +20,7 @@ namespace SlalomTracker.Video
 
         public SkiVideoProcessor(string videoUrl)
         {
+            _log.BeginScope(videoUrl);
             _sourceVideoUrl = videoUrl;
             _storage = new GoogleStorage();
             _factory = new CoursePassFactory();
@@ -80,7 +84,7 @@ namespace SlalomTracker.Video
             IStorage storage = new AzureStorage();
             string localPath = null;
             await Task.Run( () => {
-                Logger.Log($"Downloading video {_sourceVideoUrl}...");
+                _log.LogInformation($"Downloading video {_sourceVideoUrl}...");
                 localPath = storage.DownloadVideo(_sourceVideoUrl);
             });
             return localPath;
@@ -88,16 +92,16 @@ namespace SlalomTracker.Video
 
         private async Task<string> CreateThumbnailAsync(double atSeconds)
         {  
-            Logger.Log($"Creating Thumbnail for video {_sourceVideoUrl}...");           
+            _log.LogInformation($"Creating Thumbnail for video {_sourceVideoUrl}...");           
             string localThumbnailPath = await _videoTasks.GetThumbnailAsync(atSeconds);
-            Logger.Log($"Thumbnail created at {localThumbnailPath}");
+            _log.LogInformation($"Thumbnail created at {localThumbnailPath}");
             
             return localThumbnailPath;
         }
 
         private Task<string> TrimAndSilenceAsync(VideoTime videoTime)
         {
-            Logger.Log($"Trimming and silencing video {_sourceVideoUrl}...");           
+            _log.LogInformation($"Trimming and silencing video {_sourceVideoUrl}...");           
             return _videoTasks.TrimAndSilenceVideoAsync(videoTime.Start, videoTime.Duration); 
         }
 
@@ -105,9 +109,9 @@ namespace SlalomTracker.Video
         {
             string localThumbnailPath = await createThumbnail;
 
-            Logger.Log($"Uploading thumbnail {localThumbnailPath}...");
+            _log.LogInformation($"Uploading thumbnail {localThumbnailPath}...");
             string thumbnailUrl = _storage.UploadThumbnail(localThumbnailPath, entryTime);
-            Logger.Log($"Uploaded thumbnail to {thumbnailUrl}");
+            _log.LogInformation($"Uploaded thumbnail to {thumbnailUrl}");
 
             return thumbnailUrl;
         }
@@ -120,13 +124,13 @@ namespace SlalomTracker.Video
 
             try 
             {
-                Logger.Log($"Uploading video {processedVideoPath}...");
+                _log.LogInformation($"Uploading video {processedVideoPath}...");
                 videoUrl = _storage.UploadVideo(processedVideoPath, entryTime);
-                Logger.Log($"Video uploaded to {videoUrl}");
+                _log.LogInformation($"Video uploaded to {videoUrl}");
             }
             catch (Exception e)
             {
-                Logger.Log($"Unable to upload {processedVideoPath}.", e);
+                _log.LogError($"Unable to upload {processedVideoPath}.", e);
             }
 
             return videoUrl;
@@ -140,11 +144,11 @@ namespace SlalomTracker.Video
 
         private async Task ExtractMetadataAsync()
         {
-            Logger.Log($"Extracting metadata from video {_sourceVideoUrl}...");
+            _log.LogInformation($"Extracting metadata from video {_sourceVideoUrl}...");
             await Task.Run(() => {              
                 _json = MetadataExtractor.Extract.ExtractMetadata(_localVideoPath);
             });
-            Logger.Log("Extracted metadata.");
+            _log.LogInformation("Extracted metadata.");
         } 
 
         /// <summary>
@@ -162,13 +166,13 @@ namespace SlalomTracker.Video
                     if (jsonPath != null)
                     {
                         overrides = VideoTime.FromJsonFile(jsonPath);
-                        Logger.Log($"Video overrides found start, duration: {overrides.Start}, {overrides.Duration}");
+                        _log.LogInformation($"Video overrides found start, duration: {overrides.Start}, {overrides.Duration}");
                     }
                 });
             }
             catch (System.Net.WebException)
             {
-                Logger.Log("No json override found for " + _sourceVideoUrl);
+                _log.LogDebug("No json override found for " + _sourceVideoUrl);
             }
         
             return overrides;
@@ -185,7 +189,7 @@ namespace SlalomTracker.Video
             }
             catch (ApplicationException e)
             {
-                Logger.Log("Unable to find another pass.", e);
+                _log.LogInformation("Unable to find another pass.", e);
             }
             
             return nextPass;
@@ -225,7 +229,7 @@ namespace SlalomTracker.Video
             entity.RopeLengthM = await getRopePrediction;
             entity.ThumbnailUrl = thumbnailUrl;
 
-            Logger.Log($"Creating and uploading metadata for video {_localVideoPath}...");
+            _log.LogInformation($"Creating and uploading metadata for video {_localVideoPath}...");
             
             // This currently mutates the entity before persisting, so requires some changes to
             // avoid side-effects.
@@ -239,7 +243,7 @@ namespace SlalomTracker.Video
             {
                 // Not the end of the world if this fails, let's not fail the process just log it.
                 // This is where LogWarning would be helpful.
-                Logger.Log($"WARN: Unable to notify of new video {entity.Url} ", e);
+                _log.LogWarning($"Unable to notify of new video {entity.Url} ", e);
             }
         }   
 
@@ -273,7 +277,7 @@ namespace SlalomTracker.Video
 
         private void DeleteIngestVideo()
         {
-            Logger.Log($"Deleting source video at {_sourceVideoUrl}...");
+            _log.LogInformation($"Deleting source video at {_sourceVideoUrl}...");
             // Note this only deletes from the ingest folder.  It will fail if not ingest, but that's ok.
             _storage.DeleteIngestedBlob(_sourceVideoUrl);
         }       

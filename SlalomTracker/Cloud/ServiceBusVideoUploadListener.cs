@@ -7,9 +7,9 @@ using Microsoft.Azure.ServiceBus;
 using SlalomTracker.Video;
 using SlalomTracker.Cloud;
 
-namespace SkiConsole
+namespace SlalomTracker.Cloud
 {
-    public class VideoUploadListener : IUploadListener
+    public class ServiceBusVideoUploadListener : IUploadListener
     {
         const string ENV_VIDEOQUEUE = "SKIQUEUE";
         const string ENV_SERVICEBUS = "SKISB";
@@ -20,7 +20,7 @@ namespace SkiConsole
         private bool _deadLetterMode = false;
         public event EventHandler Completed;
 
-        public VideoUploadListener(string queueName = null, bool readDeadLetter = false)
+        public ServiceBusVideoUploadListener(string queueName = null, bool readDeadLetter = false)
         {
             string serviceBusConnectionString = Environment.GetEnvironmentVariable(ENV_SERVICEBUS);
             if (string.IsNullOrWhiteSpace(serviceBusConnectionString))
@@ -111,7 +111,7 @@ namespace SkiConsole
                 string json = Encoding.UTF8.GetString(message.Body);
                 Logger.Log($"Received message: SequenceNumber:{message.SystemProperties.SequenceNumber} Body:{json}");
 
-                IProcessor processor = QueueMessageParser.GetProcessor(json);               
+                IProcessor processor = VideoParserFactory.CreateFromMessage(json);               
                 await processor.ProcessAsync();
                 
                 await _queueClient.CompleteAsync(message.SystemProperties.LockToken);

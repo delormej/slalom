@@ -4,12 +4,15 @@ using FFmpeg.NET;
 using FFmpeg.NET.Events;
 using System.Threading.Tasks;
 using System.Diagnostics;
-using Logger = jasondel.Tools.Logger;
+using SlalomTracker.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace SlalomTracker
 {
     public class VideoTasks
     {
+        ILogger<VideoTasks> _log = 
+            SkiLogger.Factory.CreateLogger<VideoTasks>();        
         public const string DefaultVideoRecordingTimeZone = "America/New_York";
         private readonly TimeZoneInfo _videoTimeZone;
 
@@ -22,6 +25,7 @@ namespace SlalomTracker
         public VideoTasks(string localVideoPath, 
             string videoTimeZone = DefaultVideoRecordingTimeZone)
         {
+            _log.BeginScope(localVideoPath);
             _ffmpeg = new Engine("ffmpeg");
             _ffmpeg.Progress += OnProgress;
             _ffmpeg.Error += OnError;
@@ -32,7 +36,7 @@ namespace SlalomTracker
         public async Task<string> CombineVideoAsync(string video2Path)
         {
             // -itsoffset 0.2 <-- use this param in front of the video you what to offset the start time of video (e.g. 0.2 seconds)
-            Logger.Log($"Combining {_localVideoPath} with {video2Path}");
+            _log.LogInformation($"Combining {_localVideoPath} with {video2Path}");
             string outputPath = GetCombinedVideoPath(video2Path);
             string arguments = $"-i {_localVideoPath} -i {video2Path} " +
                 "-filter_complex \"[1]format=yuva444p,colorchannelmixer=aa=0.5[in2]; " +
@@ -47,13 +51,13 @@ namespace SlalomTracker
         {               
             if (duration > 0.0d)
             {
-                Logger.Log(
+                _log.LogInformation(
                     $"Trimming {_localVideoPath} from {start} seconds for {duration} seconds.");     
 
                 string trimmedPath = await TrimAsync(_localVideoPath, start, duration);
                 
-                Logger.Log($"Trimmed: {trimmedPath}");
-                Logger.Log($"Removing audio from {_localVideoPath}.");               
+                _log.LogInformation($"Trimmed: {trimmedPath}");
+                _log.LogDebug($"Removing audio from {_localVideoPath}.");               
 
                 string silencedPath = await RemoveAudioAsync(trimmedPath);
 
@@ -94,7 +98,7 @@ namespace SlalomTracker
             string outputFile = AppendToFileName(inputFile, "s");
             string parameters = $"-i {inputFile} -c copy -an {outputFile}";
             await _ffmpeg.ExecuteAsync(parameters);
-            Logger.Log($"Removed Audio: {outputFile}");
+            _log.LogDebug($"Removed Audio: {outputFile}");
             
             return outputFile;
         }
@@ -128,7 +132,7 @@ namespace SlalomTracker
             var outputFile = new MediaFile(thumbnailPath);
             var options = new ConversionOptions { Seek = TimeSpan.FromSeconds(atSeconds) };
 
-            Logger.Log($"Generating thumbnail: {thumbnailPath} for video: {_localVideoPath} at {atSeconds} seconds.");
+            _log.LogInformation($"Generating thumbnail: {thumbnailPath} for video: {_localVideoPath} at {atSeconds} seconds.");
             await _ffmpeg.GetThumbnailAsync(inputFile, outputFile, options);
 
             return thumbnailPath;
@@ -136,7 +140,7 @@ namespace SlalomTracker
 
         private void OnError(object sender, ConversionErrorEventArgs e)
         {
-            Logger.Log(string.Format("FFMPEG error: [{0} => {1}]: Error: {2}\n\t{3}",
+            _log.LogDebug(string.Format("FFMPEG error: [{0} => {1}]: Error: {2}\n\t{3}",
                 e.Input.FileInfo.Name, e.Output.FileInfo.Name, e.Exception.ExitCode, e.Exception.Message),
                 e.Exception);
         }    
@@ -145,7 +149,7 @@ namespace SlalomTracker
         {
             // Grab every 10th progress update.
             if (e.Frame % 10 == 0)
-                Logger.Log($"{_localVideoPath} -- Processed frame {e.Frame} @{e.ProcessedDuration}");
+                _log.LogDebug($"{_localVideoPath} -- Processed frame {e.Frame} @{e.ProcessedDuration}");
         }
 
         private string AppendToFileName(string inputFile, string suffix, bool appendFileIndex = false)

@@ -1,6 +1,6 @@
 using System;
 
-namespace SkiConsole
+namespace SlalomTracker.Cloud
 {
     public interface IUploadListener
     {

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Google.Cloud.PubSub.V1;
 using Logger = jasondel.Tools.Logger;
 
-namespace SkiConsole
+namespace SlalomTracker.Cloud
 {
     public class PubSubVideoUploadPublisher
     {       

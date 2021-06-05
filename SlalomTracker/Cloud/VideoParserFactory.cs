@@ -1,13 +1,31 @@
 using System;
 using Newtonsoft.Json;
 using SlalomTracker.Video;
-using Logger = jasondel.Tools.Logger;
+using SlalomTracker.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace SlalomTracker.Cloud
 {
-    public class QueueMessageParser
+    public class VideoParserFactory
     {
-        public static string GetUrl(string message)
+        public static IProcessor CreateFromMessage(string message)
+        {
+            var log = SkiLogger.Factory.CreateLogger<VideoParserFactory>();
+
+            IProcessor processor = null;
+            string videoUrl = GetUrl(message);
+            
+            if (videoUrl == null)
+                throw new ApplicationException("Unable to find videoUrl in message.");
+            else 
+                log.LogInformation($"Received this videoUrl: {videoUrl}");
+
+            // TODO: Need to parse Compare Message and optinally create a CompareVideoProcessor here.
+            processor = new SkiVideoProcessor(videoUrl);           
+            return processor;
+        }
+
+        private static string GetUrl(string message)
         {
             string videoUrl = null;
             dynamic msg = JsonConvert.DeserializeObject(message);
@@ -23,25 +41,7 @@ namespace SlalomTracker.Cloud
             if (!(videoUrl.ToUpper().Contains(".MP4")))
                 videoUrl = null;
 
-            if (videoUrl == null)
-                Logger.Log($"WARNING: Valid video url not found: {message}");
-            else 
-                Logger.Log($"Received this videoUrl: {videoUrl}");
-
             return videoUrl;
-        }
-
-        public static IProcessor GetProcessor(string message)
-        {
-            IProcessor processor = null;
-            string videoUrl = GetUrl(message);
-            
-            if (videoUrl == null)
-                throw new ApplicationException("Unable to find videoUrl in message.");
-
-            // TODO: Need to parse Compare Message and optinally create a CompareVideoProcessor here.
-            processor = new SkiVideoProcessor(videoUrl);           
-            return processor;
         }
 
         private static string GetUrlFromAzureStorageEvent(dynamic msg)

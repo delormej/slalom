@@ -4,15 +4,18 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Google.Cloud.PubSub.V1;
-using Google.Api.Gax;
 using SlalomTracker.Cloud;
 using SlalomTracker.Video;
-using Logger = jasondel.Tools.Logger;
+using Microsoft.Extensions.Logging;
+using SlalomTracker.Logging;
 
-namespace SkiConsole
+namespace SlalomTracker.Cloud
 {
     public class PubSubVideoUploadListener : IUploadListener
     {
+        private ILogger<PubSubVideoUploadListener> _log = 
+            SkiLogger.Factory.CreateLogger<PubSubVideoUploadListener>();
+
         public const int UnlimitedMessages = int.MaxValue;
 
         public event EventHandler Completed;
@@ -49,15 +52,15 @@ namespace SkiConsole
         public void Stop()
         {
             if (!_processorTask.IsCompleted)
-                Logger.Log("Waiting for processor to complete.");
+                _log.LogInformation("Waiting for processor to complete.");
             _processorTask.Wait();
             
-            Logger.Log("Stopped");
+            _log.LogInformation("Stopped");
         }
 
         private void InternalStop()
         {
-            Logger.Log("Stopping...");
+            _log.LogInformation("Stopping...");
             // Subscriber will stop when the last message is fully processed.
             _subscriber.StopAsync(CancellationToken.None).ContinueWith(_ =>
             {
@@ -101,11 +104,11 @@ namespace SkiConsole
             {               
                 // Process the message.
                 string json = Encoding.UTF8.GetString(message.Data.ToArray());
-                Logger.Log($"Received message id:{message.MessageId}, attempt:{attempt} Body:{json}");
+                _log.LogInformation($"Received message id:{message.MessageId}, attempt:{attempt} Body:{json}");
 
                 if (!_deadLetter)
                 {
-                    IProcessor processor = QueueMessageParser.GetProcessor(json);               
+                    IProcessor processor = VideoParserFactory.CreateFromMessage(json);
                     await processor.ProcessAsync();
                 }
 
@@ -113,10 +116,10 @@ namespace SkiConsole
             }
             catch (Exception e)
             {
-                Logger.Log($"ERROR: Attempt #{attempt} for message {message.MessageId}.", e);
+                _log.LogError($"ERROR: Attempt #{attempt} for message {message.MessageId}.", e);
             }
             
-            Logger.Log($"Message handler completed with {reply} for {message.MessageId}.");
+            _log.LogInformation($"Message handler completed with {reply} for {message.MessageId}.");
             
             if (++messagesProcessed >= _maxMessagesToProcess)
                 InternalStop();
