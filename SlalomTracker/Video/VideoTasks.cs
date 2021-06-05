@@ -25,7 +25,6 @@ namespace SlalomTracker
         public VideoTasks(string localVideoPath, 
             string videoTimeZone = DefaultVideoRecordingTimeZone)
         {
-            _log.BeginScope(localVideoPath);
             _ffmpeg = new Engine("ffmpeg");
             _ffmpeg.Progress += OnProgress;
             _ffmpeg.Error += OnError;

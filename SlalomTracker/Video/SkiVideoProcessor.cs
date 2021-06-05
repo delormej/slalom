@@ -20,7 +20,8 @@ namespace SlalomTracker.Video
 
         public SkiVideoProcessor(string videoUrl)
         {
-            _log.BeginScope(videoUrl);
+            _log.BeginScope(SkiLogger.GetScopeFromUrl(videoUrl));
+
             _sourceVideoUrl = videoUrl;
             _storage = new GoogleStorage();
             _factory = new CoursePassFactory();
